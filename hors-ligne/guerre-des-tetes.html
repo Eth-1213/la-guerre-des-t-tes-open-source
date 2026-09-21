@@ -286,7 +286,8 @@ html, body {
   box-shadow: var(--ombre);
   text-align: center;
 }
-.btn:active { transform: translateY(5px); box-shadow: 0 0 0 var(--encre); }
+.btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 var(--encre); }
+.btn:disabled { opacity: .5; box-shadow: 0 3px 0 var(--encre); }
 .btn.primary { background: var(--rouge); color: var(--blanc); }
 .btn.ghost { background: var(--papier-2); }
 .btn.danger { background: var(--blanc); color: var(--rouge-fonce); }
@@ -400,6 +401,8 @@ html, body {
 }
 .scan-dots i.fait { background: var(--rouge); }
 .scan-dots i.en-cours { background: var(--jaune); transform: scale(1.3); }
+.scan-arc { width: 100%; max-width: 320px; height: auto; display: block; }
+.scan-bar:has(.scan-arc:not(.hidden)) { flex-direction: column; align-items: stretch; gap: 8px; }
 .scan-progress {
   position: absolute; inset: 0; display: grid; place-items: center;
   background: rgba(37, 34, 43, .8); color: var(--papier);
@@ -600,6 +603,8 @@ html, body {
         <small id="scan-help"></small>
       </div>
       <div class="scan-dots" id="scan-dots"></div>
+      <canvas id="scan-arc" class="scan-arc hidden" width="320" height="96"
+              aria-label="Angles déjà balayés"></canvas>
     </div>
     <div class="capture-stage">
       <video id="capture-video" playsinline muted autoplay></video>
@@ -617,6 +622,10 @@ html, body {
       <button class="round-btn" id="btn-switch-cam" aria-label="Changer de caméra">⟳</button>
       <button class="shutter" id="btn-shutter" aria-label="Capturer"></button>
       <button class="round-btn" id="btn-capture-cancel" aria-label="Annuler">✕</button>
+    </div>
+    <div class="menu hidden" id="sweep-controls">
+      <button class="btn primary" id="btn-sweep-done" disabled>Continue à balayer…</button>
+      <button class="btn ghost" id="btn-sweep-cancel">Annuler</button>
     </div>
     <div class="capture-controls hidden" id="import-controls">
       <input type="range" id="import-zoom" min="100" max="300" value="120" aria-label="Zoom">
@@ -687,9 +696,10 @@ html, body {
       <h1>Comment jouer</h1>
     </header>
     <div class="howto">
-      <p><strong>1.</strong> <strong>Scanne un visage en relief</strong> : six prises de vue guidées (face, profils, menton baissé)
-        et le jeu reconstruit une tête complète, qui tourne vraiment sur elle-même en jeu. Une photo simple ou une image
-        de ta galerie marchent aussi, mais l'arrière du crâne est alors extrapolé.</p>
+      <p><strong>1.</strong> <strong>Scanne un visage en relief</strong> : garde la tête immobile et promène lentement le
+        téléphone autour du visage, d'une oreille à l'autre. Le gyroscope <em>mesure</em> l'angle de chaque image, et le jeu
+        reconstruit une tête complète qui tourne vraiment sur elle-même en jeu. Une photo simple ou une image de ta galerie
+        marchent aussi, mais l'arrière du crâne est alors extrapolé.</p>
       <p><strong>2.</strong> Le décor est filmé par la caméra arrière. Les têtes traversent les murs de ta pièce.</p>
       <p><strong>3.</strong> <strong>Bouge le téléphone</strong> pour viser : le gyroscope fait tourner ta vue sur 360°. Lève-toi, ce jeu ne se joue pas assis.</p>
       <p><strong>4.</strong> Touche l'écran (ou le bouton TIR) pour tirer sur le réticule.</p>
@@ -1228,6 +1238,7 @@ class Orientation {
     this.touchYaw = 0;
     this.touchPitch = 0;
 
+    this._proprietaires = new Set();
     this._recentrerDesQuePret = false;
     this._onDevice = this._onDevice.bind(this);
     this._drag = null;
@@ -1246,14 +1257,24 @@ class Orientation {
     return true; // Android / navigateurs sans garde-fou
   }
 
-  start() {
+  /**
+   * Plusieurs écrans ont besoin du capteur en même temps (partie, scan,
+   * diagnostic, sonde de démarrage). Chacun le réserve sous son nom et le
+   * relâche ; les écouteurs ne sont retirés que lorsque plus personne n'en
+   * veut. Un simple start/stop laissait le dernier à partir couper les
+   * capteurs sous les pieds des autres.
+   */
+  acquire(proprietaire) {
+    this._proprietaires.add(proprietaire);
     if (this.active) return;
     this.active = true;
     window.addEventListener("deviceorientation", this._onDevice, true);
     window.addEventListener("deviceorientationabsolute", this._onDevice, true);
   }
 
-  stop() {
+  release(proprietaire) {
+    this._proprietaires.delete(proprietaire);
+    if (this._proprietaires.size || !this.active) return;
     this.active = false;
     window.removeEventListener("deviceorientation", this._onDevice, true);
     window.removeEventListener("deviceorientationabsolute", this._onDevice, true);
@@ -1446,19 +1467,30 @@ const EQUI_H = 160;   // latitude : +90° … -90°
 
 const ATLAS = { tile: 96, yawN: 18, pitchN: 3, pitchMax: 0.7 };
 
+/**
+ * Proportions d'une tête humaine, rapportées à la moitié de sa hauteur :
+ * plus étroite que haute, et plus profonde que large. Une sphère déformait
+ * les traits dès qu'on s'écartait de la vue de face.
+ */
+const RAYONS = { x: 0.76, y: 1.08, z: 0.95 };
+
 /** Part du visage occupée par le gabarit ovale, dans le carré capturé. */
 const REMPLISSAGE_X = 0.74;
 const REMPLISSAGE_Y = 0.94;
 
-/** Étapes du scan guidé : longitude et latitude de l'observateur. */
+/**
+ * Repli sans gyroscope : trois poses seulement. Les angles y sont supposés,
+ * donc le résultat dépend de la docilité du modèle — c'est précisément ce
+ * que le balayage mesuré évite.
+ */
 const SCAN_STEPS = [
   { lon: 0, lat: 0, titre: "Bien en face", aide: "Regarde l'objectif, visage centré dans l'ovale." },
-  { lon: 0.70, lat: 0, titre: "Tourne vers ta gauche", aide: "Un quart de tour environ, sans bouger le téléphone." },
-  { lon: 1.30, lat: 0, titre: "Profil gauche", aide: "Presque de profil : on doit voir ton oreille." },
-  { lon: -0.70, lat: 0, titre: "Tourne vers ta droite", aide: "Reviens, puis tourne de l'autre côté." },
-  { lon: -1.30, lat: 0, titre: "Profil droit", aide: "Presque de profil, de l'autre côté." },
-  { lon: 0, lat: 0.42, titre: "Baisse le menton", aide: "Face à l'objectif, penche la tête en avant." },
+  { lon: 0.85, lat: 0, titre: "Trois quarts gauche", aide: "Tourne la tête vers ta gauche, sans bouger le téléphone." },
+  { lon: -0.85, lat: 0, titre: "Trois quarts droit", aide: "Et de l'autre côté." },
 ];
+
+/** Amplitude utile d'un balayage : au-delà, la caméra ne voit plus le visage. */
+const BALAYAGE_MAX = 1.65;
 
 function canvas(w, h) {
   const c = document.createElement("canvas");
@@ -1470,6 +1502,34 @@ function canvas(w, h) {
 function direction(lon, lat) {
   const cl = Math.cos(lat);
   return { x: Math.sin(lon) * cl, y: Math.sin(lat), z: -Math.cos(lon) * cl };
+}
+
+/** Point de la surface de la tête à (lon, lat). */
+function surface(lon, lat) {
+  const cl = Math.cos(lat);
+  return {
+    x: RAYONS.x * Math.sin(lon) * cl,
+    y: RAYONS.y * Math.sin(lat),
+    z: -RAYONS.z * Math.cos(lon) * cl,
+  };
+}
+
+/** Normale géométrique en un point de l'ellipsoïde. */
+function normaleEn(p) {
+  return normalise({
+    x: p.x / (RAYONS.x * RAYONS.x),
+    y: p.y / (RAYONS.y * RAYONS.y),
+    z: p.z / (RAYONS.z * RAYONS.z),
+  });
+}
+
+/**
+ * Demi-largeur de la silhouette dans une direction donnée de l'écran :
+ * fonction d'appui de l'ellipsoïde. Elle vaut exactement le bord de la
+ * silhouette, donc le cadrage colle au gabarit ovale quel que soit l'angle.
+ */
+function demiEtendue(axe) {
+  return Math.hypot(RAYONS.x * axe.x, RAYONS.y * axe.y, RAYONS.z * axe.z);
 }
 
 const croix = (a, b) => ({
@@ -1492,7 +1552,7 @@ function viewBasis(lon, lat) {
   const f = { x: -d.x, y: -d.y, z: -d.z };             // regard de l'observateur
   const r = normalise(croix(f, { x: 0, y: 1, z: 0 })); // droite de l'image
   const u = croix(r, f);                               // haut de l'image
-  return { d, f, r, u };
+  return { d, f, r, u, demiL: demiEtendue(r), demiH: demiEtendue(u) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -1510,8 +1570,17 @@ function buildEquirect(vues) {
     const ctx = c.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(v.image, 0, 0, N, N);
     const base = viewBasis(v.lon, v.lat);
-    return { data: ctx.getImageData(0, 0, N, N).data, dir: base.d, r: base.r, u: base.u };
+    return { data: ctx.getImageData(0, 0, N, N).data, base, gain: 1 };
   });
+
+  // Les caméras réajustent leur exposition à chaque angle : sans correction,
+  // la tête reconstruite est zébrée de bandes claires et sombres.
+  harmoniserExposition(sources, N);
+
+  // Beaucoup de vues : chacune peut régner sur une bande étroite, le rendu
+  // gagne en netteté. Peu de vues : il faut mélanger largement.
+  const durete = vues.length > 10 ? 7 : vues.length > 5 ? 4 : 3;
+  const seuil = vues.length > 10 ? 0.55 : 0.42;
 
   const total = EQUI_W * EQUI_H;
   const somme = new Float32Array(total * 3);
@@ -1519,29 +1588,27 @@ function buildEquirect(vues) {
 
   for (let j = 0; j < EQUI_H; j++) {
     const lat = Math.PI / 2 - ((j + 0.5) / EQUI_H) * Math.PI;
-    const cl = Math.cos(lat), sl = Math.sin(lat);
     for (let i = 0; i < EQUI_W; i++) {
       const lon = ((i + 0.5) / EQUI_W) * TAU - Math.PI;
-      // Normale de la tête modèle en ce point
-      const nx = Math.sin(lon) * cl, ny = sl, nz = -Math.cos(lon) * cl;
+      const p = surface(lon, lat);
+      const n = normaleEn(p);
       const idx = j * EQUI_W + i;
 
       for (const src of sources) {
-        const face = nx * src.dir.x + ny * src.dir.y + nz * src.dir.z;
-        if (face <= 0.42) continue;                  // angle trop rasant : on y capte le décor, pas le visage
-        const w = Math.pow(face, 3);                 // chaque vue règne là où elle voit de face
+        const { d, r, u, demiL, demiH } = src.base;
+        const face = n.x * d.x + n.y * d.y + n.z * d.z;
+        if (face <= seuil) continue;              // trop rasant : on y capte le décor
+        const w = Math.pow(face, durete);
 
-        // Projection orthographique sur la photo prise sous cet angle
-        const sx = nx * src.r.x + ny * src.r.y + nz * src.r.z;
-        const sy = nx * src.u.x + ny * src.u.y + nz * src.u.z;
-
-        const u = (0.5 + (sx * REMPLISSAGE_X) / 2) * N;
-        const v = (0.5 - (sy * REMPLISSAGE_Y) / 2) * N;
-        if (u < 0 || v < 0 || u >= N || v >= N) continue;
-        const p = ((v | 0) * N + (u | 0)) * 4;
-        somme[idx * 3] += src.data[p] * w;
-        somme[idx * 3 + 1] += src.data[p + 1] * w;
-        somme[idx * 3 + 2] += src.data[p + 2] * w;
+        const sx = (p.x * r.x + p.y * r.y + p.z * r.z) / demiL;
+        const sy = (p.x * u.x + p.y * u.y + p.z * u.z) / demiH;
+        const ui = (0.5 + (sx * REMPLISSAGE_X) / 2) * N;
+        const vi = (0.5 - (sy * REMPLISSAGE_Y) / 2) * N;
+        if (ui < 0 || vi < 0 || ui >= N || vi >= N) continue;
+        const q = ((vi | 0) * N + (ui | 0)) * 4;
+        somme[idx * 3] += src.data[q] * src.gain * w;
+        somme[idx * 3 + 1] += src.data[q + 1] * src.gain * w;
+        somme[idx * 3 + 2] += src.data[q + 2] * src.gain * w;
         poids[idx] += w;
       }
     }
@@ -1562,6 +1629,27 @@ function buildEquirect(vues) {
   comblerTrous(img, poids);
   ctx.putImageData(img, 0, 0);
   return out;
+}
+
+/** Aligne la luminosité de chaque vue sur celle de la première. */
+function harmoniserExposition(sources, N) {
+  const luminance = (data) => {
+    let somme = 0, n = 0;
+    const r = N * 0.28;
+    for (let y = N / 2 - r; y < N / 2 + r; y += 3) {
+      for (let x = N / 2 - r; x < N / 2 + r; x += 3) {
+        const p = ((y | 0) * N + (x | 0)) * 4;
+        somme += 0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2];
+        n++;
+      }
+    }
+    return n ? somme / n : 1;
+  };
+  const reference = luminance(sources[0].data);
+  for (const src of sources) {
+    const l = luminance(src.data);
+    src.gain = l > 1 ? clamp(reference / l, 0.72, 1.4) : 1;
+  }
 }
 
 /**
@@ -1676,57 +1764,62 @@ function buildAtlas(equirect) {
 }
 
 function rendreTuile(img, tex, lon, lat, tile, half) {
-  const { d, r, u } = viewBasis(lon, lat);
-  const rx = r.x, ry = r.y, rz = r.z;
-  const ux = u.x, uy = u.y, uz = u.z;
+  const { d, r, u, demiL, demiH } = viewBasis(lon, lat);
 
   // Lumière fixe dans le repère de l'observateur : haut, gauche, devant
-  const lx = -0.45 * rx + 0.55 * ux + 0.75 * d.x;
-  const ly = -0.45 * ry + 0.55 * uy + 0.75 * d.y;
-  const lz = -0.45 * rz + 0.55 * uz + 0.75 * d.z;
+  const lx = -0.45 * r.x + 0.55 * u.x + 0.75 * d.x;
+  const ly = -0.45 * r.y + 0.55 * u.y + 0.75 * d.y;
+  const lz = -0.45 * r.z + 0.55 * u.z + 0.75 * d.z;
   const ll = Math.hypot(lx, ly, lz) || 1;
+
+  // Rayon parallèle : direction constante, seule l'origine bouge.
+  const Dx = d.x / RAYONS.x, Dy = d.y / RAYONS.y, Dz = d.z / RAYONS.z;
+  const DD = Dx * Dx + Dy * Dy + Dz * Dz;
 
   const data = img.data;
   data.fill(0);
 
   for (let py = 0; py < tile; py++) {
-    // L'axe « haut » de l'écran monte, celui des pixels descend.
     const y = (half - 0.5 - py) / (half - 2);
     for (let px = 0; px < tile; px++) {
       const x = (px + 0.5 - half) / (half - 2);
-      const rr = x * x + y * y;
       const o = (py * tile + px) * 4;
-      if (rr > 1) continue;
 
-      const z = Math.sqrt(1 - rr);
-      // Point (et normale) sur la sphère, exprimé dans le repère de la tête
-      const nx = x * rx + y * ux + z * d.x;
-      const ny = x * ry + y * uy + z * d.y;
-      const nz = x * rz + y * uz + z * d.z;
+      // Point du plan de l'image, ramené à l'échelle de la silhouette
+      const ax = x * demiL * r.x + y * demiH * u.x;
+      const ay = x * demiL * r.y + y * demiH * u.y;
+      const az = x * demiL * r.z + y * demiH * u.z;
+      const Ax = ax / RAYONS.x, Ay = ay / RAYONS.y, Az = az / RAYONS.z;
 
-      // Coordonnées dans la texture
-      const tlon = Math.atan2(nx, -nz);
-      const tlat = Math.asin(clamp(ny, -1, 1));
+      const AD = Ax * Dx + Ay * Dy + Az * Dz;
+      const disc = AD * AD - DD * (Ax * Ax + Ay * Ay + Az * Az - 1);
+      if (disc < 0) continue;                         // hors silhouette
+      const t = (-AD + Math.sqrt(disc)) / DD;         // face tournée vers nous
+
+      const sx = ax + t * d.x, sy = ay + t * d.y, sz = az + t * d.z;
+      const n = normaleEn({ x: sx, y: sy, z: sz });
+
+      const tlon = Math.atan2(sx / RAYONS.x, -sz / RAYONS.z);
+      const tlat = Math.asin(clamp(sy / RAYONS.y, -1, 1));
       const tu = clamp(Math.floor(((tlon + Math.PI) / TAU) * EQUI_W), 0, EQUI_W - 1);
       const tv = clamp(Math.floor((0.5 - tlat / Math.PI) * EQUI_H), 0, EQUI_H - 1);
       const tp = (tv * EQUI_W + tu) * 4;
 
-      const diffus = clamp((nx * lx + ny * ly + nz * lz) / ll, -1, 1);
+      const diffus = (n.x * lx + n.y * ly + n.z * lz) / ll;
       const eclat = 0.62 + 0.45 * Math.max(0, diffus);
-      const bord = Math.sqrt(rr);
 
-      // Contour d'encre, pour rester dans l'habillage du jeu
+      // Distance au bord de la silhouette, 0 au centre et 1 sur le contour
+      const bord = Math.sqrt(clamp(1 - disc / DD, 0, 1));
       if (bord > 0.9) {
-        const t = clamp((bord - 0.9) / 0.1, 0, 1);
-        data[o] = 0x25 * t + tex[tp] * eclat * (1 - t);
-        data[o + 1] = 0x22 * t + tex[tp + 1] * eclat * (1 - t);
-        data[o + 2] = 0x2b * t + tex[tp + 2] * eclat * (1 - t);
+        const k = clamp((bord - 0.9) / 0.1, 0, 1);
+        data[o] = 0x25 * k + tex[tp] * eclat * (1 - k);
+        data[o + 1] = 0x22 * k + tex[tp + 1] * eclat * (1 - k);
+        data[o + 2] = 0x2b * k + tex[tp + 2] * eclat * (1 - k);
       } else {
         data[o] = tex[tp] * eclat;
         data[o + 1] = tex[tp + 1] * eclat;
         data[o + 2] = tex[tp + 2] * eclat;
       }
-      // Bord adouci sur le dernier pixel, pour ne pas crêner la silhouette
       data[o + 3] = 255 * clamp((1 - bord) * (half - 2), 0, 1);
     }
   }
@@ -1766,7 +1859,7 @@ function viewAngles(faceYaw, facePitch, vers) {
   return { lon: Math.atan2(dx, -dz), lat: Math.asin(clamp(dy, -1, 1)) };
 }
 
-return { EQUI_W, EQUI_H, ATLAS, SCAN_STEPS, buildEquirect, renderView, buildAtlas, tileFor, viewAngles };
+return { EQUI_W, EQUI_H, ATLAS, RAYONS, SCAN_STEPS, BALAYAGE_MAX, buildEquirect, renderView, buildAtlas, tileFor, viewAngles };
 })();
 
 __modules["faces.js"] = (function () {
@@ -3690,11 +3783,11 @@ const audio = __modules["audio.js"];
 const { sfx } = __modules["audio.js"];
 const { Orientation, CameraFeed } = __modules["sensors.js"];
 const F = __modules["faces.js"];
-const { SCAN_STEPS, tileFor } = __modules["head3d.js"];
+const { SCAN_STEPS, BALAYAGE_MAX, tileFor } = __modules["head3d.js"];
 const { Game } = __modules["game.js"];
 const { LEVELS, indexInMode, nextLevel } = __modules["levels.js"];
 const { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } = __modules["ui.js"];
-const { clamp } = __modules["util.js"];
+const { clamp, wrapAngle, TAU } = __modules["util.js"];
 store.load();
 const settings = store.settings();
 audio.setEnabled(settings.sound);
@@ -3810,7 +3903,7 @@ async function startLevel(level) {
   const granted = await orientation.requestPermission();
   orientation.sensitivity = settings.sensitivity / 100;
   orientation.invertY = settings.invertY;
-  if (granted) orientation.start();
+  if (granted) orientation.acquire("partie");
 
   // Caméra arrière
   let camOk = false;
@@ -3844,7 +3937,7 @@ function stopPlaying() {
   game.stop();
   feed.stop();
   video.classList.remove("on");
-  orientation.stop();
+  orientation.release("partie");
   releaseWakeLock();
   setHud(false);
 }
@@ -4012,8 +4105,18 @@ let pendingCrop = null;         // canvas carré prêt à être enregistré
 let importImage = null;         // image en cours de cadrage
 const importView = { zoom: 1.2, px: 0, py: 0 };
 
-// Scan en relief : une prise de vue par étape, puis reconstruction.
-const scan = { actif: false, etape: 0, vues: [], tete: null, apercu: 0, anim: null };
+// Scan en relief. Deux modes : balayage continu quand le gyroscope mesure
+// vraiment l'angle de prise de vue, trois poses supposées sinon.
+const scan = {
+  actif: false, mode: null, etape: 0, vues: [], tete: null, apercu: 0, anim: null,
+  boucle: null, lon0: 0, lat0: 0, dernierLon: 0, dernierT: 0, vitesse: 0,
+  capPrec: 0, calme: 0,
+};
+
+const CASES_ARC = 26;                 // découpage de l'arc de couverture
+const PAS_ECHANTILLON = 0.13;         // ~7,5° entre deux prises
+const VITESSE_MAX = 1.6;              // rad/s : au-delà, l'image est filée
+const VUES_MAX = 26;
 
 async function openCapture() {
   audio.unlock();
@@ -4031,10 +4134,15 @@ function resetCaptureUi() {
   pendingCrop = null;
   importImage = null;
   scan.actif = false;
+  scan.mode = null;
   scan.vues.length = 0;
   scan.tete = null;
   if (scan.anim) { cancelAnimationFrame(scan.anim); scan.anim = null; }
+  if (scan.boucle) { cancelAnimationFrame(scan.boucle); scan.boucle = null; }
   $("#scan-bar").classList.add("hidden");
+  $("#sweep-controls").classList.add("hidden");
+  $("#scan-arc").classList.add("hidden");
+  $("#scan-dots").classList.remove("hidden");
   $("#capture-heading").textContent = "Aligne le visage";
   capPreview.classList.remove("on");
   $("#capture-confirm").classList.add("hidden");
@@ -4048,6 +4156,7 @@ function resetCaptureUi() {
 
 function closeCapture() {
   captureFeed.stop();
+  orientation.release("scan");
   resetCaptureUi();
   refreshFaces();
   showScreen("screen-faces");
@@ -4135,20 +4244,165 @@ async function ouvrirScan() {
   scan.etape = 0;
   $("#capture-heading").textContent = "Scan en relief";
   $("#scan-bar").classList.remove("hidden");
-  majEtapeScan();
+
+  // Le gyroscope mesure réellement sous quel angle chaque image est prise ;
+  // sans lui on retombe sur des poses supposées, forcément approximatives.
+  const accorde = await orientation.requestPermission();
+  if (accorde) orientation.acquire("scan");
+  await wait(350);
+  scan.mode = orientation.hasGyro ? "balayage" : "poses";
+
   const ok = await captureFeed.start(capFacing);
   capVideo.classList.toggle("mirror", ok && capFacing === "user");
   if (!ok) {
     $("#capture-hint").textContent = "Caméra inaccessible : le scan a besoin de l'appareil photo.";
     $("#btn-shutter").disabled = true;
+    return;
   }
+  if (scan.mode === "balayage") demarrerBalayage();
+  else majEtapeScan();
 }
+
+/* --- Mode mesuré : un seul geste continu --- */
+
+function demarrerBalayage() {
+  scan.vues.length = 0;
+  scan.lon0 = null;
+  scan.dernierT = performance.now();
+  scan.vitesse = 0;
+  scan.calme = 0;
+  scan.capPrec = null;
+  $("#scan-arc").classList.remove("hidden");
+  $("#scan-dots").classList.add("hidden");
+  $("#capture-controls").classList.add("hidden");
+  $("#sweep-controls").classList.remove("hidden");
+  $("#scan-title").textContent = "Balaie autour du visage";
+  $("#scan-help").textContent = "Garde la tête immobile et promène lentement le téléphone d'une oreille à l'autre, visage dans l'ovale.";
+  $("#capture-hint").textContent = "C'est le téléphone qui tourne, pas la tête : c'est ainsi que l'angle est mesuré.";
+  scan.boucle = requestAnimationFrame(tourBalayage);
+}
+
+function tourBalayage(now) {
+  if (!scan.actif || scan.mode !== "balayage") return;
+  const dt = Math.min(0.1, Math.max(0.001, (now - scan.dernierT) / 1000));
+  scan.dernierT = now;
+  orientation.update(dt);
+
+  if (scan.lon0 === null) {
+    // La toute première image définit le « droit devant » et sert de
+    // référence d'exposition : la prendre en plein mouvement fausserait
+    // tout le balayage. On attend donc que le téléphone soit posé.
+    const cap = orientation.yaw;
+    const bouge = scan.capPrec === null ? 1 : Math.abs(wrapAngle(cap - scan.capPrec)) / dt;
+    scan.capPrec = cap;
+    scan.calme = bouge < 0.25 ? scan.calme + dt : 0;
+    $("#capture-hint").textContent = scan.calme > 0
+      ? "Ne bouge plus…"
+      : "Place le visage dans l'ovale et immobilise le téléphone.";
+    if (scan.calme > 0.4) {
+      scan.lon0 = cap;
+      scan.lat0 = orientation.pitch;
+      scan.dernierLon = 0;
+      $("#capture-hint").textContent = "C'est le téléphone qui tourne, pas la tête : c'est ainsi que l'angle est mesuré.";
+      echantillonner(0, 0);
+    }
+    dessinerArc(0);
+  } else {
+    const lon = wrapAngle(orientation.yaw - scan.lon0);
+    const lat = -(orientation.pitch - scan.lat0);
+    scan.vitesse = Math.abs(wrapAngle(lon - scan.dernierLon)) / dt;
+    const assezLoin = scan.vues.every((v) => Math.abs(wrapAngle(v.lon - lon)) >= PAS_ECHANTILLON);
+    if (assezLoin && Math.abs(lon) <= BALAYAGE_MAX && Math.abs(lat) <= 0.7
+        && scan.vitesse < VITESSE_MAX && scan.vues.length < VUES_MAX) {
+      echantillonner(lon, clamp(lat, -0.6, 0.6));
+    }
+    scan.dernierLon = lon;
+    dessinerArc(lon);
+  }
+  scan.boucle = requestAnimationFrame(tourBalayage);
+}
+
+function echantillonner(lon, lat) {
+  const rect = capStage.getBoundingClientRect();
+  scan.vues.push({ image: F.cropFromVideo(capVideo, rect.width, rect.height), lon, lat });
+  sfx.ui();
+  dessinerArc(lon);
+  majBoutonBalayage();
+}
+
+/** Assez de matière pour reconstruire ? Il faut de l'étendue, pas du nombre. */
+function couvertureBalayage() {
+  if (scan.vues.length < 2) return { cases: 0, etendue: 0, pret: false };
+  const lons = scan.vues.map((v) => v.lon);
+  const etendue = Math.max(...lons) - Math.min(...lons);
+  const cases = new Set(scan.vues.map((v) => Math.round((v.lon / BALAYAGE_MAX) * (CASES_ARC / 2)))).size;
+  return { cases, etendue, pret: scan.vues.length >= 7 && etendue >= 1.0 };
+}
+
+function majBoutonBalayage() {
+  const { pret, etendue } = couvertureBalayage();
+  const btn = $("#btn-sweep-done");
+  btn.disabled = !pret;
+  btn.textContent = pret
+    ? `Reconstruire (${scan.vues.length} vues)`
+    : `Continue à balayer… ${Math.round((etendue * 180) / Math.PI)}°`;
+}
+
+function dessinerArc(lonActuel) {
+  const c = $("#scan-arc");
+  const ctx = c.getContext("2d");
+  const W = c.width, H = c.height;
+  ctx.clearRect(0, 0, W, H);
+  const cx = W / 2, cy = H - 8, R = H - 20;
+
+  const vues = new Set(scan.vues.map((v) => Math.round((v.lon / BALAYAGE_MAX) * (CASES_ARC / 2))));
+  for (let k = -CASES_ARC / 2; k <= CASES_ARC / 2; k++) {
+    const lon = (k / (CASES_ARC / 2)) * BALAYAGE_MAX;
+    const a = -Math.PI / 2 + lon * 0.92;
+    const x = cx + Math.sin(a + Math.PI / 2) * 0 + Math.cos(a) * R;
+    const y = cy + Math.sin(a) * R;
+    const fait = vues.has(k);
+    ctx.beginPath();
+    ctx.arc(x, y, fait ? 6 : 4, 0, TAU);
+    ctx.fillStyle = fait ? "#e63b2e" : "#f6e6ca";
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Position actuelle du téléphone sur l'arc
+  const a = -Math.PI / 2 + clamp(lonActuel, -BALAYAGE_MAX, BALAYAGE_MAX) * 0.92;
+  ctx.beginPath();
+  ctx.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, 11, 0, TAU);
+  ctx.strokeStyle = scan.vitesse > VITESSE_MAX ? "#e63b2e" : "#25222b";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.fillStyle = "#25222b";
+  ctx.font = '700 13px ui-rounded, "Trebuchet MS", sans-serif';
+  ctx.textAlign = "center";
+  ctx.fillText(scan.vitesse > VITESSE_MAX ? "moins vite" : `${scan.vues.length} vues`, cx, cy - 6);
+}
+
+$("#btn-sweep-done").addEventListener("click", async () => {
+  if (!couvertureBalayage().pret) return;
+  sfx.ui();
+  if (scan.boucle) { cancelAnimationFrame(scan.boucle); scan.boucle = null; }
+  $("#sweep-controls").classList.add("hidden");
+  await reconstruireScan();
+});
+$("#btn-sweep-cancel").addEventListener("click", () => { sfx.ui(); closeCapture(); });
+
+/* --- Repli sans gyroscope : trois poses --- */
 
 function majEtapeScan() {
   const etape = SCAN_STEPS[scan.etape];
+  $("#scan-arc").classList.add("hidden");
+  $("#scan-dots").classList.remove("hidden");
   $("#scan-title").textContent = `${scan.etape + 1}/${SCAN_STEPS.length} · ${etape.titre}`;
   $("#scan-help").textContent = etape.aide;
-  $("#capture-hint").textContent = "Garde le téléphone immobile : c'est ta tête qui tourne.";
+  $("#capture-hint").textContent = "Sans gyroscope, les angles sont supposés : tiens la pose au plus près.";
   $("#scan-dots").innerHTML = SCAN_STEPS
     .map((_, i) => `<i class="${i < scan.etape ? "fait" : i === scan.etape ? "en-cours" : ""}"></i>`)
     .join("");
@@ -4178,24 +4432,29 @@ async function prendreVueScan() {
   await reconstruireScan();
 }
 
+/* --- Reconstruction, commune aux deux modes --- */
+
 async function reconstruireScan() {
-  const stage = capStage;
   const voile = document.createElement("div");
   voile.className = "scan-progress";
   voile.textContent = "Reconstruction de la tête…";
-  stage.appendChild(voile);
+  capStage.appendChild(voile);
   await wait(50);   // laisse le voile s'afficher avant de bloquer le fil
 
   scan.tete = F.buildHead(scan.vues);
   F.ensureAtlas(scan.tete);
   captureFeed.stop();
+  orientation.release("scan");
   voile.remove();
 
   $("#scan-bar").classList.add("hidden");
   $("#capture-controls").classList.add("hidden");
+  $("#sweep-controls").classList.add("hidden");
   $("#capture-confirm").classList.remove("hidden");
   $("#btn-face-save").textContent = "Garder cette tête";
-  $("#capture-hint").textContent = "Tête reconstruite depuis " + SCAN_STEPS.length + " angles. " + F.funProfile();
+  $("#capture-hint").textContent = scan.mode === "balayage"
+    ? `Tête reconstruite depuis ${scan.vues.length} vues, angles mesurés au gyroscope.`
+    : `Tête reconstruite depuis ${scan.vues.length} poses.`;
   animerApercu();
 }
 
@@ -4358,7 +4617,7 @@ async function ouvrirTestGyro() {
   audio.unlock();
   showScreen("screen-gyro");
   const accorde = await orientation.requestPermission();
-  if (accorde) orientation.start();
+  if (accorde) orientation.acquire("diagnostic");
   if (settings.camera && !FICHIER_LOCAL) {
     const ok = await feed.start("environment");
     video.classList.toggle("on", ok);
@@ -4374,7 +4633,7 @@ function fermerTestGyro() {
   diag.actif = false;
   feed.stop();
   video.classList.remove("on");
-  if (!game.running) orientation.stop();
+  orientation.release("diagnostic");
   game.ctx.clearRect(0, 0, game.W, game.H);
   showScreen("screen-settings");
 }
@@ -4510,8 +4769,8 @@ async function boot() {
   // La sonde ne doit couper les capteurs que si personne ne s'en sert : une
   // partie ou le diagnostic ouverts entre-temps gardent la main.
   if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission !== "function") {
-    orientation.start();
-    setTimeout(() => { if (!game.running && !diag.actif) orientation.stop(); }, 2500);
+    orientation.acquire("sonde");
+    setTimeout(() => orientation.release("sonde"), 2500);
   }
 
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
@@ -4520,7 +4779,7 @@ async function boot() {
 }
 
 // Point d'accès pour le débogage et les tests automatisés.
-window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel };
+window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel, scan };
 
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("dblclick", (e) => e.preventDefault());

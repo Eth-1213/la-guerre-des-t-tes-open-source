@@ -129,6 +129,8 @@
         <small id="scan-help"></small>
       </div>
       <div class="scan-dots" id="scan-dots"></div>
+      <canvas id="scan-arc" class="scan-arc hidden" width="320" height="96"
+              aria-label="Angles déjà balayés"></canvas>
     </div>
     <div class="capture-stage">
       <video id="capture-video" playsinline muted autoplay></video>
@@ -146,6 +148,10 @@
       <button class="round-btn" id="btn-switch-cam" aria-label="Changer de caméra">⟳</button>
       <button class="shutter" id="btn-shutter" aria-label="Capturer"></button>
       <button class="round-btn" id="btn-capture-cancel" aria-label="Annuler">✕</button>
+    </div>
+    <div class="menu hidden" id="sweep-controls">
+      <button class="btn primary" id="btn-sweep-done" disabled>Continue à balayer…</button>
+      <button class="btn ghost" id="btn-sweep-cancel">Annuler</button>
     </div>
     <div class="capture-controls hidden" id="import-controls">
       <input type="range" id="import-zoom" min="100" max="300" value="120" aria-label="Zoom">
@@ -216,9 +222,10 @@
       <h1>Comment jouer</h1>
     </header>
     <div class="howto">
-      <p><strong>1.</strong> <strong>Scanne un visage en relief</strong> : six prises de vue guidées (face, profils, menton baissé)
-        et le jeu reconstruit une tête complète, qui tourne vraiment sur elle-même en jeu. Une photo simple ou une image
-        de ta galerie marchent aussi, mais l'arrière du crâne est alors extrapolé.</p>
+      <p><strong>1.</strong> <strong>Scanne un visage en relief</strong> : garde la tête immobile et promène lentement le
+        téléphone autour du visage, d'une oreille à l'autre. Le gyroscope <em>mesure</em> l'angle de chaque image, et le jeu
+        reconstruit une tête complète qui tourne vraiment sur elle-même en jeu. Une photo simple ou une image de ta galerie
+        marchent aussi, mais l'arrière du crâne est alors extrapolé.</p>
       <p><strong>2.</strong> Le décor est filmé par la caméra arrière. Les têtes traversent les murs de ta pièce.</p>
       <p><strong>3.</strong> <strong>Bouge le téléphone</strong> pour viser : le gyroscope fait tourner ta vue sur 360°. Lève-toi, ce jeu ne se joue pas assis.</p>
       <p><strong>4.</strong> Touche l'écran (ou le bouton TIR) pour tirer sur le réticule.</p>

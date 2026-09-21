@@ -111,10 +111,16 @@ chronométrées). Chaque niveau se débloque en terminant le précédent.
 
 ## Visages et scan en relief
 
-- **Scanner en relief** (recommandé) : six prises de vue guidées — face, quart de tour et profil
-  de chaque côté, menton baissé. Le jeu en tire une **tête complète orientable**, qu'un aperçu
-  fait tourner avant de la garder. En jeu, les têtes se tournent réellement : elles regardent où
-  elles volent, jettent un œil au joueur, et se braquent sur lui juste avant de foncer.
+- **Scanner en relief** (recommandé) : un seul geste continu. Le sujet garde la tête immobile,
+  et on promène le téléphone autour de son visage, d'une oreille à l'autre. Le **gyroscope mesure
+  l'angle de chaque image** — rien n'est supposé — et une vingtaine de vues sont prises
+  automatiquement, réparties sur l'arc balayé. Un arc de progression montre ce qui est couvert et
+  signale si le geste est trop rapide. Le jeu en tire une **tête complète orientable**, qu'un
+  aperçu fait tourner avant de la garder. En jeu, les têtes se tournent réellement : elles
+  regardent où elles volent, jettent un œil au joueur, et se braquent sur lui avant de foncer.
+- Sans gyroscope, repli sur **trois poses** guidées (face et deux trois-quarts). Les angles y sont
+  supposés, donc le résultat dépend de la docilité du modèle : c'est exactement ce que la mesure
+  évite.
 - **Photo simple** : une seule vue, comme avant. La tête reste en relief, mais tout ce qui n'a pas
   été photographié est extrapolé.
 - **Importer** : n'importe quelle photo de la galerie, avec cadrage (glisser + zoom).
@@ -127,11 +133,16 @@ chronométrées). Chaque niveau se débloque en terminant le précédent.
 
 ### Ce que « scan 3D » veut dire ici, et ce que ça ne veut pas dire
 
-Le web n'expose aucun capteur de profondeur : **aucune géométrie réelle n'est mesurée**. Le jeu
-fait ce que faisaient les studios avant la photogrammétrie — il plaque les prises de vue sur une
-tête modèle, en laissant chaque vue régner là où elle regarde la surface de face, puis replie et
-adoucit la zone jamais photographiée (la nuque). Le relief vient de la texture et de l'éclairage,
-pas d'une mesure. C'est largement suffisant pour des ennemis volants, et honnête à dire.
+Le web n'expose aucun capteur de profondeur : **la forme du visage n'est pas mesurée**. Ce qui est
+mesuré, c'est l'**angle de chaque prise de vue**, par le gyroscope. Le jeu plaque ensuite les vues
+sur une tête modèle — un ellipsoïde aux proportions d'un crâne, plus étroit que haut et plus
+profond que large — en laissant chaque vue régner là où elle regarde la surface de face, puis
+replie et adoucit la zone jamais photographiée (la nuque). L'exposition de chaque vue est ramenée
+à celle de la première, sans quoi les réglages automatiques de la caméra zèbrent la tête de bandes
+claires et sombres.
+
+Le relief vient donc de la texture et de l'éclairage, pas d'une mesure de forme. C'est largement
+suffisant pour des ennemis volants, et honnête à dire.
 
 ## Réglages
 

@@ -37,6 +37,7 @@ export class Orientation {
     this.touchYaw = 0;
     this.touchPitch = 0;
 
+    this._proprietaires = new Set();
     this._recentrerDesQuePret = false;
     this._onDevice = this._onDevice.bind(this);
     this._drag = null;
@@ -55,14 +56,24 @@ export class Orientation {
     return true; // Android / navigateurs sans garde-fou
   }
 
-  start() {
+  /**
+   * Plusieurs écrans ont besoin du capteur en même temps (partie, scan,
+   * diagnostic, sonde de démarrage). Chacun le réserve sous son nom et le
+   * relâche ; les écouteurs ne sont retirés que lorsque plus personne n'en
+   * veut. Un simple start/stop laissait le dernier à partir couper les
+   * capteurs sous les pieds des autres.
+   */
+  acquire(proprietaire) {
+    this._proprietaires.add(proprietaire);
     if (this.active) return;
     this.active = true;
     window.addEventListener("deviceorientation", this._onDevice, true);
     window.addEventListener("deviceorientationabsolute", this._onDevice, true);
   }
 
-  stop() {
+  release(proprietaire) {
+    this._proprietaires.delete(proprietaire);
+    if (this._proprietaires.size || !this.active) return;
     this.active = false;
     window.removeEventListener("deviceorientation", this._onDevice, true);
     window.removeEventListener("deviceorientationabsolute", this._onDevice, true);

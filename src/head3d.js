@@ -16,19 +16,30 @@ export const EQUI_H = 160;   // latitude : +90° … -90°
 
 export const ATLAS = { tile: 96, yawN: 18, pitchN: 3, pitchMax: 0.7 };
 
+/**
+ * Proportions d'une tête humaine, rapportées à la moitié de sa hauteur :
+ * plus étroite que haute, et plus profonde que large. Une sphère déformait
+ * les traits dès qu'on s'écartait de la vue de face.
+ */
+export const RAYONS = { x: 0.76, y: 1.08, z: 0.95 };
+
 /** Part du visage occupée par le gabarit ovale, dans le carré capturé. */
 const REMPLISSAGE_X = 0.74;
 const REMPLISSAGE_Y = 0.94;
 
-/** Étapes du scan guidé : longitude et latitude de l'observateur. */
+/**
+ * Repli sans gyroscope : trois poses seulement. Les angles y sont supposés,
+ * donc le résultat dépend de la docilité du modèle — c'est précisément ce
+ * que le balayage mesuré évite.
+ */
 export const SCAN_STEPS = [
   { lon: 0, lat: 0, titre: "Bien en face", aide: "Regarde l'objectif, visage centré dans l'ovale." },
-  { lon: 0.70, lat: 0, titre: "Tourne vers ta gauche", aide: "Un quart de tour environ, sans bouger le téléphone." },
-  { lon: 1.30, lat: 0, titre: "Profil gauche", aide: "Presque de profil : on doit voir ton oreille." },
-  { lon: -0.70, lat: 0, titre: "Tourne vers ta droite", aide: "Reviens, puis tourne de l'autre côté." },
-  { lon: -1.30, lat: 0, titre: "Profil droit", aide: "Presque de profil, de l'autre côté." },
-  { lon: 0, lat: 0.42, titre: "Baisse le menton", aide: "Face à l'objectif, penche la tête en avant." },
+  { lon: 0.85, lat: 0, titre: "Trois quarts gauche", aide: "Tourne la tête vers ta gauche, sans bouger le téléphone." },
+  { lon: -0.85, lat: 0, titre: "Trois quarts droit", aide: "Et de l'autre côté." },
 ];
+
+/** Amplitude utile d'un balayage : au-delà, la caméra ne voit plus le visage. */
+export const BALAYAGE_MAX = 1.65;
 
 function canvas(w, h) {
   const c = document.createElement("canvas");
@@ -40,6 +51,34 @@ function canvas(w, h) {
 function direction(lon, lat) {
   const cl = Math.cos(lat);
   return { x: Math.sin(lon) * cl, y: Math.sin(lat), z: -Math.cos(lon) * cl };
+}
+
+/** Point de la surface de la tête à (lon, lat). */
+function surface(lon, lat) {
+  const cl = Math.cos(lat);
+  return {
+    x: RAYONS.x * Math.sin(lon) * cl,
+    y: RAYONS.y * Math.sin(lat),
+    z: -RAYONS.z * Math.cos(lon) * cl,
+  };
+}
+
+/** Normale géométrique en un point de l'ellipsoïde. */
+function normaleEn(p) {
+  return normalise({
+    x: p.x / (RAYONS.x * RAYONS.x),
+    y: p.y / (RAYONS.y * RAYONS.y),
+    z: p.z / (RAYONS.z * RAYONS.z),
+  });
+}
+
+/**
+ * Demi-largeur de la silhouette dans une direction donnée de l'écran :
+ * fonction d'appui de l'ellipsoïde. Elle vaut exactement le bord de la
+ * silhouette, donc le cadrage colle au gabarit ovale quel que soit l'angle.
+ */
+function demiEtendue(axe) {
+  return Math.hypot(RAYONS.x * axe.x, RAYONS.y * axe.y, RAYONS.z * axe.z);
 }
 
 const croix = (a, b) => ({
@@ -62,7 +101,7 @@ function viewBasis(lon, lat) {
   const f = { x: -d.x, y: -d.y, z: -d.z };             // regard de l'observateur
   const r = normalise(croix(f, { x: 0, y: 1, z: 0 })); // droite de l'image
   const u = croix(r, f);                               // haut de l'image
-  return { d, f, r, u };
+  return { d, f, r, u, demiL: demiEtendue(r), demiH: demiEtendue(u) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -80,8 +119,17 @@ export function buildEquirect(vues) {
     const ctx = c.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(v.image, 0, 0, N, N);
     const base = viewBasis(v.lon, v.lat);
-    return { data: ctx.getImageData(0, 0, N, N).data, dir: base.d, r: base.r, u: base.u };
+    return { data: ctx.getImageData(0, 0, N, N).data, base, gain: 1 };
   });
+
+  // Les caméras réajustent leur exposition à chaque angle : sans correction,
+  // la tête reconstruite est zébrée de bandes claires et sombres.
+  harmoniserExposition(sources, N);
+
+  // Beaucoup de vues : chacune peut régner sur une bande étroite, le rendu
+  // gagne en netteté. Peu de vues : il faut mélanger largement.
+  const durete = vues.length > 10 ? 7 : vues.length > 5 ? 4 : 3;
+  const seuil = vues.length > 10 ? 0.55 : 0.42;
 
   const total = EQUI_W * EQUI_H;
   const somme = new Float32Array(total * 3);
@@ -89,29 +137,27 @@ export function buildEquirect(vues) {
 
   for (let j = 0; j < EQUI_H; j++) {
     const lat = Math.PI / 2 - ((j + 0.5) / EQUI_H) * Math.PI;
-    const cl = Math.cos(lat), sl = Math.sin(lat);
     for (let i = 0; i < EQUI_W; i++) {
       const lon = ((i + 0.5) / EQUI_W) * TAU - Math.PI;
-      // Normale de la tête modèle en ce point
-      const nx = Math.sin(lon) * cl, ny = sl, nz = -Math.cos(lon) * cl;
+      const p = surface(lon, lat);
+      const n = normaleEn(p);
       const idx = j * EQUI_W + i;
 
       for (const src of sources) {
-        const face = nx * src.dir.x + ny * src.dir.y + nz * src.dir.z;
-        if (face <= 0.42) continue;                  // angle trop rasant : on y capte le décor, pas le visage
-        const w = Math.pow(face, 3);                 // chaque vue règne là où elle voit de face
+        const { d, r, u, demiL, demiH } = src.base;
+        const face = n.x * d.x + n.y * d.y + n.z * d.z;
+        if (face <= seuil) continue;              // trop rasant : on y capte le décor
+        const w = Math.pow(face, durete);
 
-        // Projection orthographique sur la photo prise sous cet angle
-        const sx = nx * src.r.x + ny * src.r.y + nz * src.r.z;
-        const sy = nx * src.u.x + ny * src.u.y + nz * src.u.z;
-
-        const u = (0.5 + (sx * REMPLISSAGE_X) / 2) * N;
-        const v = (0.5 - (sy * REMPLISSAGE_Y) / 2) * N;
-        if (u < 0 || v < 0 || u >= N || v >= N) continue;
-        const p = ((v | 0) * N + (u | 0)) * 4;
-        somme[idx * 3] += src.data[p] * w;
-        somme[idx * 3 + 1] += src.data[p + 1] * w;
-        somme[idx * 3 + 2] += src.data[p + 2] * w;
+        const sx = (p.x * r.x + p.y * r.y + p.z * r.z) / demiL;
+        const sy = (p.x * u.x + p.y * u.y + p.z * u.z) / demiH;
+        const ui = (0.5 + (sx * REMPLISSAGE_X) / 2) * N;
+        const vi = (0.5 - (sy * REMPLISSAGE_Y) / 2) * N;
+        if (ui < 0 || vi < 0 || ui >= N || vi >= N) continue;
+        const q = ((vi | 0) * N + (ui | 0)) * 4;
+        somme[idx * 3] += src.data[q] * src.gain * w;
+        somme[idx * 3 + 1] += src.data[q + 1] * src.gain * w;
+        somme[idx * 3 + 2] += src.data[q + 2] * src.gain * w;
         poids[idx] += w;
       }
     }
@@ -132,6 +178,27 @@ export function buildEquirect(vues) {
   comblerTrous(img, poids);
   ctx.putImageData(img, 0, 0);
   return out;
+}
+
+/** Aligne la luminosité de chaque vue sur celle de la première. */
+function harmoniserExposition(sources, N) {
+  const luminance = (data) => {
+    let somme = 0, n = 0;
+    const r = N * 0.28;
+    for (let y = N / 2 - r; y < N / 2 + r; y += 3) {
+      for (let x = N / 2 - r; x < N / 2 + r; x += 3) {
+        const p = ((y | 0) * N + (x | 0)) * 4;
+        somme += 0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2];
+        n++;
+      }
+    }
+    return n ? somme / n : 1;
+  };
+  const reference = luminance(sources[0].data);
+  for (const src of sources) {
+    const l = luminance(src.data);
+    src.gain = l > 1 ? clamp(reference / l, 0.72, 1.4) : 1;
+  }
 }
 
 /**
@@ -246,57 +313,62 @@ export function buildAtlas(equirect) {
 }
 
 function rendreTuile(img, tex, lon, lat, tile, half) {
-  const { d, r, u } = viewBasis(lon, lat);
-  const rx = r.x, ry = r.y, rz = r.z;
-  const ux = u.x, uy = u.y, uz = u.z;
+  const { d, r, u, demiL, demiH } = viewBasis(lon, lat);
 
   // Lumière fixe dans le repère de l'observateur : haut, gauche, devant
-  const lx = -0.45 * rx + 0.55 * ux + 0.75 * d.x;
-  const ly = -0.45 * ry + 0.55 * uy + 0.75 * d.y;
-  const lz = -0.45 * rz + 0.55 * uz + 0.75 * d.z;
+  const lx = -0.45 * r.x + 0.55 * u.x + 0.75 * d.x;
+  const ly = -0.45 * r.y + 0.55 * u.y + 0.75 * d.y;
+  const lz = -0.45 * r.z + 0.55 * u.z + 0.75 * d.z;
   const ll = Math.hypot(lx, ly, lz) || 1;
+
+  // Rayon parallèle : direction constante, seule l'origine bouge.
+  const Dx = d.x / RAYONS.x, Dy = d.y / RAYONS.y, Dz = d.z / RAYONS.z;
+  const DD = Dx * Dx + Dy * Dy + Dz * Dz;
 
   const data = img.data;
   data.fill(0);
 
   for (let py = 0; py < tile; py++) {
-    // L'axe « haut » de l'écran monte, celui des pixels descend.
     const y = (half - 0.5 - py) / (half - 2);
     for (let px = 0; px < tile; px++) {
       const x = (px + 0.5 - half) / (half - 2);
-      const rr = x * x + y * y;
       const o = (py * tile + px) * 4;
-      if (rr > 1) continue;
 
-      const z = Math.sqrt(1 - rr);
-      // Point (et normale) sur la sphère, exprimé dans le repère de la tête
-      const nx = x * rx + y * ux + z * d.x;
-      const ny = x * ry + y * uy + z * d.y;
-      const nz = x * rz + y * uz + z * d.z;
+      // Point du plan de l'image, ramené à l'échelle de la silhouette
+      const ax = x * demiL * r.x + y * demiH * u.x;
+      const ay = x * demiL * r.y + y * demiH * u.y;
+      const az = x * demiL * r.z + y * demiH * u.z;
+      const Ax = ax / RAYONS.x, Ay = ay / RAYONS.y, Az = az / RAYONS.z;
 
-      // Coordonnées dans la texture
-      const tlon = Math.atan2(nx, -nz);
-      const tlat = Math.asin(clamp(ny, -1, 1));
+      const AD = Ax * Dx + Ay * Dy + Az * Dz;
+      const disc = AD * AD - DD * (Ax * Ax + Ay * Ay + Az * Az - 1);
+      if (disc < 0) continue;                         // hors silhouette
+      const t = (-AD + Math.sqrt(disc)) / DD;         // face tournée vers nous
+
+      const sx = ax + t * d.x, sy = ay + t * d.y, sz = az + t * d.z;
+      const n = normaleEn({ x: sx, y: sy, z: sz });
+
+      const tlon = Math.atan2(sx / RAYONS.x, -sz / RAYONS.z);
+      const tlat = Math.asin(clamp(sy / RAYONS.y, -1, 1));
       const tu = clamp(Math.floor(((tlon + Math.PI) / TAU) * EQUI_W), 0, EQUI_W - 1);
       const tv = clamp(Math.floor((0.5 - tlat / Math.PI) * EQUI_H), 0, EQUI_H - 1);
       const tp = (tv * EQUI_W + tu) * 4;
 
-      const diffus = clamp((nx * lx + ny * ly + nz * lz) / ll, -1, 1);
+      const diffus = (n.x * lx + n.y * ly + n.z * lz) / ll;
       const eclat = 0.62 + 0.45 * Math.max(0, diffus);
-      const bord = Math.sqrt(rr);
 
-      // Contour d'encre, pour rester dans l'habillage du jeu
+      // Distance au bord de la silhouette, 0 au centre et 1 sur le contour
+      const bord = Math.sqrt(clamp(1 - disc / DD, 0, 1));
       if (bord > 0.9) {
-        const t = clamp((bord - 0.9) / 0.1, 0, 1);
-        data[o] = 0x25 * t + tex[tp] * eclat * (1 - t);
-        data[o + 1] = 0x22 * t + tex[tp + 1] * eclat * (1 - t);
-        data[o + 2] = 0x2b * t + tex[tp + 2] * eclat * (1 - t);
+        const k = clamp((bord - 0.9) / 0.1, 0, 1);
+        data[o] = 0x25 * k + tex[tp] * eclat * (1 - k);
+        data[o + 1] = 0x22 * k + tex[tp + 1] * eclat * (1 - k);
+        data[o + 2] = 0x2b * k + tex[tp + 2] * eclat * (1 - k);
       } else {
         data[o] = tex[tp] * eclat;
         data[o + 1] = tex[tp + 1] * eclat;
         data[o + 2] = tex[tp + 2] * eclat;
       }
-      // Bord adouci sur le dernier pixel, pour ne pas crêner la silhouette
       data[o + 3] = 255 * clamp((1 - bord) * (half - 2), 0, 1);
     }
   }
