@@ -87,11 +87,17 @@ export function makeTexture(src) {
   ctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
   ctx.restore();
 
-  // Liseré lumineux
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  // Double liseré : un reflet clair, puis le contour d'encre de l'habillage.
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(r, r, r - 3, 0, TAU);
+  ctx.arc(r, r, r - 7, 0, TAU);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#25222b";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(r, r, r - 4, 0, TAU);
   ctx.stroke();
   return c;
 }

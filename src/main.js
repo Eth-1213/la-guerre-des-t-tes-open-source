@@ -132,7 +132,7 @@ async function startLevel(level) {
   if (settings.camera && !FICHIER_LOCAL) {
     camOk = await feed.start("environment");
     video.classList.toggle("on", camOk);
-    if (!camOk) toast("Caméra indisponible : décor de secours activé.", 3200);
+    if (!camOk) toast("Caméra indisponible\u00a0: décor de secours activé.", 3200);
   } else {
     video.classList.remove("on");
   }
@@ -148,7 +148,7 @@ async function startLevel(level) {
 
   if (!orientation.hasGyro) {
     setTimeout(() => {
-      if (!orientation.hasGyro) toast("Pas de gyroscope : glisse le doigt pour tourner la vue.", 3600);
+      if (!orientation.hasGyro) toast("Pas de gyroscope\u00a0: glisse le doigt pour tourner la vue.", 3600);
     }, 1200);
   } else {
     toast("Tourne sur toi-même : elles arrivent de partout !", 2600);

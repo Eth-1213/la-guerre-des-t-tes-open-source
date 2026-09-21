@@ -10,19 +10,27 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iMzUlIiBjeT0iMjglIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMmEzMTYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBiMGQxYSIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0ic2tpbiIgY3g9IjM4JSIgY3k9IjMyJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZDliOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNjMDdhNGEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxnPgogICAgPGVsbGlwc2UgY3g9IjEyOCIgY3k9IjI1MCIgcng9Ijc4IiByeT0iMzQiIGZpbGw9IiMzOGU4ZmYiIG9wYWNpdHk9Ii4yOCIvPgogICAgPGVsbGlwc2UgY3g9IjM4NCIgY3k9IjI1MCIgcng9Ijc4IiByeT0iMzQiIGZpbGw9IiMzOGU4ZmYiIG9wYWNpdHk9Ii4yOCIvPgogICAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjYyIiByPSIxMTgiIGZpbGw9InVybCgjc2tpbikiLz4KICAgIDxwYXRoIGQ9Ik0xMzggMjIyYTExOCAxMTggMCAwIDEgMjM2IDB6IiBmaWxsPSIjMmUzNTUwIi8+CiAgICA8cGF0aCBkPSJNMjE0IDE3NmMxOC01OCA2Ni01OCA4NCAwLTI4LTE4LTU2LTE4LTg0IDB6IiBmaWxsPSIjZmZjYzRkIi8+CiAgICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIxOTYiIHI9IjIwIiBmaWxsPSIjZmYzYjZiIi8+CiAgICA8Y2lyY2xlIGN4PSIyMTQiIGN5PSIyNzIiIHI9IjE2IiBmaWxsPSIjMjAyNDJlIi8+CiAgICA8Y2lyY2xlIGN4PSIyOTgiIGN5PSIyNzIiIHI9IjE2IiBmaWxsPSIjMjAyNDJlIi8+CiAgICA8cGF0aCBkPSJNMjEyIDMzMnE0NCAzMCA4OCAwIiBzdHJva2U9IiM4YzNiM2IiIHN0cm9rZS13aWR0aD0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZjNiNmIiIHN0cm9rZS13aWR0aD0iMTYiPgogICAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjYyIiByPSIxNzYiIHN0cm9rZS1kYXNoYXJyYXk9IjQ4IDYwIiBvcGFjaXR5PSIuODUiLz4KICA8L2c+Cjwvc3ZnPgo=">
 <style>
-/* La Guerre des Têtes 2.0 — interface mobile plein écran */
+/* La Guerre des Têtes 2.0 — habillage « pop » à la Face Raiders :
+   papier crème, rouge franc, contours noirs épais, formes rondes. */
 
 :root {
-  --bg: #0b0d1a;
-  --ink: #f4f6ff;
-  --accent: #ff3b6b;
-  --accent-2: #38e8ff;
-  --gold: #ffcc4d;
-  --panel: rgba(10, 13, 28, 0.82);
+  --papier: #fdf3e0;
+  --papier-2: #f6e6ca;
+  --blanc: #ffffff;
+  --encre: #25222b;          /* contour et texte : partout, épais */
+  --rouge: #e63b2e;
+  --rouge-fonce: #b4241a;
+  --jaune: #ffc93c;
+  --bleu: #36a7e6;
+  --vert: #57c777;
+  --ombre: 0 5px 0 var(--encre);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
+  /* Pile arrondie : SF Pro Rounded sur iOS, sans téléchargement de police. */
+  --police: ui-rounded, "SF Pro Rounded", "Varela Round", "Nunito",
+            "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,9 +39,10 @@ html, body {
   margin: 0; padding: 0;
   width: 100%; height: 100%;
   overflow: hidden;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--police);
+  font-weight: 700;
   overscroll-behavior: none;
   touch-action: none;
   user-select: none;
@@ -44,11 +53,19 @@ html, body {
   position: fixed; inset: 0;
   width: 100%; height: 100%;
 }
-#world-video { object-fit: cover; background: #05060d; z-index: 0; display: none; }
+#world-video { object-fit: cover; background: #10131c; z-index: 0; display: none; }
 #world-video.on { display: block; }
 #scene { z-index: 1; pointer-events: none; }
 
 .hidden { display: none !important; }
+
+/* Plaque blanche cernée de noir : lisible par-dessus n'importe quelle image. */
+.plaque {
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--encre);
+}
 
 /* ---------------------------- HUD ---------------------------- */
 #hud {
@@ -57,70 +74,141 @@ html, body {
   padding: calc(var(--safe-t) + 10px) calc(var(--safe-r) + 12px)
            calc(var(--safe-b) + 10px) calc(var(--safe-l) + 12px);
   display: flex; flex-direction: column; justify-content: space-between;
-  text-shadow: 0 2px 6px rgba(0,0,0,.8);
 }
 
-.hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
-.hud-right { text-align: right; }
-.hearts { display: flex; gap: 4px; font-size: 22px; line-height: 1; }
-.hud-level { margin-top: 6px; font-size: 13px; letter-spacing: .12em; opacity: .85; text-transform: uppercase; }
-.score { font-size: 30px; font-weight: bold; color: var(--gold); letter-spacing: .04em; }
-.remaining { font-size: 13px; opacity: .85; }
+.hud-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.hud-left { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.hud-right { display: flex; flex-direction: column; gap: 6px; }
+.hud-right { align-items: flex-end; }
 
+.hearts {
+  display: flex; gap: 3px; align-items: center;
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--encre);
+  padding: 5px 9px;
+}
+.heart { width: 22px; height: 22px; display: block; }
+.heart path { stroke: var(--encre); stroke-width: 2.4; stroke-linejoin: round; }
+.heart.on path { fill: var(--rouge); }
+.heart.off path { fill: var(--papier-2); }
+
+.hud-level {
+  background: var(--encre); color: var(--papier);
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  max-width: 62vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.score {
+  background: var(--jaune);
+  border: 3px solid var(--encre);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--encre);
+  padding: 2px 14px;
+  font-size: 26px; line-height: 1.25; color: var(--encre);
+  font-variant-numeric: tabular-nums;
+}
+.remaining {
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--encre);
+  padding: 3px 12px; font-size: 13px;
+}
+
+/* Combo : éclat de bande dessinée */
 .combo {
-  position: absolute; top: 24%; left: 50%; transform: translateX(-50%);
-  font-size: 44px; font-weight: bold; color: var(--accent-2);
-  animation: pop .25s ease-out;
+  position: absolute; top: 22%; left: 50%;
+  transform: translateX(-50%);
+  display: grid; place-items: center;
+  width: 128px; height: 128px;
+  animation: combo-pop .3s cubic-bezier(.2, 1.6, .5, 1);
 }
-@keyframes pop { from { transform: translateX(-50%) scale(.5); opacity: 0 } to { transform: translateX(-50%) scale(1); opacity: 1 } }
+/* Deux étoiles superposées : le clip-path rogne les bordures,
+   l'étoile d'encre en dessous fait donc office de contour. */
+.combo::before, .combo::after {
+  content: ""; position: absolute;
+  clip-path: polygon(50% 0%, 61% 20%, 83% 13%, 80% 36%, 100% 50%, 80% 64%, 83% 87%,
+                     61% 80%, 50% 100%, 39% 80%, 17% 87%, 20% 64%, 0% 50%, 20% 36%, 17% 13%, 39% 20%);
+}
+.combo::before { inset: -6px; background: var(--encre); }
+.combo::after { inset: 0; background: var(--jaune); }
+.combo span {
+  position: relative; z-index: 1; font-size: 38px; color: var(--rouge);
+  -webkit-text-stroke: 2px var(--encre);
+  paint-order: stroke fill;
+}
+@keyframes combo-pop {
+  from { transform: translateX(-50%) scale(.3) rotate(-18deg); opacity: 0; }
+  to   { transform: translateX(-50%) scale(1) rotate(-6deg); opacity: 1; }
+}
 
-.boss-bar { position: absolute; top: calc(var(--safe-t) + 74px); left: 12%; width: 76%; }
-.boss-bar-label { font-size: 11px; letter-spacing: .3em; text-align: center; color: var(--accent); margin-bottom: 4px; }
-.boss-bar-track { height: 10px; border: 2px solid rgba(255,255,255,.7); border-radius: 6px; overflow: hidden; background: rgba(0,0,0,.45); }
-#boss-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width .2s; }
+/* Jauge du boss */
+.boss-bar { position: absolute; top: calc(var(--safe-t) + 84px); left: 10%; width: 80%; }
+.boss-bar-label {
+  display: block; width: fit-content; margin: 0 auto 4px;
+  background: var(--rouge); color: var(--blanc);
+  border: 3px solid var(--encre); border-radius: 999px;
+  font-size: 11px; letter-spacing: .18em; padding: 3px 12px;
+}
+.boss-bar-track {
+  height: 16px; border: 3px solid var(--encre); border-radius: 999px;
+  overflow: hidden; background: var(--blanc); box-shadow: 0 3px 0 var(--encre);
+}
+#boss-bar-fill {
+  height: 100%; width: 100%;
+  background: repeating-linear-gradient(115deg, var(--rouge) 0 12px, var(--rouge-fonce) 12px 24px);
+  transition: width .2s;
+}
 
 #radar {
-  position: absolute; right: calc(var(--safe-r) + 12px); top: 50%;
+  position: absolute; right: calc(var(--safe-r) + 10px); top: 50%;
   transform: translateY(-50%);
-  width: 92px; height: 92px; opacity: .85;
+  width: 100px; height: 100px;
 }
 
+/* Réticule : anneau blanc cerné de noir, comme la visée de la 3DS */
 .crosshair {
   position: absolute; left: 50%; top: 50%;
-  width: 62px; height: 62px; margin: -31px 0 0 -31px;
-  border: 2px solid rgba(255,255,255,.75);
-  border-radius: 50%;
-  transition: transform .08s, border-color .1s;
+  width: 74px; height: 74px; margin: -37px 0 0 -37px;
+  transition: transform .09s ease-out;
 }
-.crosshair span {
-  position: absolute; inset: 44%;
-  background: var(--accent-2); border-radius: 50%;
-}
-.crosshair.lock { border-color: var(--accent); transform: scale(.82); }
-.crosshair.shoot { transform: scale(1.25); }
+.crosshair svg { width: 100%; height: 100%; overflow: visible; }
+.crosshair .ring { fill: none; stroke: var(--blanc); stroke-width: 6; }
+.crosshair .ring-out { fill: none; stroke: var(--encre); stroke-width: 12; }
+.crosshair .tick { stroke: var(--blanc); stroke-width: 7; stroke-linecap: round; }
+.crosshair .tick-out { stroke: var(--encre); stroke-width: 13; stroke-linecap: round; }
+.crosshair .dot { fill: var(--rouge); stroke: var(--encre); stroke-width: 3; }
+.crosshair.lock { transform: scale(.86) rotate(45deg); }
+.crosshair.lock .ring, .crosshair.lock .tick { stroke: var(--rouge); }
+.crosshair.shoot { transform: scale(1.3); }
 
 .hud-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
 .round-btn, .fire-btn {
   pointer-events: auto;
-  border: 2px solid rgba(255,255,255,.5);
-  background: rgba(10,13,28,.55);
-  color: var(--ink);
+  font-family: inherit; font-weight: 700;
+  border: 3px solid var(--encre);
   border-radius: 50%;
-  font-family: inherit;
+  background: var(--blanc);
+  color: var(--encre);
+  box-shadow: 0 5px 0 var(--encre);
 }
-.round-btn { width: 48px; height: 48px; font-size: 15px; }
+.round-btn { width: 50px; height: 50px; font-size: 15px; }
 .fire-btn {
-  width: 92px; height: 92px; font-size: 19px; font-weight: bold;
-  letter-spacing: .1em;
-  background: radial-gradient(circle at 35% 30%, rgba(255,59,107,.9), rgba(120,10,40,.75));
-  border-color: rgba(255,255,255,.75);
+  width: 96px; height: 96px; font-size: 22px; letter-spacing: .06em;
+  background: var(--rouge); color: var(--blanc);
+  text-shadow: 0 2px 0 var(--rouge-fonce);
 }
-.fire-btn:active { transform: scale(.94); }
+.round-btn:active, .fire-btn:active { transform: translateY(5px); box-shadow: 0 0 0 var(--encre); }
 
 .toast {
-  position: absolute; left: 50%; bottom: 26%; transform: translateX(-50%);
-  background: var(--panel); border: 1px solid rgba(255,255,255,.25);
-  padding: 8px 16px; border-radius: 20px; font-size: 14px; white-space: nowrap;
+  position: absolute; left: 50%; bottom: 23%; transform: translateX(-50%);
+  background: var(--blanc); color: var(--encre);
+  border: 3px solid var(--encre); border-radius: 999px;
+  box-shadow: 0 4px 0 var(--encre);
+  padding: 9px 18px; font-size: 14px; max-width: 86vw; text-align: center;
 }
 
 /* --------------------------- Écrans --------------------------- */
@@ -130,150 +218,228 @@ html, body {
   position: absolute; inset: 0;
   display: none;
   flex-direction: column;
-  padding: calc(var(--safe-t) + 18px) calc(var(--safe-r) + 20px)
-           calc(var(--safe-b) + 18px) calc(var(--safe-l) + 20px);
-  background: linear-gradient(170deg, #121634 0%, #0b0d1a 60%, #14091a 100%);
+  padding: calc(var(--safe-t) + 16px) calc(var(--safe-r) + 18px)
+           calc(var(--safe-b) + 16px) calc(var(--safe-l) + 18px);
+  background:
+    radial-gradient(rgba(37, 34, 43, .07) 1.4px, transparent 1.5px) 0 0 / 14px 14px,
+    linear-gradient(170deg, var(--papier) 0%, var(--papier-2) 100%);
+  color: var(--encre);
   overflow-y: auto;
   overscroll-behavior: contain;
   pointer-events: auto;
 }
 .screen.active { display: flex; }
-.screen.overlay { background: rgba(6, 8, 20, .88); backdrop-filter: blur(6px); align-items: center; justify-content: center; text-align: center; }
+.screen.overlay {
+  background: rgba(37, 34, 43, .82);
+  color: var(--papier);
+  align-items: center; justify-content: center; text-align: center;
+}
 
 .screen-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.screen-head h1 { font-size: 22px; margin: 0; letter-spacing: .04em; }
+.screen-head h1 { font-size: 24px; margin: 0; }
 .back {
-  width: 40px; height: 40px; flex: 0 0 40px;
-  border-radius: 50%; border: 2px solid rgba(255,255,255,.4);
-  background: transparent; color: var(--ink); font-size: 20px; font-family: inherit;
+  width: 44px; height: 44px; flex: 0 0 44px;
+  border-radius: 50%; border: 3px solid var(--encre);
+  background: var(--blanc); color: var(--encre);
+  font-size: 20px; font-family: inherit; font-weight: 700;
+  box-shadow: 0 4px 0 var(--encre);
 }
+.back:active { transform: translateY(4px); box-shadow: none; }
 
-.logo { margin: 8vh 0 10px; text-align: center; line-height: 1; }
-.logo-small { display: block; font-size: 15px; letter-spacing: .5em; opacity: .8; }
-.logo-big {
-  display: block; font-size: 17vw; font-weight: bold; letter-spacing: .02em;
-  line-height: 1.08; padding-top: .1em;
-  background: linear-gradient(180deg, #fff, var(--accent) 60%, #7a0f2c);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 4px 12px rgba(255,59,107,.35));
+/* Logo façon autocollant */
+.logo { margin: 3vh 0 6px; text-align: center; line-height: 1; }
+.logo-small {
+  display: inline-block; font-size: 14px; letter-spacing: .34em;
+  background: var(--encre); color: var(--papier);
+  padding: 5px 14px; border-radius: 999px; margin-bottom: 14px;
 }
-.logo-version { display: block; font-size: 13px; letter-spacing: .28em; color: var(--accent-2); margin-top: 6px; }
-.tagline { text-align: center; opacity: .85; font-size: 15px; line-height: 1.5; margin: 6px 20px 18px; }
-.footnote { margin-top: auto; text-align: center; font-size: 11px; opacity: .5; line-height: 1.5; }
-.hint { font-size: 13px; opacity: .7; line-height: 1.5; margin: 0 0 12px; }
+.logo-big {
+  display: block; font-size: 16vw; line-height: 1.04; padding: .14em 0 .02em;
+  color: var(--rouge);
+  transform: rotate(-3deg);
+  text-shadow:
+    3px 0 0 var(--encre), -3px 0 0 var(--encre), 0 3px 0 var(--encre), 0 -3px 0 var(--encre),
+    3px 3px 0 var(--encre), -3px 3px 0 var(--encre), 3px -3px 0 var(--encre), -3px -3px 0 var(--encre),
+    0 10px 0 var(--encre);
+}
+.logo-version {
+  display: inline-block; margin-top: 10px;
+  font-size: 12px; letter-spacing: .2em;
+  background: var(--jaune); color: var(--encre);
+  border: 3px solid var(--encre); border-radius: 999px; padding: 4px 12px;
+  transform: rotate(2deg);
+}
+.tagline { text-align: center; font-size: 14px; line-height: 1.5; margin: 12px 14px 14px; font-weight: 700; }
+.screen.overlay .tagline { color: var(--papier); }
+.footnote { margin-top: auto; text-align: center; font-size: 10.5px; line-height: 1.5; opacity: .65; font-weight: 400; padding-top: 12px; }
+.hint { font-size: 13px; line-height: 1.5; margin: 0 0 12px; font-weight: 400; }
 
 .menu { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin: 8px auto 0; }
 .btn {
   pointer-events: auto;
-  width: 100%; padding: 15px 18px;
-  font-size: 17px; font-family: inherit; color: var(--ink);
-  background: rgba(255,255,255,.07);
-  border: 2px solid rgba(255,255,255,.22);
-  border-radius: 14px;
+  width: 100%; padding: 14px 18px;
+  font-size: 17px; font-family: inherit; font-weight: 700;
+  color: var(--encre);
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  border-radius: 18px;
+  box-shadow: var(--ombre);
   text-align: center;
 }
-.btn:active { transform: scale(.98); }
-.btn.primary { background: linear-gradient(120deg, var(--accent), #b3154a); border-color: rgba(255,255,255,.5); font-weight: bold; }
-.btn.ghost { background: transparent; opacity: .8; }
-.btn.danger { border-color: rgba(255,59,107,.6); color: #ff8ea8; }
+.btn:active { transform: translateY(5px); box-shadow: 0 0 0 var(--encre); }
+.btn.primary { background: var(--rouge); color: var(--blanc); }
+.btn.ghost { background: var(--papier-2); }
+.btn.danger { background: var(--blanc); color: var(--rouge-fonce); }
 .file-btn { position: relative; overflow: hidden; display: block; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; }
 
 /* Niveaux */
-.tabs { display: flex; gap: 8px; margin-bottom: 14px; width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; }
+.tabs { display: flex; gap: 10px; margin: 0 auto 14px; width: 100%; max-width: 560px; }
 .tab {
-  flex: 1; padding: 11px; border-radius: 10px; font-family: inherit; font-size: 14px;
-  background: rgba(255,255,255,.06); border: 2px solid transparent; color: var(--ink);
+  flex: 1; padding: 12px; border-radius: 14px;
+  font-family: inherit; font-weight: 700; font-size: 14px;
+  background: var(--blanc); border: 3px solid var(--encre); color: var(--encre);
+  box-shadow: 0 4px 0 var(--encre);
 }
-.tab.active { border-color: var(--accent); background: rgba(255,59,107,.16); }
+.tab.active { background: var(--rouge); color: var(--blanc); }
 
-.level-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; width: 100%; max-width: 560px; margin: 0 auto; }
+.level-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; width: 100%; max-width: 560px; margin: 0 auto; }
 .level-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px; border-radius: 14px; text-align: left;
-  background: rgba(255,255,255,.06);
-  border: 2px solid rgba(255,255,255,.14);
-  color: var(--ink); font-family: inherit; width: 100%;
+  padding: 13px; border-radius: 18px; text-align: left;
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  box-shadow: var(--ombre);
+  color: var(--encre); font-family: inherit; width: 100%;
 }
-.level-card.locked { opacity: .45; }
+.level-card:active:not(.locked) { transform: translateY(5px); box-shadow: 0 0 0 var(--encre); }
+.level-card.locked { background: var(--papier-2); opacity: .7; box-shadow: 0 3px 0 rgba(37,34,43,.45); }
 .level-card .num {
-  width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px;
-  display: grid; place-items: center; font-size: 19px; font-weight: bold;
-  background: rgba(255,59,107,.22); border: 1px solid rgba(255,59,107,.5);
+  width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 20px;
+  background: var(--rouge); color: var(--blanc);
+  border: 3px solid var(--encre);
 }
+.level-card.locked .num { background: var(--papier); color: var(--encre); }
 .level-card .meta { flex: 1; min-width: 0; }
 .level-card .meta b { display: block; font-size: 16px; margin-bottom: 3px; }
-.level-card .meta small { opacity: .7; font-size: 12px; display: block; line-height: 1.4; }
-.level-card .best { font-size: 12px; color: var(--gold); white-space: nowrap; }
+.level-card .meta small { font-size: 12px; display: block; line-height: 1.4; font-weight: 400; }
+.level-card .best {
+  font-size: 12px; white-space: nowrap;
+  background: var(--jaune); border: 2px solid var(--encre); border-radius: 999px;
+  padding: 2px 8px;
+}
+.level-card .best:empty { display: none; }
 
 /* Visages */
-.face-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.face-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 14px; margin-bottom: 18px; }
 .face-cell { position: relative; text-align: center; }
-.face-cell canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); background: #000; }
-.face-cell.saved canvas { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,204,77,.4); }
-.face-cell span { display: block; font-size: 11px; margin-top: 4px; opacity: .75; }
-.face-cell .del {
-  position: absolute; top: -4px; right: -4px; width: 24px; height: 24px;
-  border-radius: 50%; border: none; background: rgba(0,0,0,.8); color: #fff; font-size: 13px; font-family: inherit;
+.face-cell canvas {
+  width: 100%; aspect-ratio: 1; border-radius: 50%;
+  border: 3px solid var(--encre); background: var(--blanc);
+  box-shadow: 0 4px 0 var(--encre);
 }
-.face-empty { grid-column: 1/-1; opacity: .6; font-size: 14px; text-align: center; padding: 22px 0; }
+.face-cell.saved canvas { border-color: var(--rouge); box-shadow: 0 4px 0 var(--rouge-fonce); }
+.face-cell span { display: block; font-size: 11px; margin-top: 8px; }
+.face-cell .del {
+  position: absolute; top: -6px; right: -6px; width: 26px; height: 26px;
+  border-radius: 50%; border: 3px solid var(--encre);
+  background: var(--blanc); color: var(--encre); font-size: 12px; font-family: inherit; font-weight: 700;
+}
+.face-empty { grid-column: 1/-1; font-size: 14px; text-align: center; padding: 22px 0; font-weight: 400; }
 
 /* Capture */
 .screen.capture { padding-bottom: calc(var(--safe-b) + 10px); }
 .capture-stage {
   position: relative; flex: 1; min-height: 240px;
-  border-radius: 20px; overflow: hidden; background: #000;
-  margin-bottom: 12px;
+  border-radius: 22px; overflow: hidden;
+  background: #10131c;
+  border: 3px solid var(--encre);
+  box-shadow: var(--ombre);
+  margin-bottom: 14px;
 }
 #capture-video, #capture-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 #capture-preview { display: none; }
 #capture-preview.on { display: block; }
 #capture-video.mirror { transform: scaleX(-1); }
-.capture-guide { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: rgba(56,232,255,.85); stroke-width: .8; }
-.capture-guide ellipse { stroke-dasharray: 3 2.2; }
+.capture-guide {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  fill: none; stroke: var(--blanc); stroke-width: 1.1;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,.9));
+}
+.capture-guide ellipse { stroke-dasharray: 4 2.6; }
+.capture-guide circle, .capture-guide path { stroke: var(--jaune); }
 .capture-count {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 22vw; font-weight: bold; color: #fff; text-shadow: 0 0 30px var(--accent);
+  font-size: 24vw; color: var(--blanc);
+  text-shadow: 4px 4px 0 var(--encre), -4px -4px 0 var(--encre), 4px -4px 0 var(--encre), -4px 4px 0 var(--encre);
 }
 .capture-controls { display: flex; align-items: center; justify-content: space-around; gap: 16px; padding: 4px 0 8px; }
 .shutter {
-  width: 74px; height: 74px; border-radius: 50%;
-  border: 4px solid #fff; background: var(--accent);
+  width: 78px; height: 78px; border-radius: 50%;
+  border: 4px solid var(--encre); background: var(--rouge);
+  box-shadow: 0 5px 0 var(--encre);
 }
-.shutter:active { transform: scale(.92); }
-#import-zoom { width: 100%; }
+.shutter:active { transform: translateY(5px); box-shadow: none; }
+#import-zoom { width: 100%; accent-color: var(--rouge); }
 
 /* Réglages */
-.settings { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; }
+.settings { display: flex; flex-direction: column; gap: 0; margin: 0 auto 20px; width: 100%; max-width: 560px; }
 .row {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
-  padding: 14px 4px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 15px;
+  padding: 13px 14px; font-size: 15px;
+  background: var(--blanc);
+  border: 3px solid var(--encre);
+  border-bottom-width: 0;
 }
-.row input[type="range"] { flex: 0 0 48%; }
-.row input[type="checkbox"] { width: 26px; height: 26px; accent-color: var(--accent); }
-.row select { padding: 8px; border-radius: 8px; background: rgba(255,255,255,.1); color: var(--ink); border: 1px solid rgba(255,255,255,.2); font-family: inherit; font-size: 14px; }
+.row:first-of-type { border-radius: 16px 16px 0 0; }
+.row:last-of-type { border-radius: 0 0 16px 16px; border-bottom-width: 3px; box-shadow: var(--ombre); }
+.row input[type="range"] { flex: 0 0 46%; accent-color: var(--rouge); }
+.row input[type="checkbox"] { width: 26px; height: 26px; accent-color: var(--rouge); }
+.row select {
+  padding: 8px; border-radius: 10px; background: var(--papier); color: var(--encre);
+  border: 2px solid var(--encre); font-family: inherit; font-weight: 700; font-size: 14px;
+}
 
-.howto p { font-size: 15px; line-height: 1.6; margin: 0 0 14px; opacity: .92; }
+.howto p { font-size: 15px; line-height: 1.6; margin: 0 0 14px; font-weight: 400; }
+.howto strong { font-weight: 700; }
 
-/* Résultat */
-.screen.overlay h1 { font-size: 28px; margin: 0 0 12px; }
-.result-face canvas { width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--gold); background: #000; }
-.result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin: 18px 0; }
-.result-stats div { display: flex; flex-direction: column; }
-.result-stats span { font-size: 11px; letter-spacing: .16em; opacity: .6; text-transform: uppercase; }
-.result-stats strong { font-size: 22px; color: var(--gold); }
+/* Résultat et pause */
+.screen.overlay h1 {
+  font-size: 30px; margin: 0 0 14px; color: var(--jaune);
+  text-shadow: 3px 3px 0 var(--encre), -3px -3px 0 var(--encre), 3px -3px 0 var(--encre), -3px 3px 0 var(--encre);
+}
+.result-face canvas {
+  width: 132px; height: 132px; border-radius: 50%;
+  border: 4px solid var(--blanc); background: var(--encre);
+  box-shadow: 0 5px 0 rgba(0,0,0,.5);
+}
+.result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin: 20px 0; }
+.result-stats div {
+  display: flex; flex-direction: column;
+  background: var(--blanc); color: var(--encre);
+  border: 3px solid var(--encre); border-radius: 14px; padding: 6px 10px;
+}
+.result-stats span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.result-stats strong { font-size: 21px; }
 .unlock {
-  border: 1px dashed var(--accent-2); border-radius: 12px;
-  padding: 10px 14px; font-size: 14px; color: var(--accent-2); margin-bottom: 14px; max-width: 320px;
+  background: var(--jaune); color: var(--encre);
+  border: 3px solid var(--encre); border-radius: 14px;
+  padding: 10px 14px; font-size: 14px; margin-bottom: 16px; max-width: 320px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.45);
 }
-.ready-face { margin: 10px 0 4px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.ready-face canvas { width: 66px; height: 66px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); }
+.ready-face { margin: 12px 0 4px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.ready-face canvas {
+  width: 68px; height: 68px; border-radius: 50%;
+  border: 3px solid var(--blanc); background: var(--encre);
+}
 
-@media (min-height: 760px) { .logo-big { font-size: 15vw; } }
+@media (min-height: 760px) { .logo-big { font-size: 17vw; } .logo { margin-top: 5vh; } }
 @media (orientation: landscape) {
   .logo { margin-top: 2vh; }
-  .logo-big { font-size: 10vh; }
-  .fire-btn { width: 76px; height: 76px; }
+  .logo-big { font-size: 11vh; }
+  .fire-btn { width: 80px; height: 80px; }
+  #radar { width: 84px; height: 84px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .combo { animation: none; }
@@ -305,13 +471,27 @@ html, body {
   <div id="combo" class="combo hidden"><span id="combo-x">x2</span></div>
 
   <div id="boss-bar" class="boss-bar hidden">
-    <div class="boss-bar-label">TÊTE DE GUERRE</div>
+    <span class="boss-bar-label">LA GRANDE TÊTE</span>
     <div class="boss-bar-track"><div id="boss-bar-fill"></div></div>
   </div>
 
   <canvas id="radar" width="160" height="160" aria-label="Radar des ennemis"></canvas>
 
-  <div id="crosshair" class="crosshair"><span></span></div>
+  <div id="crosshair" class="crosshair">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="ring-out" cx="50" cy="50" r="34"/>
+      <g class="tick-out">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="ring" cx="50" cy="50" r="34"/>
+      <g class="tick">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="dot" cx="50" cy="50" r="5"/>
+    </svg>
+  </div>
 
   <div class="hud-bottom">
     <button id="btn-pause" class="round-btn" aria-label="Pause">❚❚</button>
@@ -1105,11 +1285,17 @@ function makeTexture(src) {
   ctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
   ctx.restore();
 
-  // Liseré lumineux
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  // Double liseré : un reflet clair, puis le contour d'encre de l'habillage.
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(r, r, r - 3, 0, TAU);
+  ctx.arc(r, r, r - 7, 0, TAU);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#25222b";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(r, r, r - 4, 0, TAU);
   ctx.stroke();
   return c;
 }
@@ -1382,7 +1568,7 @@ class Head extends Entity {
   update(dt, world) {
     this.t += dt;
     this.stateT += dt;
-    this.spawnFx = Math.max(0, this.spawnFx - dt * 1.6);
+    this.spawnFx = Math.max(0, this.spawnFx - dt * 2.4);
     this.flash = Math.max(0, this.flash - dt * 5);
 
     const d = this.dist;
@@ -1446,28 +1632,45 @@ class Head extends Entity {
     ctx.save();
     ctx.translate(p.x, p.y);
 
-    // Onde de choc à l'apparition : la tête « traverse le mur ».
+    // Apparition : le mur se fend et la tête le traverse.
     if (this.spawnFx > 0) {
-      ctx.globalAlpha = this.spawnFx * 0.6;
-      ctx.strokeStyle = this.spec.color;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, 0, r * (1.4 + (1 - this.spawnFx) * 2.4), 0, TAU);
-      ctx.stroke();
+      const t = 1 - this.spawnFx;
+      const portee = r * (0.9 + t * 1.1);
+      ctx.save();
+      ctx.globalAlpha = this.spawnFx;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (let i = 0; i < 7; i++) {
+        const a = this.bob + (i / 7) * TAU + Math.sin(i * 3.7) * 0.2;
+        const l1 = portee * (0.7 + ((i * 37) % 11) / 30);
+        const coude = 0.5 + ((i * 53) % 7) / 24;
+        const bx = Math.cos(a) * l1 * coude, by = Math.sin(a) * l1 * coude;
+        const ex = Math.cos(a + 0.26) * l1, ey = Math.sin(a + 0.26) * l1;
+        for (const [couleur, epaisseur] of [["#25222b", Math.max(4, r * 0.3)], ["#ffffff", Math.max(2, r * 0.16)]]) {
+          ctx.strokeStyle = couleur;
+          ctx.lineWidth = epaisseur;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(bx, by);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
       ctx.globalAlpha = 1;
     }
 
     // Ailes
     const flap = Math.sin(this.t * 14) * 0.5 + 0.5;
-    ctx.fillStyle = "rgba(255,255,255,0.28)";
-    ctx.strokeStyle = this.spec.color;
-    ctx.lineWidth = Math.max(1, r * 0.05);
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(1.2, r * 0.055);
     for (const s of [-1, 1]) {
       ctx.save();
-      ctx.translate(s * r * 0.72, -r * 0.1);
-      ctx.rotate(s * (0.35 + flap * 0.55));
+      ctx.translate(s * r * 0.78, -r * 0.12);
+      ctx.rotate(s * (0.3 + flap * 0.5));
       ctx.beginPath();
-      ctx.ellipse(s * r * 0.34, 0, r * 0.42, r * 0.17, 0, 0, TAU);
+      ctx.ellipse(s * r * 0.3, 0, r * 0.36, r * 0.14, 0, 0, TAU);
       ctx.fill();
       ctx.stroke();
       ctx.restore();
@@ -1488,20 +1691,20 @@ class Head extends Entity {
 
     // Casque de fer : la première touche le fait sauter.
     if (this.type === "armor" && this.hp > 1) {
-      ctx.fillStyle = "rgba(190,196,214,0.92)";
+      ctx.fillStyle = "#c9cede";
       ctx.beginPath();
       ctx.arc(0, 0, r * 1.04, Math.PI * 1.06, Math.PI * 1.94);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "#6f7590";
-      ctx.lineWidth = Math.max(1, r * 0.06);
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(2, r * 0.1);
       ctx.stroke();
     }
 
     // Aura du cracheur
     if (this.type === "spitter") {
-      ctx.strokeStyle = "rgba(180,125,255,0.75)";
-      ctx.lineWidth = Math.max(1, r * 0.07);
+      ctx.strokeStyle = "#b47dff";
+      ctx.lineWidth = Math.max(2, r * 0.11);
       ctx.beginPath();
       ctx.arc(0, 0, r * (1.12 + Math.sin(this.t * 4) * 0.06), 0, TAU);
       ctx.stroke();
@@ -1519,11 +1722,19 @@ class Head extends Entity {
 
     // Signal rouge lorsqu'elle fonce sur le joueur
     if (this.state === "charge") {
-      ctx.strokeStyle = "rgba(255,59,107," + (0.5 + Math.sin(this.t * 18) * 0.4) + ")";
-      ctx.lineWidth = Math.max(2, r * 0.09);
+      const bat = 0.55 + Math.sin(this.t * 18) * 0.45;
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(4, r * 0.2);
       ctx.beginPath();
-      ctx.arc(0, 0, r * 1.22, 0, TAU);
+      ctx.arc(0, 0, r * 1.26, 0, TAU);
       ctx.stroke();
+      ctx.globalAlpha = bat;
+      ctx.strokeStyle = "#e63b2e";
+      ctx.lineWidth = Math.max(2, r * 0.12);
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.26, 0, TAU);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }
@@ -1558,17 +1769,35 @@ class Butterfly extends Entity {
     const flap = Math.abs(Math.sin(this.t * 9));
     ctx.save();
     ctx.translate(p.x, p.y);
-    ctx.globalAlpha = this.life < 3 ? 0.35 + Math.abs(Math.sin(this.t * 10)) * 0.65 : 1;
+    ctx.globalAlpha = this.life < 3 ? 0.4 + Math.abs(Math.sin(this.t * 10)) * 0.6 : 1;
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(1.5, r * 0.12);
+    ctx.strokeStyle = "#25222b";
+
+    // Deux paires d'ailes qui battent
     for (const s of [-1, 1]) {
-      ctx.fillStyle = `hsl(${this.hue + (s > 0 ? 25 : 0)},90%,65%)`;
-      ctx.beginPath();
-      ctx.ellipse(s * r * 0.55 * (0.35 + flap), 0, r * 0.62 * (0.35 + flap), r * 0.85, s * 0.2, 0, TAU);
-      ctx.fill();
+      const ouverture = 0.3 + flap * 0.7;
+      for (const [dy, taille, teinte] of [[-r * 0.25, 0.95, 0], [r * 0.3, 0.7, 22]]) {
+        ctx.fillStyle = `hsl(${this.hue + teinte},88%,64%)`;
+        ctx.beginPath();
+        ctx.ellipse(s * r * 0.55 * ouverture, dy, r * 0.58 * ouverture * taille, r * 0.5 * taille, s * 0.25, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
-    ctx.fillStyle = "#2a2233";
+
+    // Corps et antennes
+    ctx.fillStyle = "#25222b";
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 0.12, r * 0.55, 0, 0, TAU);
+    ctx.ellipse(0, 0, r * 0.15, r * 0.6, 0, 0, TAU);
     ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.07);
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.05, -r * 0.5);
+      ctx.quadraticCurveTo(s * r * 0.3, -r * 0.9, s * r * 0.42, -r * 0.78);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
     ctx.restore();
   }
@@ -1609,11 +1838,16 @@ class Bomb extends Entity {
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, TAU);
     ctx.fill();
-    ctx.strokeStyle = `rgba(255,120,60,${0.45 + pulse * 0.55})`;
-    ctx.lineWidth = Math.max(1.5, r * 0.12);
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 1.15, 0, TAU);
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(2, r * 0.13);
     ctx.stroke();
+    ctx.globalAlpha = 0.45 + pulse * 0.55;
+    ctx.strokeStyle = "#ff8a3b";
+    ctx.lineWidth = Math.max(2, r * 0.14);
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.2, 0, TAU);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     // Mèche
     ctx.strokeStyle = "#c8a06a";
     ctx.lineWidth = Math.max(1, r * 0.1);
@@ -1789,13 +2023,14 @@ class Boss extends Entity {
     else { ctx.fillStyle = "#c0392b"; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); }
 
     // Kabuto : bombe du casque
+    ctx.lineJoin = "round";
     ctx.fillStyle = "#2e3550";
     ctx.beginPath();
     ctx.arc(0, -r * 0.12, r * 1.06, Math.PI * 1.02, Math.PI * 1.98);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = "#8a93b8";
-    ctx.lineWidth = Math.max(1.5, r * 0.04);
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(3, r * 0.07);
     ctx.stroke();
 
     // Fukigaeshi (rabats latéraux) et cornes maedate
@@ -1807,8 +2042,9 @@ class Boss extends Entity {
       ctx.quadraticCurveTo(s * r * 0.95, r * 0.05, s * r * 0.8, -r * 0.1);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
-    ctx.fillStyle = "#ffcc4d";
+    ctx.fillStyle = "#ffc93c";
     for (const s of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(s * r * 0.18, -r * 0.95);
@@ -1816,6 +2052,7 @@ class Boss extends Entity {
       ctx.quadraticCurveTo(s * r * 0.7, -r * 1.35, s * r * 0.42, -r * 0.88);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
 
     // Visière : elle se relève pour découvrir la gemme
@@ -1828,6 +2065,9 @@ class Boss extends Entity {
     ctx.beginPath();
     ctx.ellipse(0, 0, r * 0.62, r * 0.3, 0, 0, TAU);
     ctx.fill();
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(2, r * 0.05);
+    ctx.stroke();
     ctx.restore();
 
     // Gemme
@@ -1838,20 +2078,23 @@ class Boss extends Entity {
       ctx.globalAlpha = open;
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.42);
       g.addColorStop(0, "#fff");
-      g.addColorStop(0.35, "#ff3b6b");
-      g.addColorStop(1, "rgba(255,59,107,0)");
+      g.addColorStop(0.35, "#e63b2e");
+      g.addColorStop(1, "rgba(230,59,46,0)");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.42 * (0.85 + pulse * 0.25), 0, TAU);
       ctx.fill();
-      ctx.fillStyle = "#ff5c86";
+      ctx.fillStyle = "#ff5348";
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(2, r * 0.045);
       ctx.beginPath();
-      ctx.moveTo(0, -r * 0.2);
-      ctx.lineTo(r * 0.16, 0);
-      ctx.lineTo(0, r * 0.2);
-      ctx.lineTo(-r * 0.16, 0);
+      ctx.moveTo(0, -r * 0.24);
+      ctx.lineTo(r * 0.18, 0);
+      ctx.lineTo(0, r * 0.24);
+      ctx.lineTo(-r * 0.18, 0);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -1891,10 +2134,15 @@ class Particles {
     this.list.push({ pos: v3(pos.x, pos.y, pos.z), vel: v3(0, 1.1, 0), life: 0.9, max: 0.9, color, label });
   }
 
+  /** Éclat façon bande dessinée, à l'endroit où la tête est éclatée. */
+  star(pos, color, taille = 1) {
+    this.list.push({ pos: v3(pos.x, pos.y, pos.z), vel: v3(0, 0, 0), life: 0.42, max: 0.42, color, star: taille });
+  }
+
   update(dt) {
     for (const p of this.list) {
       p.pos = vAdd(p.pos, vScale(p.vel, dt));
-      if (!p.label) p.vel = vScale(p.vel, 1 - 1.6 * dt);
+      if (!p.label && !p.star) p.vel = vScale(p.vel, 1 - 1.6 * dt);
       p.life -= dt;
     }
     this.list = this.list.filter((p) => p.life > 0);
@@ -1908,11 +2156,37 @@ class Particles {
       const a = clamp(p.life / p.max, 0, 1);
       ctx.globalAlpha = a;
       if (p.label) {
-        const s = Math.max(11, Math.min(46, 0.55 * pr.scale));
-        ctx.fillStyle = p.color;
-        ctx.font = `bold ${s}px "Trebuchet MS", sans-serif`;
+        const s = Math.max(13, Math.min(50, 0.6 * pr.scale));
+        ctx.font = `700 ${s}px ui-rounded, "SF Pro Rounded", "Varela Round", "Trebuchet MS", sans-serif`;
         ctx.textAlign = "center";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = Math.max(3, s * 0.22);
+        ctx.strokeStyle = "#25222b";
+        ctx.strokeText(p.label, pr.x, pr.y);
+        ctx.fillStyle = p.color;
         ctx.fillText(p.label, pr.x, pr.y);
+      } else if (p.star) {
+        // L'étoile grandit puis s'efface, contour d'encre compris.
+        const t = 1 - a;
+        const R = (0.35 + t * 0.9) * p.star * pr.scale;
+        ctx.save();
+        ctx.translate(pr.x, pr.y);
+        ctx.rotate(t * 0.7);
+        ctx.beginPath();
+        for (let i = 0; i < 20; i++) {
+          const ang = (i / 20) * TAU;
+          const rr = i % 2 ? R * 0.46 : R;
+          const x = Math.cos(ang) * rr, y = Math.sin(ang) * rr;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.lineJoin = "round";
+        ctx.lineWidth = Math.max(2, R * 0.16);
+        ctx.strokeStyle = "#25222b";
+        ctx.stroke();
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.restore();
       } else {
         ctx.fillStyle = p.color;
         const r = Math.max(1, p.size * pr.scale);
@@ -1972,16 +2246,22 @@ function toast(msg, ms = 2200) {
 
 /* ----------------------------- HUD ----------------------------- */
 
+/** Cœur dessiné : même trait épais que le reste de l'habillage. */
+const COEUR = (plein) =>
+  `<svg class="heart ${plein ? "on" : "off"}" viewBox="0 0 24 24" aria-hidden="true">` +
+  '<path d="M12 21.2C8.2 18.4 3 14.7 3 10.1 3 7.1 5.2 5 7.9 5c1.8 0 3.2 1 4.1 2.3C12.9 6 14.3 5 16.1 5 18.8 5 21 7.1 21 10.1c0 4.6-5.2 8.3-9 11.1z"/></svg>';
+
 const hud = {
   hearts({ hearts, max }) {
     const el = $("#hud-hearts");
     let out = "";
-    for (let i = 0; i < max; i++) out += i < hearts ? "❤️" : "🖤";
-    el.textContent = out;
+    for (let i = 0; i < max; i++) out += COEUR(i < hearts);
+    el.innerHTML = out;
+    el.setAttribute("aria-label", `${hearts} vies sur ${max}`);
   },
   score(v) { $("#hud-score").textContent = formatScore(v); },
-  remaining(n) { $("#hud-remaining").textContent = "Têtes : " + n; },
-  time(t) { $("#hud-remaining").textContent = "Temps : " + Math.ceil(t) + " s"; },
+  remaining(n) { $("#hud-remaining").textContent = "Têtes  " + n; },
+  time(t) { $("#hud-remaining").textContent = "Temps  " + Math.ceil(t) + " s"; },
   level(label) { $("#hud-level").textContent = label; },
   combo(n) {
     const el = $("#combo");
@@ -2294,7 +2574,7 @@ class Game extends Emitter {
     sfx.bossIn();
     vibrate([40, 60, 40, 60, 120]);
     this.emit("boss", { hp: this.boss.hp, max: this.boss.maxHp });
-    this.emit("toast", "La Grande Tête arrive ! Vise la gemme du casque.");
+    this.emit("toast", "La Grande Tête arrive\u00a0! Vise la gemme du casque.");
   }
 
   _bossDefeated() {
@@ -2355,6 +2635,7 @@ class Game extends Emitter {
     if (entity instanceof Projectile) {
       entity.dead = true;
       this.hits++;
+      this.particles.star(entity.pos, "#ffffff", 1.4);
       this.particles.burst(entity.pos, 10, entity.color, 2.2);
       this._award(entity.pos, 60, null, false);
       sfx.hit(1);
@@ -2371,7 +2652,8 @@ class Game extends Emitter {
         this.hits++;
         sfx.bossHit();
         vibrate(50);
-        this.particles.burst(entity.gemPos(), 22, "#ff3b6b", 3.4);
+        this.particles.star(entity.gemPos(), "#e63b2e", 3.2);
+        this.particles.burst(entity.gemPos(), 22, "#ffc93c", 3.4);
         this._award(entity.gemPos(), 500, "GEMME !");
         this.emit("boss", { hp: Math.max(0, this.boss.hp), max: this.boss.maxHp });
         this.shake = 0.6;
@@ -2390,6 +2672,7 @@ class Game extends Emitter {
       sfx.hit(this.combo + 1);
       vibrate(25);
       this.killed++;
+      this.particles.star(entity.pos, "#ffc93c", entity.radius * 3.2);
       this.particles.burst(entity.pos, 16, entity.spec.color, 3);
       this._award(entity.pos, entity.spec.score);
       this.emit("remaining", Math.max(0, this.level.quota - this.killed));
@@ -2460,7 +2743,8 @@ class Game extends Emitter {
     sfx.bomb();
     vibrate([60, 30, 90]);
     this.shake = 0.9;
-    this.particles.burst(bomb.pos, 46, "#ff8a3b", 6);
+    this.particles.star(bomb.pos, "#ff8a3b", 7);
+    this.particles.burst(bomb.pos, 46, "#ffc93c", 6);
     let caught = 0;
     for (const e of this.entities) {
       if (e.dead || !(e instanceof Head)) continue;
@@ -2529,7 +2813,7 @@ class Game extends Emitter {
     this._drawOffscreenHints(ctx);
     if (this.hurtFx > 0) this._drawHurt(ctx);
     if (this.invul > 0 && Math.floor(this.time * 12) % 2 === 0) {
-      ctx.fillStyle = "rgba(255,59,107,0.05)";
+      ctx.fillStyle = "rgba(230,59,46,0.05)";
       ctx.fillRect(0, 0, W, H);
     }
     this._drawRadar();
@@ -2539,9 +2823,9 @@ class Game extends Emitter {
   _drawRoom(ctx) {
     const W = this.W, H = this.H;
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#131a33");
-    g.addColorStop(0.5, "#0a0c18");
-    g.addColorStop(1, "#1a0f1f");
+    g.addColorStop(0, "#2d3f63");
+    g.addColorStop(0.52, "#1b2440");
+    g.addColorStop(1, "#3a2b46");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
@@ -2558,7 +2842,7 @@ class Game extends Emitter {
     for (const st of this._stars) {
       const p = this.cam.project(st.p, out);
       if (!p) continue;
-      ctx.fillStyle = "rgba(190,215,255," + (0.25 + st.s * 0.2) + ")";
+      ctx.fillStyle = "rgba(253,243,224," + (0.3 + st.s * 0.22) + ")";
       ctx.fillRect(p.x, p.y, st.s, st.s);
     }
 
@@ -2577,13 +2861,13 @@ class Game extends Emitter {
     };
     for (let k = -EXT; k <= EXT; k += STEP) {
       const fade = 1 - Math.abs(k) / (EXT * 1.4);
-      ctx.strokeStyle = "rgba(56,232,255," + (0.05 + fade * 0.16).toFixed(3) + ")";
+      ctx.strokeStyle = "rgba(253,243,224," + (0.06 + fade * 0.2).toFixed(3) + ")";
       line(k, "x");
       line(k, "z");
     }
 
     // Ligne d'horizon
-    ctx.strokeStyle = "rgba(255,59,107,0.22)";
+    ctx.strokeStyle = "rgba(230,59,46,0.3)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     let started = false;
@@ -2617,11 +2901,15 @@ class Game extends Emitter {
       ctx.save();
       ctx.translate(cx + ux * radius, cy + uy * radius);
       ctx.rotate(Math.atan2(uy, ux));
-      ctx.globalAlpha = urgent ? 0.95 : 0.5;
-      ctx.fillStyle = urgent ? "#ff3b6b" : "rgba(255,255,255,.85)";
+      ctx.globalAlpha = urgent ? 1 : 0.65;
       ctx.beginPath();
-      ctx.moveTo(12, 0); ctx.lineTo(-8, 8); ctx.lineTo(-8, -8);
+      ctx.moveTo(15, 0); ctx.lineTo(-9, 10); ctx.lineTo(-4, 0); ctx.lineTo(-9, -10);
       ctx.closePath();
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#25222b";
+      ctx.stroke();
+      ctx.fillStyle = urgent ? "#e63b2e" : "#ffffff";
       ctx.fill();
       ctx.restore();
     }
@@ -2631,8 +2919,8 @@ class Game extends Emitter {
   _drawHurt(ctx) {
     const W = this.W, H = this.H;
     const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.7);
-    g.addColorStop(0, "rgba(255,0,60,0)");
-    g.addColorStop(1, `rgba(255,0,60,${0.55 * this.hurtFx})`);
+    g.addColorStop(0, "rgba(230,59,46,0)");
+    g.addColorStop(1, `rgba(230,59,46,${0.6 * this.hurtFx})`);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   }
@@ -2640,45 +2928,62 @@ class Game extends Emitter {
   _drawRadar() {
     const c = this.radarCtx;
     if (!c) return;
-    const S = this.radar.width, R = S / 2 - 6;
+    const S = this.radar.width, R = S / 2 - 8;
     c.clearRect(0, 0, S, S);
     c.save();
     c.translate(S / 2, S / 2);
 
-    c.fillStyle = "rgba(6,10,24,0.55)";
+    // Lunette
+    c.fillStyle = "#fdf3e0";
     c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fill();
-    c.strokeStyle = "rgba(255,255,255,0.35)";
+
+    // Cercles de distance
+    c.strokeStyle = "rgba(37,34,43,0.22)";
     c.lineWidth = 2;
-    c.stroke();
+    for (const k of [0.38, 0.7]) {
+      c.beginPath(); c.arc(0, 0, R * k, 0, TAU); c.stroke();
+    }
 
     // Cône de vision
-    c.fillStyle = "rgba(56,232,255,0.16)";
+    c.fillStyle = "rgba(54,167,230,0.35)";
     c.beginPath();
     c.moveTo(0, 0);
     c.arc(0, 0, R, -Math.PI / 2 - this.cam.fov / 2, -Math.PI / 2 + this.cam.fov / 2);
     c.closePath();
     c.fill();
 
-    const plot = (e, color, size) => {
-      const s = toSpherical(e.pos);
-      const a = s.yaw - this.cam.yaw - Math.PI / 2;
-      const d = clamp(s.r / 14, 0.12, 1) * R;
-      c.fillStyle = color;
+    // Contour d'encre
+    c.strokeStyle = "#25222b";
+    c.lineWidth = 5;
+    c.beginPath(); c.arc(0, 0, R, 0, TAU); c.stroke();
+
+    const pion = (e, couleur, taille) => {
+      const sp = toSpherical(e.pos);
+      const a = sp.yaw - this.cam.yaw - Math.PI / 2;
+      const d = clamp(sp.r / 14, 0.12, 0.94) * R;
+      c.fillStyle = couleur;
+      c.strokeStyle = "#25222b";
+      c.lineWidth = 2;
       c.beginPath();
-      c.arc(Math.cos(a) * d, Math.sin(a) * d, size, 0, TAU);
+      c.arc(Math.cos(a) * d, Math.sin(a) * d, taille, 0, TAU);
       c.fill();
+      c.stroke();
     };
 
     for (const e of this.entities) {
-      if (e instanceof Head) plot(e, e.state === "charge" ? "#ff3b6b" : "rgba(255,255,255,.85)", e.state === "charge" ? 5 : 3.5);
-      else if (e instanceof Butterfly) plot(e, "#7dffa8", 3);
-      else if (e instanceof Bomb) plot(e, "#ff8a3b", 3.5);
-      else if (e instanceof Projectile) plot(e, "#b47dff", 2.5);
+      if (e instanceof Head) pion(e, e.state === "charge" ? "#e63b2e" : "#ffffff", e.state === "charge" ? 6 : 4.5);
+      else if (e instanceof Butterfly) pion(e, "#57c777", 4);
+      else if (e instanceof Bomb) pion(e, "#ff8a3b", 4.5);
+      else if (e instanceof Projectile) pion(e, "#b47dff", 3.5);
     }
-    if (this.boss && !this.boss.dead) plot(this.boss, "#ffcc4d", 7);
+    if (this.boss && !this.boss.dead) pion(this.boss, "#ffc93c", 8);
 
-    c.fillStyle = "#fff";
-    c.beginPath(); c.arc(0, 0, 3, 0, TAU); c.fill();
+    // Le joueur, au centre, tourné vers le haut
+    c.fillStyle = "#25222b";
+    c.beginPath();
+    c.moveTo(0, -7); c.lineTo(5.5, 5); c.lineTo(0, 2.5); c.lineTo(-5.5, 5);
+    c.closePath();
+    c.fill();
     c.restore();
   }
 }
@@ -2821,7 +3126,7 @@ async function startLevel(level) {
   if (settings.camera && !FICHIER_LOCAL) {
     camOk = await feed.start("environment");
     video.classList.toggle("on", camOk);
-    if (!camOk) toast("Caméra indisponible : décor de secours activé.", 3200);
+    if (!camOk) toast("Caméra indisponible\u00a0: décor de secours activé.", 3200);
   } else {
     video.classList.remove("on");
   }
@@ -2837,7 +3142,7 @@ async function startLevel(level) {
 
   if (!orientation.hasGyro) {
     setTimeout(() => {
-      if (!orientation.hasGyro) toast("Pas de gyroscope : glisse le doigt pour tourner la vue.", 3600);
+      if (!orientation.hasGyro) toast("Pas de gyroscope\u00a0: glisse le doigt pour tourner la vue.", 3600);
     }, 1200);
   } else {
     toast("Tourne sur toi-même : elles arrivent de partout !", 2600);

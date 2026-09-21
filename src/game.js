@@ -213,7 +213,7 @@ export class Game extends Emitter {
     sfx.bossIn();
     vibrate([40, 60, 40, 60, 120]);
     this.emit("boss", { hp: this.boss.hp, max: this.boss.maxHp });
-    this.emit("toast", "La Grande Tête arrive ! Vise la gemme du casque.");
+    this.emit("toast", "La Grande Tête arrive\u00a0! Vise la gemme du casque.");
   }
 
   _bossDefeated() {
@@ -274,6 +274,7 @@ export class Game extends Emitter {
     if (entity instanceof Projectile) {
       entity.dead = true;
       this.hits++;
+      this.particles.star(entity.pos, "#ffffff", 1.4);
       this.particles.burst(entity.pos, 10, entity.color, 2.2);
       this._award(entity.pos, 60, null, false);
       sfx.hit(1);
@@ -290,7 +291,8 @@ export class Game extends Emitter {
         this.hits++;
         sfx.bossHit();
         vibrate(50);
-        this.particles.burst(entity.gemPos(), 22, "#ff3b6b", 3.4);
+        this.particles.star(entity.gemPos(), "#e63b2e", 3.2);
+        this.particles.burst(entity.gemPos(), 22, "#ffc93c", 3.4);
         this._award(entity.gemPos(), 500, "GEMME !");
         this.emit("boss", { hp: Math.max(0, this.boss.hp), max: this.boss.maxHp });
         this.shake = 0.6;
@@ -309,6 +311,7 @@ export class Game extends Emitter {
       sfx.hit(this.combo + 1);
       vibrate(25);
       this.killed++;
+      this.particles.star(entity.pos, "#ffc93c", entity.radius * 3.2);
       this.particles.burst(entity.pos, 16, entity.spec.color, 3);
       this._award(entity.pos, entity.spec.score);
       this.emit("remaining", Math.max(0, this.level.quota - this.killed));
@@ -379,7 +382,8 @@ export class Game extends Emitter {
     sfx.bomb();
     vibrate([60, 30, 90]);
     this.shake = 0.9;
-    this.particles.burst(bomb.pos, 46, "#ff8a3b", 6);
+    this.particles.star(bomb.pos, "#ff8a3b", 7);
+    this.particles.burst(bomb.pos, 46, "#ffc93c", 6);
     let caught = 0;
     for (const e of this.entities) {
       if (e.dead || !(e instanceof Head)) continue;
@@ -448,7 +452,7 @@ export class Game extends Emitter {
     this._drawOffscreenHints(ctx);
     if (this.hurtFx > 0) this._drawHurt(ctx);
     if (this.invul > 0 && Math.floor(this.time * 12) % 2 === 0) {
-      ctx.fillStyle = "rgba(255,59,107,0.05)";
+      ctx.fillStyle = "rgba(230,59,46,0.05)";
       ctx.fillRect(0, 0, W, H);
     }
     this._drawRadar();
@@ -458,9 +462,9 @@ export class Game extends Emitter {
   _drawRoom(ctx) {
     const W = this.W, H = this.H;
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#131a33");
-    g.addColorStop(0.5, "#0a0c18");
-    g.addColorStop(1, "#1a0f1f");
+    g.addColorStop(0, "#2d3f63");
+    g.addColorStop(0.52, "#1b2440");
+    g.addColorStop(1, "#3a2b46");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
@@ -477,7 +481,7 @@ export class Game extends Emitter {
     for (const st of this._stars) {
       const p = this.cam.project(st.p, out);
       if (!p) continue;
-      ctx.fillStyle = "rgba(190,215,255," + (0.25 + st.s * 0.2) + ")";
+      ctx.fillStyle = "rgba(253,243,224," + (0.3 + st.s * 0.22) + ")";
       ctx.fillRect(p.x, p.y, st.s, st.s);
     }
 
@@ -496,13 +500,13 @@ export class Game extends Emitter {
     };
     for (let k = -EXT; k <= EXT; k += STEP) {
       const fade = 1 - Math.abs(k) / (EXT * 1.4);
-      ctx.strokeStyle = "rgba(56,232,255," + (0.05 + fade * 0.16).toFixed(3) + ")";
+      ctx.strokeStyle = "rgba(253,243,224," + (0.06 + fade * 0.2).toFixed(3) + ")";
       line(k, "x");
       line(k, "z");
     }
 
     // Ligne d'horizon
-    ctx.strokeStyle = "rgba(255,59,107,0.22)";
+    ctx.strokeStyle = "rgba(230,59,46,0.3)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     let started = false;
@@ -536,11 +540,15 @@ export class Game extends Emitter {
       ctx.save();
       ctx.translate(cx + ux * radius, cy + uy * radius);
       ctx.rotate(Math.atan2(uy, ux));
-      ctx.globalAlpha = urgent ? 0.95 : 0.5;
-      ctx.fillStyle = urgent ? "#ff3b6b" : "rgba(255,255,255,.85)";
+      ctx.globalAlpha = urgent ? 1 : 0.65;
       ctx.beginPath();
-      ctx.moveTo(12, 0); ctx.lineTo(-8, 8); ctx.lineTo(-8, -8);
+      ctx.moveTo(15, 0); ctx.lineTo(-9, 10); ctx.lineTo(-4, 0); ctx.lineTo(-9, -10);
       ctx.closePath();
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#25222b";
+      ctx.stroke();
+      ctx.fillStyle = urgent ? "#e63b2e" : "#ffffff";
       ctx.fill();
       ctx.restore();
     }
@@ -550,8 +558,8 @@ export class Game extends Emitter {
   _drawHurt(ctx) {
     const W = this.W, H = this.H;
     const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.7);
-    g.addColorStop(0, "rgba(255,0,60,0)");
-    g.addColorStop(1, `rgba(255,0,60,${0.55 * this.hurtFx})`);
+    g.addColorStop(0, "rgba(230,59,46,0)");
+    g.addColorStop(1, `rgba(230,59,46,${0.6 * this.hurtFx})`);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   }
@@ -559,45 +567,62 @@ export class Game extends Emitter {
   _drawRadar() {
     const c = this.radarCtx;
     if (!c) return;
-    const S = this.radar.width, R = S / 2 - 6;
+    const S = this.radar.width, R = S / 2 - 8;
     c.clearRect(0, 0, S, S);
     c.save();
     c.translate(S / 2, S / 2);
 
-    c.fillStyle = "rgba(6,10,24,0.55)";
+    // Lunette
+    c.fillStyle = "#fdf3e0";
     c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fill();
-    c.strokeStyle = "rgba(255,255,255,0.35)";
+
+    // Cercles de distance
+    c.strokeStyle = "rgba(37,34,43,0.22)";
     c.lineWidth = 2;
-    c.stroke();
+    for (const k of [0.38, 0.7]) {
+      c.beginPath(); c.arc(0, 0, R * k, 0, TAU); c.stroke();
+    }
 
     // Cône de vision
-    c.fillStyle = "rgba(56,232,255,0.16)";
+    c.fillStyle = "rgba(54,167,230,0.35)";
     c.beginPath();
     c.moveTo(0, 0);
     c.arc(0, 0, R, -Math.PI / 2 - this.cam.fov / 2, -Math.PI / 2 + this.cam.fov / 2);
     c.closePath();
     c.fill();
 
-    const plot = (e, color, size) => {
-      const s = toSpherical(e.pos);
-      const a = s.yaw - this.cam.yaw - Math.PI / 2;
-      const d = clamp(s.r / 14, 0.12, 1) * R;
-      c.fillStyle = color;
+    // Contour d'encre
+    c.strokeStyle = "#25222b";
+    c.lineWidth = 5;
+    c.beginPath(); c.arc(0, 0, R, 0, TAU); c.stroke();
+
+    const pion = (e, couleur, taille) => {
+      const sp = toSpherical(e.pos);
+      const a = sp.yaw - this.cam.yaw - Math.PI / 2;
+      const d = clamp(sp.r / 14, 0.12, 0.94) * R;
+      c.fillStyle = couleur;
+      c.strokeStyle = "#25222b";
+      c.lineWidth = 2;
       c.beginPath();
-      c.arc(Math.cos(a) * d, Math.sin(a) * d, size, 0, TAU);
+      c.arc(Math.cos(a) * d, Math.sin(a) * d, taille, 0, TAU);
       c.fill();
+      c.stroke();
     };
 
     for (const e of this.entities) {
-      if (e instanceof Head) plot(e, e.state === "charge" ? "#ff3b6b" : "rgba(255,255,255,.85)", e.state === "charge" ? 5 : 3.5);
-      else if (e instanceof Butterfly) plot(e, "#7dffa8", 3);
-      else if (e instanceof Bomb) plot(e, "#ff8a3b", 3.5);
-      else if (e instanceof Projectile) plot(e, "#b47dff", 2.5);
+      if (e instanceof Head) pion(e, e.state === "charge" ? "#e63b2e" : "#ffffff", e.state === "charge" ? 6 : 4.5);
+      else if (e instanceof Butterfly) pion(e, "#57c777", 4);
+      else if (e instanceof Bomb) pion(e, "#ff8a3b", 4.5);
+      else if (e instanceof Projectile) pion(e, "#b47dff", 3.5);
     }
-    if (this.boss && !this.boss.dead) plot(this.boss, "#ffcc4d", 7);
+    if (this.boss && !this.boss.dead) pion(this.boss, "#ffc93c", 8);
 
-    c.fillStyle = "#fff";
-    c.beginPath(); c.arc(0, 0, 3, 0, TAU); c.fill();
+    // Le joueur, au centre, tourné vers le haut
+    c.fillStyle = "#25222b";
+    c.beginPath();
+    c.moveTo(0, -7); c.lineTo(5.5, 5); c.lineTo(0, 2.5); c.lineTo(-5.5, 5);
+    c.closePath();
+    c.fill();
     c.restore();
   }
 }

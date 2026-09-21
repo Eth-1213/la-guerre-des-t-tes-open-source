@@ -39,16 +39,22 @@ export function toast(msg, ms = 2200) {
 
 /* ----------------------------- HUD ----------------------------- */
 
+/** Cœur dessiné : même trait épais que le reste de l'habillage. */
+const COEUR = (plein) =>
+  `<svg class="heart ${plein ? "on" : "off"}" viewBox="0 0 24 24" aria-hidden="true">` +
+  '<path d="M12 21.2C8.2 18.4 3 14.7 3 10.1 3 7.1 5.2 5 7.9 5c1.8 0 3.2 1 4.1 2.3C12.9 6 14.3 5 16.1 5 18.8 5 21 7.1 21 10.1c0 4.6-5.2 8.3-9 11.1z"/></svg>';
+
 export const hud = {
   hearts({ hearts, max }) {
     const el = $("#hud-hearts");
     let out = "";
-    for (let i = 0; i < max; i++) out += i < hearts ? "❤️" : "🖤";
-    el.textContent = out;
+    for (let i = 0; i < max; i++) out += COEUR(i < hearts);
+    el.innerHTML = out;
+    el.setAttribute("aria-label", `${hearts} vies sur ${max}`);
   },
   score(v) { $("#hud-score").textContent = formatScore(v); },
-  remaining(n) { $("#hud-remaining").textContent = "Têtes : " + n; },
-  time(t) { $("#hud-remaining").textContent = "Temps : " + Math.ceil(t) + " s"; },
+  remaining(n) { $("#hud-remaining").textContent = "Têtes  " + n; },
+  time(t) { $("#hud-remaining").textContent = "Temps  " + Math.ceil(t) + " s"; },
   level(label) { $("#hud-level").textContent = label; },
   combo(n) {
     const el = $("#combo");

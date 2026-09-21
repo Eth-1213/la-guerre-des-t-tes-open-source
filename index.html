@@ -37,13 +37,27 @@
   <div id="combo" class="combo hidden"><span id="combo-x">x2</span></div>
 
   <div id="boss-bar" class="boss-bar hidden">
-    <div class="boss-bar-label">TÊTE DE GUERRE</div>
+    <span class="boss-bar-label">LA GRANDE TÊTE</span>
     <div class="boss-bar-track"><div id="boss-bar-fill"></div></div>
   </div>
 
   <canvas id="radar" width="160" height="160" aria-label="Radar des ennemis"></canvas>
 
-  <div id="crosshair" class="crosshair"><span></span></div>
+  <div id="crosshair" class="crosshair">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="ring-out" cx="50" cy="50" r="34"/>
+      <g class="tick-out">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="ring" cx="50" cy="50" r="34"/>
+      <g class="tick">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="dot" cx="50" cy="50" r="5"/>
+    </svg>
+  </div>
 
   <div class="hud-bottom">
     <button id="btn-pause" class="round-btn" aria-label="Pause">❚❚</button>

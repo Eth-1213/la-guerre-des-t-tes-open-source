@@ -65,7 +65,7 @@ export class Head extends Entity {
   update(dt, world) {
     this.t += dt;
     this.stateT += dt;
-    this.spawnFx = Math.max(0, this.spawnFx - dt * 1.6);
+    this.spawnFx = Math.max(0, this.spawnFx - dt * 2.4);
     this.flash = Math.max(0, this.flash - dt * 5);
 
     const d = this.dist;
@@ -129,28 +129,45 @@ export class Head extends Entity {
     ctx.save();
     ctx.translate(p.x, p.y);
 
-    // Onde de choc à l'apparition : la tête « traverse le mur ».
+    // Apparition : le mur se fend et la tête le traverse.
     if (this.spawnFx > 0) {
-      ctx.globalAlpha = this.spawnFx * 0.6;
-      ctx.strokeStyle = this.spec.color;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, 0, r * (1.4 + (1 - this.spawnFx) * 2.4), 0, TAU);
-      ctx.stroke();
+      const t = 1 - this.spawnFx;
+      const portee = r * (0.9 + t * 1.1);
+      ctx.save();
+      ctx.globalAlpha = this.spawnFx;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (let i = 0; i < 7; i++) {
+        const a = this.bob + (i / 7) * TAU + Math.sin(i * 3.7) * 0.2;
+        const l1 = portee * (0.7 + ((i * 37) % 11) / 30);
+        const coude = 0.5 + ((i * 53) % 7) / 24;
+        const bx = Math.cos(a) * l1 * coude, by = Math.sin(a) * l1 * coude;
+        const ex = Math.cos(a + 0.26) * l1, ey = Math.sin(a + 0.26) * l1;
+        for (const [couleur, epaisseur] of [["#25222b", Math.max(4, r * 0.3)], ["#ffffff", Math.max(2, r * 0.16)]]) {
+          ctx.strokeStyle = couleur;
+          ctx.lineWidth = epaisseur;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(bx, by);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
       ctx.globalAlpha = 1;
     }
 
     // Ailes
     const flap = Math.sin(this.t * 14) * 0.5 + 0.5;
-    ctx.fillStyle = "rgba(255,255,255,0.28)";
-    ctx.strokeStyle = this.spec.color;
-    ctx.lineWidth = Math.max(1, r * 0.05);
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(1.2, r * 0.055);
     for (const s of [-1, 1]) {
       ctx.save();
-      ctx.translate(s * r * 0.72, -r * 0.1);
-      ctx.rotate(s * (0.35 + flap * 0.55));
+      ctx.translate(s * r * 0.78, -r * 0.12);
+      ctx.rotate(s * (0.3 + flap * 0.5));
       ctx.beginPath();
-      ctx.ellipse(s * r * 0.34, 0, r * 0.42, r * 0.17, 0, 0, TAU);
+      ctx.ellipse(s * r * 0.3, 0, r * 0.36, r * 0.14, 0, 0, TAU);
       ctx.fill();
       ctx.stroke();
       ctx.restore();
@@ -171,20 +188,20 @@ export class Head extends Entity {
 
     // Casque de fer : la première touche le fait sauter.
     if (this.type === "armor" && this.hp > 1) {
-      ctx.fillStyle = "rgba(190,196,214,0.92)";
+      ctx.fillStyle = "#c9cede";
       ctx.beginPath();
       ctx.arc(0, 0, r * 1.04, Math.PI * 1.06, Math.PI * 1.94);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "#6f7590";
-      ctx.lineWidth = Math.max(1, r * 0.06);
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(2, r * 0.1);
       ctx.stroke();
     }
 
     // Aura du cracheur
     if (this.type === "spitter") {
-      ctx.strokeStyle = "rgba(180,125,255,0.75)";
-      ctx.lineWidth = Math.max(1, r * 0.07);
+      ctx.strokeStyle = "#b47dff";
+      ctx.lineWidth = Math.max(2, r * 0.11);
       ctx.beginPath();
       ctx.arc(0, 0, r * (1.12 + Math.sin(this.t * 4) * 0.06), 0, TAU);
       ctx.stroke();
@@ -202,11 +219,19 @@ export class Head extends Entity {
 
     // Signal rouge lorsqu'elle fonce sur le joueur
     if (this.state === "charge") {
-      ctx.strokeStyle = "rgba(255,59,107," + (0.5 + Math.sin(this.t * 18) * 0.4) + ")";
-      ctx.lineWidth = Math.max(2, r * 0.09);
+      const bat = 0.55 + Math.sin(this.t * 18) * 0.45;
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(4, r * 0.2);
       ctx.beginPath();
-      ctx.arc(0, 0, r * 1.22, 0, TAU);
+      ctx.arc(0, 0, r * 1.26, 0, TAU);
       ctx.stroke();
+      ctx.globalAlpha = bat;
+      ctx.strokeStyle = "#e63b2e";
+      ctx.lineWidth = Math.max(2, r * 0.12);
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.26, 0, TAU);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }
@@ -241,17 +266,35 @@ export class Butterfly extends Entity {
     const flap = Math.abs(Math.sin(this.t * 9));
     ctx.save();
     ctx.translate(p.x, p.y);
-    ctx.globalAlpha = this.life < 3 ? 0.35 + Math.abs(Math.sin(this.t * 10)) * 0.65 : 1;
+    ctx.globalAlpha = this.life < 3 ? 0.4 + Math.abs(Math.sin(this.t * 10)) * 0.6 : 1;
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(1.5, r * 0.12);
+    ctx.strokeStyle = "#25222b";
+
+    // Deux paires d'ailes qui battent
     for (const s of [-1, 1]) {
-      ctx.fillStyle = `hsl(${this.hue + (s > 0 ? 25 : 0)},90%,65%)`;
-      ctx.beginPath();
-      ctx.ellipse(s * r * 0.55 * (0.35 + flap), 0, r * 0.62 * (0.35 + flap), r * 0.85, s * 0.2, 0, TAU);
-      ctx.fill();
+      const ouverture = 0.3 + flap * 0.7;
+      for (const [dy, taille, teinte] of [[-r * 0.25, 0.95, 0], [r * 0.3, 0.7, 22]]) {
+        ctx.fillStyle = `hsl(${this.hue + teinte},88%,64%)`;
+        ctx.beginPath();
+        ctx.ellipse(s * r * 0.55 * ouverture, dy, r * 0.58 * ouverture * taille, r * 0.5 * taille, s * 0.25, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
-    ctx.fillStyle = "#2a2233";
+
+    // Corps et antennes
+    ctx.fillStyle = "#25222b";
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 0.12, r * 0.55, 0, 0, TAU);
+    ctx.ellipse(0, 0, r * 0.15, r * 0.6, 0, 0, TAU);
     ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.07);
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.05, -r * 0.5);
+      ctx.quadraticCurveTo(s * r * 0.3, -r * 0.9, s * r * 0.42, -r * 0.78);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
     ctx.restore();
   }
@@ -292,11 +335,16 @@ export class Bomb extends Entity {
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, TAU);
     ctx.fill();
-    ctx.strokeStyle = `rgba(255,120,60,${0.45 + pulse * 0.55})`;
-    ctx.lineWidth = Math.max(1.5, r * 0.12);
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 1.15, 0, TAU);
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(2, r * 0.13);
     ctx.stroke();
+    ctx.globalAlpha = 0.45 + pulse * 0.55;
+    ctx.strokeStyle = "#ff8a3b";
+    ctx.lineWidth = Math.max(2, r * 0.14);
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.2, 0, TAU);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     // Mèche
     ctx.strokeStyle = "#c8a06a";
     ctx.lineWidth = Math.max(1, r * 0.1);
@@ -472,13 +520,14 @@ export class Boss extends Entity {
     else { ctx.fillStyle = "#c0392b"; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); }
 
     // Kabuto : bombe du casque
+    ctx.lineJoin = "round";
     ctx.fillStyle = "#2e3550";
     ctx.beginPath();
     ctx.arc(0, -r * 0.12, r * 1.06, Math.PI * 1.02, Math.PI * 1.98);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = "#8a93b8";
-    ctx.lineWidth = Math.max(1.5, r * 0.04);
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(3, r * 0.07);
     ctx.stroke();
 
     // Fukigaeshi (rabats latéraux) et cornes maedate
@@ -490,8 +539,9 @@ export class Boss extends Entity {
       ctx.quadraticCurveTo(s * r * 0.95, r * 0.05, s * r * 0.8, -r * 0.1);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
-    ctx.fillStyle = "#ffcc4d";
+    ctx.fillStyle = "#ffc93c";
     for (const s of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(s * r * 0.18, -r * 0.95);
@@ -499,6 +549,7 @@ export class Boss extends Entity {
       ctx.quadraticCurveTo(s * r * 0.7, -r * 1.35, s * r * 0.42, -r * 0.88);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
 
     // Visière : elle se relève pour découvrir la gemme
@@ -511,6 +562,9 @@ export class Boss extends Entity {
     ctx.beginPath();
     ctx.ellipse(0, 0, r * 0.62, r * 0.3, 0, 0, TAU);
     ctx.fill();
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(2, r * 0.05);
+    ctx.stroke();
     ctx.restore();
 
     // Gemme
@@ -521,20 +575,23 @@ export class Boss extends Entity {
       ctx.globalAlpha = open;
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.42);
       g.addColorStop(0, "#fff");
-      g.addColorStop(0.35, "#ff3b6b");
-      g.addColorStop(1, "rgba(255,59,107,0)");
+      g.addColorStop(0.35, "#e63b2e");
+      g.addColorStop(1, "rgba(230,59,46,0)");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.42 * (0.85 + pulse * 0.25), 0, TAU);
       ctx.fill();
-      ctx.fillStyle = "#ff5c86";
+      ctx.fillStyle = "#ff5348";
+      ctx.strokeStyle = "#25222b";
+      ctx.lineWidth = Math.max(2, r * 0.045);
       ctx.beginPath();
-      ctx.moveTo(0, -r * 0.2);
-      ctx.lineTo(r * 0.16, 0);
-      ctx.lineTo(0, r * 0.2);
-      ctx.lineTo(-r * 0.16, 0);
+      ctx.moveTo(0, -r * 0.24);
+      ctx.lineTo(r * 0.18, 0);
+      ctx.lineTo(0, r * 0.24);
+      ctx.lineTo(-r * 0.18, 0);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -574,10 +631,15 @@ export class Particles {
     this.list.push({ pos: v3(pos.x, pos.y, pos.z), vel: v3(0, 1.1, 0), life: 0.9, max: 0.9, color, label });
   }
 
+  /** Éclat façon bande dessinée, à l'endroit où la tête est éclatée. */
+  star(pos, color, taille = 1) {
+    this.list.push({ pos: v3(pos.x, pos.y, pos.z), vel: v3(0, 0, 0), life: 0.42, max: 0.42, color, star: taille });
+  }
+
   update(dt) {
     for (const p of this.list) {
       p.pos = vAdd(p.pos, vScale(p.vel, dt));
-      if (!p.label) p.vel = vScale(p.vel, 1 - 1.6 * dt);
+      if (!p.label && !p.star) p.vel = vScale(p.vel, 1 - 1.6 * dt);
       p.life -= dt;
     }
     this.list = this.list.filter((p) => p.life > 0);
@@ -591,11 +653,37 @@ export class Particles {
       const a = clamp(p.life / p.max, 0, 1);
       ctx.globalAlpha = a;
       if (p.label) {
-        const s = Math.max(11, Math.min(46, 0.55 * pr.scale));
-        ctx.fillStyle = p.color;
-        ctx.font = `bold ${s}px "Trebuchet MS", sans-serif`;
+        const s = Math.max(13, Math.min(50, 0.6 * pr.scale));
+        ctx.font = `700 ${s}px ui-rounded, "SF Pro Rounded", "Varela Round", "Trebuchet MS", sans-serif`;
         ctx.textAlign = "center";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = Math.max(3, s * 0.22);
+        ctx.strokeStyle = "#25222b";
+        ctx.strokeText(p.label, pr.x, pr.y);
+        ctx.fillStyle = p.color;
         ctx.fillText(p.label, pr.x, pr.y);
+      } else if (p.star) {
+        // L'étoile grandit puis s'efface, contour d'encre compris.
+        const t = 1 - a;
+        const R = (0.35 + t * 0.9) * p.star * pr.scale;
+        ctx.save();
+        ctx.translate(pr.x, pr.y);
+        ctx.rotate(t * 0.7);
+        ctx.beginPath();
+        for (let i = 0; i < 20; i++) {
+          const ang = (i / 20) * TAU;
+          const rr = i % 2 ? R * 0.46 : R;
+          const x = Math.cos(ang) * rr, y = Math.sin(ang) * rr;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.lineJoin = "round";
+        ctx.lineWidth = Math.max(2, R * 0.16);
+        ctx.strokeStyle = "#25222b";
+        ctx.stroke();
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.restore();
       } else {
         ctx.fillStyle = p.color;
         const r = Math.max(1, p.size * pr.scale);
