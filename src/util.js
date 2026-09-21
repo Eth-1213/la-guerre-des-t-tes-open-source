@@ -74,6 +74,13 @@ export class Camera {
     this.up = v3(-sy * sp, cp, cy * sp);
   }
 
+  /** Repère fourni tel quel par les capteurs : roulis et paysage compris. */
+  setBasis(right, up, fwd) {
+    this.right = right;
+    this.up = up;
+    this.fwd = fwd;
+  }
+
   /** Projette un point du monde ; renvoie null si derrière la caméra. */
   project(p, out = {}) {
     const z = vDot(p, this.fwd);
@@ -106,3 +113,86 @@ export class Emitter {
 export function formatScore(n) {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
+
+/* ------------------------------------------------------------------ */
+/*  Quaternions : orientation du téléphone sans blocage de cardan      */
+/* ------------------------------------------------------------------ */
+
+export const quat = (x = 0, y = 0, z = 0, w = 1) => ({ x, y, z, w });
+
+/** Quaternion d'angles d'Euler appliqués dans l'ordre YXZ. */
+export function quatFromEulerYXZ(x, y, z) {
+  const c1 = Math.cos(x / 2), s1 = Math.sin(x / 2);
+  const c2 = Math.cos(y / 2), s2 = Math.sin(y / 2);
+  const c3 = Math.cos(z / 2), s3 = Math.sin(z / 2);
+  return quat(
+    s1 * c2 * c3 + c1 * s2 * s3,
+    c1 * s2 * c3 - s1 * c2 * s3,
+    c1 * c2 * s3 - s1 * s2 * c3,
+    c1 * c2 * c3 + s1 * s2 * s3,
+  );
+}
+
+export function quatFromAxisAngle(ax, ay, az, angle) {
+  const h = angle / 2, s = Math.sin(h);
+  return quat(ax * s, ay * s, az * s, Math.cos(h));
+}
+
+export function quatMul(a, b) {
+  return quat(
+    a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+    a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+    a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+    a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+  );
+}
+
+/** Applique un quaternion à un vecteur. */
+export function quatRotate(q, v) {
+  const ix = q.w * v.x + q.y * v.z - q.z * v.y;
+  const iy = q.w * v.y + q.z * v.x - q.x * v.z;
+  const iz = q.w * v.z + q.x * v.y - q.y * v.x;
+  const iw = -q.x * v.x - q.y * v.y - q.z * v.z;
+  return v3(
+    ix * q.w + iw * -q.x + iy * -q.z - iz * -q.y,
+    iy * q.w + iw * -q.y + iz * -q.x - ix * -q.z,
+    iz * q.w + iw * -q.z + ix * -q.y - iy * -q.x,
+  );
+}
+
+/** Interpolation sphérique : lissage sans à-coups ni blocage de cardan. */
+export function quatSlerp(a, b, t) {
+  let cos = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+  let bx = b.x, by = b.y, bz = b.z, bw = b.w;
+  if (cos < 0) { cos = -cos; bx = -bx; by = -by; bz = -bz; bw = -bw; }
+  if (cos > 0.9995) {
+    const r = quat(a.x + (bx - a.x) * t, a.y + (by - a.y) * t, a.z + (bz - a.z) * t, a.w + (bw - a.w) * t);
+    const l = Math.hypot(r.x, r.y, r.z, r.w) || 1;
+    return quat(r.x / l, r.y / l, r.z / l, r.w / l);
+  }
+  const theta = Math.acos(clamp(cos, -1, 1));
+  const sin = Math.sin(theta);
+  const k0 = Math.sin((1 - t) * theta) / sin;
+  const k1 = Math.sin(t * theta) / sin;
+  return quat(a.x * k0 + bx * k1, a.y * k0 + by * k1, a.z * k0 + bz * k1, a.w * k0 + bw * k1);
+}
+
+/**
+ * Orientation de la caméra arrière à partir d'un événement deviceorientation.
+ * Repère du jeu : Y vers le haut, -Z devant (cap nul = nord).
+ * alpha/beta/gamma en radians, ecran = angle de rotation de l'écran en radians.
+ */
+export function cameraQuaternion(alpha, beta, gamma, ecran) {
+  // Le capteur décrit l'écran ; on bascule de -90° autour de X pour viser
+  // par l'arrière de l'appareil, puis on compense la rotation de l'écran.
+  let q = quatFromEulerYXZ(beta, alpha, -gamma);
+  q = quatMul(q, quat(-Math.SQRT1_2, 0, 0, Math.SQRT1_2));
+  q = quatMul(q, quatFromAxisAngle(0, 0, 1, -ecran));
+  return q;
+}
+
+export const vCross = (a, b) => v3(
+  a.y * b.z - a.z * b.y,
+  a.z * b.x - a.x * b.z,
+  a.x * b.y - a.y * b.x,
+);

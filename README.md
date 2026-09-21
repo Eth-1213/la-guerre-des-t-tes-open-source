@@ -126,6 +126,11 @@ Sensibilité de visée, inversion de l'axe vertical, visée au toucher (pour jou
 caméra activable/désactivable (un décor de secours en fil de fer prend alors le relais), sons,
 vibrations, et trois difficultés qui changent la vitesse, l'agressivité et le nombre de cœurs.
 
+**Tester le gyroscope** ouvre un diagnostic : des repères fixes dans la pièce, plus la source
+utilisée, sa fréquence, le cap, l'élévation, le roulis, le tremblement et la dérive. Si les
+repères tiennent en place quand le téléphone est posé, le capteur va bien — ce sont les têtes
+qui volent.
+
 ## Architecture
 
 ```
@@ -149,10 +154,14 @@ hors-ligne/         le fichier unique généré
 
 Points techniques notables :
 
-- L'orientation vient de `deviceorientation` : la matrice ZXY (alpha, beta, gamma) est appliquée
-  à l'axe de la caméra arrière, ce qui donne directement un cap et une élévation, indépendants de
-  la rotation de l'écran. iOS exige `DeviceOrientationEvent.requestPermission()` depuis un geste
-  de l'utilisateur : c'est le bouton « Lancer la partie ».
+- L'orientation vient de `deviceorientation`, convertie en quaternion (Euler YXZ, bascule de
+  −90° pour viser par l'arrière, compensation de `screen.orientation.angle`). Le repère complet
+  de l'appareil — roulis compris — sert directement de base à la caméra, donc la scène reste
+  collée au décor filmé même téléphone incliné ou en paysage ; pas de blocage de cardan au
+  zénith. Android émet `deviceorientation` **et** `deviceorientationabsolute` avec des références
+  de cap différentes : la première source qui parle est verrouillée, l'autre ignorée. iOS exige
+  `DeviceOrientationEvent.requestPermission()` depuis un geste de l'utilisateur : c'est le bouton
+  « Lancer la partie ».
 - La scène est projetée à la main sur un canvas 2D (repère caméra orthonormé + distance focale
   déduite du champ de vision), triée par profondeur. Pas de WebGL : ça démarre instantanément et
   ça consomme peu de batterie.

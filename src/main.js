@@ -143,7 +143,7 @@ async function startLevel(level) {
   setHud(true);
   hud.level(`${level.mode === "ami" ? "Démo" : "Niveau"} ${indexInMode(level) + 1} · ${level.name}`);
   game.load(level, faces, camOk);
-  orientation.recenter();
+  orientation.recenterWhenReady();
   game.start();
 
   if (!orientation.hasGyro) {
@@ -543,6 +543,145 @@ $("#btn-reset").addEventListener("click", () => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Diagnostic du gyroscope                                            */
+/* ------------------------------------------------------------------ */
+
+// Des repères fixes dans la pièce : s'ils bougent alors que le téléphone ne
+// bouge pas, le capteur dérive ; s'ils tiennent, ce sont les têtes qui volent.
+const diag = { actif: false, last: 0, capDepart: null, jitter: 0, capPrec: 0, fenetre: 0, pics: [] };
+
+async function ouvrirTestGyro() {
+  audio.unlock();
+  showScreen("screen-gyro");
+  const accorde = await orientation.requestPermission();
+  if (accorde) orientation.start();
+  if (settings.camera && !FICHIER_LOCAL) {
+    const ok = await feed.start("environment");
+    video.classList.toggle("on", ok);
+  }
+  diag.actif = true;
+  diag.last = performance.now();
+  diag.capDepart = null;
+  diag.pics.length = 0;
+  requestAnimationFrame(boucleDiag);
+}
+
+function fermerTestGyro() {
+  diag.actif = false;
+  feed.stop();
+  video.classList.remove("on");
+  if (!game.running) orientation.stop();
+  game.ctx.clearRect(0, 0, game.W, game.H);
+  showScreen("screen-settings");
+}
+
+function boucleDiag(now) {
+  if (!diag.actif) return;
+  const dt = Math.min(0.05, Math.max(0, (now - diag.last) / 1000));
+  diag.last = now;
+
+  orientation.update(dt);
+  const cam = game.cam;
+  cam.yaw = orientation.yaw;
+  cam.pitch = orientation.pitch;
+  if (orientation.hasGyro) cam.setBasis(orientation.right, orientation.up, orientation.fwd);
+  else cam.update();
+
+  // Tremblement : plus grand écart de cap observé sur la dernière seconde.
+  const capDeg = (orientation.yaw * 180) / Math.PI;
+  let d = Math.abs(capDeg - diag.capPrec);
+  if (d > 180) d = 360 - d;
+  diag.capPrec = capDeg;
+  diag.pics.push(d);
+  if (diag.pics.length > 60) diag.pics.shift();
+  diag.jitter = Math.max(...diag.pics);
+  if (diag.capDepart === null && orientation.hasGyro) diag.capDepart = capDeg;
+
+  dessineReperes();
+
+  diag.fenetre += dt;
+  if (diag.fenetre > 0.2) {
+    diag.fenetre = 0;
+    const src = orientation.source
+      ? `${orientation.source}${orientation.autresSources.size ? " (autre ignorée)" : ""}`
+      : "aucune — visée au doigt";
+    $("#gyro-source").textContent = src;
+    $("#gyro-rate").textContent = orientation.hasGyro ? orientation.frequence.toFixed(0) + " Hz" : "—";
+    $("#gyro-angles").textContent = `${capDeg.toFixed(0)}°  /  ${((orientation.pitch * 180) / Math.PI).toFixed(0)}°  /  ${((orientation.roll * 180) / Math.PI).toFixed(0)}°`;
+    $("#gyro-jitter").textContent = orientation.hasGyro ? diag.jitter.toFixed(2) + "°" : "—";
+    if (diag.capDepart === null) $("#gyro-drift").textContent = "—";
+    else {
+      let dd = capDeg - diag.capDepart;
+      if (dd > 180) dd -= 360; else if (dd < -180) dd += 360;
+      $("#gyro-drift").textContent = dd.toFixed(1) + "°";
+    }
+  }
+  requestAnimationFrame(boucleDiag);
+}
+
+function dessineReperes() {
+  const ctx = game.ctx, W = game.W, H = game.H, cam = game.cam;
+  ctx.clearRect(0, 0, W, H);
+  // Sans caméra, le décor de repli sert de référence spatiale.
+  if (!feed.ready) game.drawRoom();
+  const out = {};
+  const points = [];
+  const cardinaux = { 0: "DEVANT", 90: "DROITE", 180: "DERRIÈRE", 270: "GAUCHE" };
+
+  // Huit piquets sur l'horizon, tous les 45°
+  for (let d = 0; d < 360; d += 45) {
+    const a = (d * Math.PI) / 180;
+    for (const h of [-1.4, 0, 1.4]) {
+      const p = cam.project({ x: Math.sin(a) * 8, y: h, z: -Math.cos(a) * 8 }, out);
+      if (p) points.push({ p: { x: p.x, y: p.y, scale: p.scale }, cardinal: h === 0 ? cardinaux[d] : null, gros: d % 90 === 0 });
+    }
+  }
+
+  // Ligne d'horizon
+  ctx.strokeStyle = "rgba(230,59,46,0.85)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  let amorce = false;
+  for (let d = 0; d <= 72; d++) {
+    const a = ((d * 5) * Math.PI) / 180;
+    const p = cam.project({ x: Math.sin(a) * 8, y: 0, z: -Math.cos(a) * 8 }, out);
+    if (!p) { amorce = false; continue; }
+    if (!amorce) { ctx.moveTo(p.x, p.y); amorce = true; } else ctx.lineTo(p.x, p.y);
+  }
+  ctx.stroke();
+
+  for (const { p, cardinal, gros } of points) {
+    const r = Math.max(3, (gros ? 0.16 : 0.1) * p.scale);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = gros ? "#ffc93c" : "#ffffff";
+    ctx.strokeStyle = "#25222b";
+    ctx.lineWidth = Math.max(2, r * 0.4);
+    ctx.fill();
+    ctx.stroke();
+    if (cardinal) {
+      const s = Math.max(12, Math.min(30, 0.1 * p.scale));
+      ctx.font = `700 ${s}px ui-rounded, "SF Pro Rounded", "Trebuchet MS", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = Math.max(3, s * 0.3);
+      ctx.strokeStyle = "#25222b";
+      ctx.strokeText(cardinal, p.x, p.y - r - 8);
+      ctx.fillStyle = "#ffc93c";
+      ctx.fillText(cardinal, p.x, p.y - r - 8);
+    }
+  }
+}
+
+$("#btn-gyro-test").addEventListener("click", () => { sfx.ui(); ouvrirTestGyro(); });
+$("#gyro-back").addEventListener("click", () => { sfx.ui(); fermerTestGyro(); });
+$("#gyro-recenter").addEventListener("click", () => {
+  orientation.recenter();
+  diag.capDepart = null;
+  sfx.ui();
+});
+
+/* ------------------------------------------------------------------ */
 /*  Démarrage                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -564,9 +703,11 @@ async function boot() {
   }
 
   // Le gyroscope n'est lu qu'en jeu, mais on détecte sa présence pour l'aide.
+  // La sonde ne doit couper les capteurs que si personne ne s'en sert : une
+  // partie ou le diagnostic ouverts entre-temps gardent la main.
   if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission !== "function") {
     orientation.start();
-    setTimeout(() => { if (!game.running) orientation.stop(); }, 2500);
+    setTimeout(() => { if (!game.running && !diag.actif) orientation.stop(); }, 2500);
   }
 
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {

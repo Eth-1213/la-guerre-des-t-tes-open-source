@@ -123,7 +123,13 @@ export class Game extends Emitter {
     this.orientation.update(dt);
     this.cam.yaw = this.orientation.yaw;
     this.cam.pitch = this.orientation.pitch;
-    this.cam.update();
+    // Avec le gyroscope on reprend le repère complet de l'appareil (roulis
+    // compris) ; sans lui, la caméra se reconstruit depuis cap et élévation.
+    if (this.orientation.hasGyro) {
+      this.cam.setBasis(this.orientation.right, this.orientation.up, this.orientation.fwd);
+    } else {
+      this.cam.update();
+    }
 
     this.invul = Math.max(0, this.invul - dt);
     this.shake = Math.max(0, this.shake - dt * 2.5);
@@ -456,6 +462,11 @@ export class Game extends Emitter {
       ctx.fillRect(0, 0, W, H);
     }
     this._drawRadar();
+  }
+
+  /** Redessine le décor de repli seul (utilisé par le test du gyroscope). */
+  drawRoom() {
+    this._drawRoom(this.ctx);
   }
 
   /** Décor de repli : une salle en fil de fer quand la caméra n'est pas disponible. */

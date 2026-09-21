@@ -1,6 +1,7 @@
 // Capteurs du téléphone : gyroscope (orientation de la vue) et caméra (décor AR).
 
-import { clamp, wrapAngle, lerpAngle, rad } from "./util.js";
+import { clamp, wrapAngle, rad, v3, vDot, vCross, vNorm, toSpherical,
+  quat, quatMul, quatSlerp, quatRotate, quatFromAxisAngle, cameraQuaternion } from "./util.js";
 
 /* ------------------------------------------------------------------ */
 /*  Orientation : gyroscope + repli au doigt                          */
@@ -8,15 +9,35 @@ import { clamp, wrapAngle, lerpAngle, rad } from "./util.js";
 
 export class Orientation {
   constructor() {
-    this.yaw = 0;            // lissé, consommé par la caméra de jeu
+    // Orientation complète de l'appareil, quaternion plutôt qu'angles d'Euler :
+    // pas de blocage de cardan quand on vise le ciel ou ses pieds, et le
+    // roulis est pris en compte, donc la scène reste collée au décor filmé.
+    this.q = quat();
+    this.qCible = quat();
+    this.right = v3(1, 0, 0);
+    this.up = v3(0, 1, 0);
+    this.fwd = v3(0, 0, -1);
+
+    this.yaw = 0;            // cap et élévation, pour le radar et les apparitions
     this.pitch = 0;
-    this.rawYaw = 0;         // brut, issu du capteur ou du doigt
-    this.rawPitch = 0;
+    this.roll = 0;
     this.offsetYaw = 0;      // « recentrer la vue »
+
     this.hasGyro = false;
     this.active = false;
+    this.source = null;      // "absolue" | "relative" — une seule, verrouillée
+    this.autresSources = new Set();
+    this.evenements = 0;
+    this.frequence = 0;
+    this._fenetre = 0;
+    this._compte = 0;
+
     this.sensitivity = 1.2;
     this.invertY = false;
+    this.touchYaw = 0;
+    this.touchPitch = 0;
+
+    this._recentrerDesQuePret = false;
     this._onDevice = this._onDevice.bind(this);
     this._drag = null;
   }
@@ -26,8 +47,7 @@ export class Orientation {
     const DOE = window.DeviceOrientationEvent;
     if (DOE && typeof DOE.requestPermission === "function") {
       try {
-        const res = await DOE.requestPermission();
-        return res === "granted";
+        return (await DOE.requestPermission()) === "granted";
       } catch (err) {
         return false;
       }
@@ -48,22 +68,28 @@ export class Orientation {
     window.removeEventListener("deviceorientationabsolute", this._onDevice, true);
   }
 
+  /** Angle de rotation de l'écran, en radians. */
+  get angleEcran() {
+    const o = window.screen && window.screen.orientation;
+    const a = o && typeof o.angle === "number" ? o.angle : window.orientation || 0;
+    return rad(a);
+  }
+
   _onDevice(e) {
     if (e.alpha == null && e.beta == null && e.gamma == null) return;
-    const a = rad(e.alpha || 0), b = rad(e.beta || 0), g = rad(e.gamma || 0);
-    const cA = Math.cos(a), sA = Math.sin(a);
-    const cB = Math.cos(b), sB = Math.sin(b);
-    const cG = Math.cos(g), sG = Math.sin(g);
+    const type = e.type === "deviceorientationabsolute" || e.absolute ? "absolue" : "relative";
 
-    // Direction visée par la caméra arrière = R(alpha,beta,gamma) appliqué à (0,0,-1),
-    // exprimée dans le repère terrestre (x est, y nord, z haut).
-    const ex = -(cA * sG + cG * sA * sB);
-    const ny = -(sA * sG - cA * cG * sB);
-    const uz = -(cB * cG);
+    // Android émet les deux événements avec des références de cap différentes.
+    // Les mélanger faisait sauter la vue d'un cap à l'autre : on verrouille
+    // la première source qui parle et on ignore l'autre.
+    if (this.source === null) this.source = type;
+    else if (this.source !== type) { this.autresSources.add(type); return; }
 
-    this.hasGyro = true;
-    this.rawYaw = Math.atan2(ex, ny);
-    this.rawPitch = Math.asin(clamp(uz, -1, 1));
+    this.qCible = cameraQuaternion(rad(e.alpha || 0), rad(e.beta || 0), rad(e.gamma || 0), this.angleEcran);
+    if (!this.hasGyro) { this.q = this.qCible; this.hasGyro = true; }
+    if (this._recentrerDesQuePret) { this._recentrerDesQuePret = false; this.recenter(); }
+    this.evenements++;
+    this._compte++;
   }
 
   /** Repli sans gyroscope : glisser le doigt (ou la souris) pour tourner. */
@@ -75,8 +101,8 @@ export class Orientation {
       this._drag.x = x; this._drag.y = y;
       if (this.hasGyro) return; // le capteur a pris la main
       const k = 0.0032 * this.sensitivity;
-      this.rawYaw = wrapAngle(this.rawYaw - dx * k);
-      this.rawPitch = clamp(this.rawPitch + dy * k * (this.invertY ? -1 : 1), -rad(85), rad(85));
+      this.touchYaw = wrapAngle(this.touchYaw - dx * k);
+      this.touchPitch = clamp(this.touchPitch + dy * k * (this.invertY ? -1 : 1), -rad(85), rad(85));
     };
     const up = () => { this._drag = null; };
 
@@ -96,18 +122,59 @@ export class Orientation {
     window.addEventListener("mouseup", up);
   }
 
-  recenter() {
-    this.offsetYaw = this.rawYaw;
-    this.yaw = 0;
+  /** Cap brut, avant recentrage. */
+  get capBrut() {
+    return toSpherical(quatRotate(this.q, v3(0, 0, -1))).yaw;
   }
 
-  /** Lissage : évite les tremblements du capteur sans ajouter de latence perceptible. */
+  recenter() {
+    if (this.hasGyro) this.offsetYaw = this.capBrut;
+    else { this.touchYaw = 0; this.touchPitch = 0; }
+  }
+
+  /**
+   * Recentre dès la première mesure du capteur : au lancement d'un niveau,
+   * « devant » doit être là où le joueur pointe, pas le nord magnétique.
+   */
+  recenterWhenReady() {
+    this.recenter();
+    if (!this.hasGyro) this._recentrerDesQuePret = true;
+  }
+
   update(dt) {
-    const target = wrapAngle(this.rawYaw - this.offsetYaw);
-    const tp = clamp(this.invertY && this.hasGyro ? -this.rawPitch : this.rawPitch, -rad(88), rad(88));
-    const k = 1 - Math.pow(0.0001, dt); // ~ suivi immédiat, filtré à haute fréquence
-    this.yaw = lerpAngle(this.yaw, target, k);
-    this.pitch = this.pitch + (tp - this.pitch) * k;
+    // Fréquence du capteur, utile au diagnostic.
+    this._fenetre += dt;
+    if (this._fenetre >= 0.5) {
+      this.frequence = this._compte / this._fenetre;
+      this._compte = 0;
+      this._fenetre = 0;
+    }
+
+    if (this.hasGyro) {
+      // Lissage sphérique à constante de temps fixe : même réponse à 60 ou 120 Hz.
+      this.q = quatSlerp(this.q, this.qCible, 1 - Math.exp(-dt / 0.06));
+      const vue = quatMul(quatFromAxisAngle(0, 1, 0, -this.offsetYaw), this.q);
+      this.right = quatRotate(vue, v3(1, 0, 0));
+      this.up = quatRotate(vue, v3(0, 1, 0));
+      this.fwd = quatRotate(vue, v3(0, 0, -1));
+    } else {
+      // Sans capteur : cap et élévation pilotés au doigt, horizon toujours droit.
+      const cy = Math.cos(this.touchYaw), sy = Math.sin(this.touchYaw);
+      const cp = Math.cos(this.touchPitch), sp = Math.sin(this.touchPitch);
+      this.fwd = v3(sy * cp, sp, -cy * cp);
+      this.right = v3(cy, 0, sy);
+      this.up = v3(-sy * sp, cp, cy * sp);
+    }
+
+    const s = toSpherical(this.fwd);
+    this.yaw = s.yaw;
+    this.pitch = s.pitch;
+
+    // Roulis : écart entre le haut de l'écran et la verticale du monde.
+    // Le « droite » de référence est fwd x haut-du-monde, soit (-fz, 0, fx).
+    const horizontal = vNorm(v3(-this.fwd.z, 0, this.fwd.x));
+    const hautDroit = vNorm(vCross(horizontal, this.fwd));
+    this.roll = Math.atan2(vDot(vCross(hautDroit, this.up), this.fwd), clamp(vDot(hautDroit, this.up), -1, 1));
   }
 }
 

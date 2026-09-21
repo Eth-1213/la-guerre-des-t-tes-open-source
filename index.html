@@ -175,7 +175,29 @@
         </select></label>
     </div>
     <div class="menu">
+      <button class="btn" id="btn-gyro-test">Tester le gyroscope</button>
       <button class="btn ghost danger" id="btn-reset">Effacer la progression</button>
+    </div>
+  </section>
+
+  <!-- Diagnostic du gyroscope -->
+  <section id="screen-gyro" class="screen gyro">
+    <header class="screen-head">
+      <button class="back" id="gyro-back" aria-label="Retour">←</button>
+      <h1>Test du gyroscope</h1>
+    </header>
+    <p class="hint">Les repères ci-dessous sont <strong>fixes dans la pièce</strong>. Pose le téléphone :
+      s'ils ne bougent plus, le gyroscope va bien et ce sont les têtes qui volent. S'ils dérivent
+      tout seuls, c'est le capteur.</p>
+    <div class="settings" id="gyro-readout">
+      <div class="row"><span>Source</span><strong id="gyro-source">—</strong></div>
+      <div class="row"><span>Fréquence</span><strong id="gyro-rate">—</strong></div>
+      <div class="row"><span>Cap / élévation / roulis</span><strong id="gyro-angles">—</strong></div>
+      <div class="row"><span>Tremblement (1 s)</span><strong id="gyro-jitter">—</strong></div>
+      <div class="row"><span>Dérive depuis l'ouverture</span><strong id="gyro-drift">—</strong></div>
+    </div>
+    <div class="menu">
+      <button class="btn" id="gyro-recenter">Recentrer</button>
     </div>
   </section>
 
@@ -194,6 +216,8 @@
       <p><strong>6.</strong> 🦋 Les papillons rendent de la vie. 💣 Les bombes explosent et nettoient tout autour.</p>
       <p><strong>7.</strong> À la fin de chaque niveau, un <strong>boss</strong> coiffé d'un casque de samouraï apparaît : vise la <strong>gemme</strong> sur son front.</p>
       <p class="hint">Sans gyroscope (ordinateur, tablette bloquée) : glisse le doigt ou la souris pour tourner la vue.</p>
+      <p class="hint">Les têtes volent en permanence : c'est normal qu'elles se déplacent quand tu ne bouges pas.
+        Pour vérifier le capteur lui-même, ouvre <strong>Réglages → Tester le gyroscope</strong>.</p>
     </div>
   </section>
 

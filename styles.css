@@ -389,6 +389,20 @@ html, body {
   border: 2px solid var(--encre); font-family: inherit; font-weight: 700; font-size: 14px;
 }
 
+/* Diagnostic : les repères sont dessinés sur le canvas, donc la zone
+   d'observation reste transparente ; seuls les cartouches sont opaques. */
+.screen.gyro { background: none; color: var(--papier); }
+.screen.gyro .screen-head {
+  background: rgba(37, 34, 43, .88); border-radius: 16px; padding: 8px 12px 8px 8px; margin-bottom: 10px;
+}
+.screen.gyro .hint {
+  color: var(--papier); background: rgba(37, 34, 43, .88);
+  border-radius: 16px; padding: 10px 14px; margin-bottom: 0;
+}
+.screen.gyro #gyro-readout { margin-top: auto; }
+.screen.gyro .row { background: rgba(255, 255, 255, .94); color: var(--encre); }
+.screen.gyro .row strong { font-variant-numeric: tabular-nums; font-size: 14px; }
+
 .howto p { font-size: 15px; line-height: 1.6; margin: 0 0 14px; font-weight: 400; }
 .howto strong { font-weight: 700; }
 
