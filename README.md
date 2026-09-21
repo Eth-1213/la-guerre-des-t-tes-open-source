@@ -68,11 +68,20 @@ fonctionne. C'est l'aperçu rapide ; pour la vraie AR, prends la méthode 1.
 Ce fichier est **généré** à partir de `src/` : après une modification du code, relance
 `npm run hors-ligne` pour le régénérer.
 
-## Publier plus tard (facultatif)
+## Publier (facultatif)
 
-Sur n'importe quel hébergement statique en HTTPS. Avec GitHub Pages : *Settings → Pages →
-Source : Deploy from a branch*, puis la branche et le dossier `/`. « Ajouter à l'écran d'accueil »
-installe alors le jeu comme une application (manifeste + service worker, jouable hors connexion).
+Le jeu est un site statique : n'importe quel hébergement HTTPS convient.
+
+**Vercel** — `vercel.json` est fourni : pas de build, la racine du dépôt est servie telle quelle,
+avec une `Permissions-Policy` qui autorise la caméra et les capteurs de mouvement. En ligne de
+commande : `npx vercel --prod`. Pour retirer le déploiement ensuite, supprime le projet depuis le
+tableau de bord Vercel (*Settings → Delete Project*), ou `npx vercel remove <nom-du-projet>`.
+
+**GitHub Pages** — *Settings → Pages → Source : Deploy from a branch*, puis la branche et le
+dossier `/`.
+
+Dans les deux cas, « Ajouter à l'écran d'accueil » installe le jeu comme une application
+(manifeste + service worker, jouable hors connexion).
 
 ## Commandes
 
