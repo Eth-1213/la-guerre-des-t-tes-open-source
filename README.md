@@ -1,0 +1,113 @@
+# La Guerre des Têtes 2.0
+
+Une relecture pour téléphone de **Face Raiders** (« La Guerre des Têtes »), le jeu de tir en
+réalité augmentée préinstallé sur les consoles Nintendo 3DS.
+
+Tu photographies un visage, il devient la tête d'ennemis volants qui traversent les murs de
+ta pièce. Tu vises en **bougeant réellement ton téléphone** (gyroscope), sur 360°, avec le flux
+de la caméra arrière comme décor. Chaque niveau se termine par une **Grande Tête** coiffée d'un
+kabuto dont la gemme frontale est le point faible.
+
+Tout tient dans une page web : ni moteur de jeu, ni dépendance, ni build. HTML, CSS et
+JavaScript modules, un canvas 2D avec sa propre projection 3D, et des sons synthétisés à la volée.
+
+## Jouer
+
+Le jeu a besoin d'**HTTPS** (ou de `localhost`) pour accéder à la caméra et aux capteurs de
+mouvement — c'est une exigence des navigateurs, pas du jeu.
+
+### En local
+
+```bash
+npx http-server -p 8080 .
+# puis ouvre http://localhost:8080 sur l'ordinateur,
+# ou http://<ip-de-ton-ordi>:8080 depuis le téléphone (caméra désactivée hors HTTPS)
+```
+
+### Sur ton téléphone (recommandé)
+
+Publie le dossier sur n'importe quel hébergement statique en HTTPS. Avec GitHub Pages :
+*Settings → Pages → Source : Deploy from a branch*, puis choisis la branche et le dossier `/`.
+Ouvre ensuite l'URL sur le téléphone et accepte les demandes de caméra et de mouvement.
+« Ajouter à l'écran d'accueil » installe le jeu comme une application (manifeste + service worker,
+jouable hors connexion).
+
+## Commandes
+
+| Action | Geste |
+|---|---|
+| Viser | Bouger le téléphone (gyroscope) — ou glisser le doigt sans capteur |
+| Tirer | Toucher l'écran, ou le bouton **TIR**, ou la barre d'espace |
+| Pause | Bouton **❚❚**, ou `Échap` |
+| Recentrer la vue | Menu pause → *Recentrer la vue* |
+
+## Le jeu
+
+- **Têtes volantes** : la base. Elles orbitent autour de toi puis foncent — un cercle rouge
+  clignotant annonce la charge.
+- **Têtes rapides** : plus petites et nerveuses.
+- **Casques de fer** : un premier tir fait sauter le casque, un second la tête.
+- **Cracheurs** : ils restent à distance et envoient des projectiles, que tu peux abattre en vol.
+- **🦋 Papillons** : rendent un cœur.
+- **💣 Bombes** : les toucher déclenche une explosion qui nettoie tout autour.
+- **Combos** : enchaîne les tirs réussis en moins de 2,6 s pour multiplier les points. Un tir
+  manqué ou un coup encaissé remet le compteur à zéro.
+- **Boss** : la visière du kabuto se relève par intermittence et découvre la gemme. C'est le seul
+  moment où il est vulnérable. Le vaincre « sauve » le visage utilisé et débloque le niveau suivant.
+
+**9 niveaux** : 6 pour la campagne, 3 en mode « Montrer à un ami » (parties courtes, dont deux
+chronométrées). Chaque niveau se débloque en terminant le précédent.
+
+## Visages
+
+- **Capturer** : caméra frontale, yeux et nez sur les repères, déclencheur avec compte à rebours.
+- **Importer** : n'importe quelle photo de la galerie, avec cadrage (glisser + zoom).
+- Les visages sont découpés en rond, ombrés comme des sphères, et stockés **uniquement sur
+  l'appareil** (`localStorage`, en JPEG). Rien n'est envoyé nulle part : il n'y a pas de serveur.
+- Tant qu'aucun visage n'est capturé, trois têtes dessinées par le code prennent le relais, donc
+  le jeu est jouable immédiatement.
+- La « fiche de profil » affichée après une capture est une plaisanterie tirée au hasard : le jeu
+  ne fait aucune analyse du visage.
+
+## Réglages
+
+Sensibilité de visée, inversion de l'axe vertical, visée au toucher (pour jouer sans gyroscope),
+caméra activable/désactivable (un décor de secours en fil de fer prend alors le relais), sons,
+vibrations, et trois difficultés qui changent la vitesse, l'agressivité et le nombre de cœurs.
+
+## Architecture
+
+```
+index.html          écrans, HUD, canvas
+styles.css          interface plein écran, encoches, paysage/portrait
+sw.js               service worker (jeu hors connexion)
+src/util.js         maths 3D, caméra et projection, émetteur d'événements
+src/storage.js      sauvegarde locale (réglages, progression, visages)
+src/audio.js        sons synthétisés (WebAudio) et vibrations
+src/sensors.js      gyroscope (+ repli au doigt) et flux caméra
+src/faces.js        capture, recadrage, masque circulaire, visages de secours
+src/entities.js     têtes, papillons, bombes, projectiles, boss, particules
+src/levels.js       les 9 niveaux et les difficultés
+src/game.js         boucle de jeu, vagues, tir, score, rendu, radar
+src/ui.js           navigation entre écrans, HUD, listes
+src/main.js         assemblage et enchaînement des écrans
+```
+
+Points techniques notables :
+
+- L'orientation vient de `deviceorientation` : la matrice ZXY (alpha, beta, gamma) est appliquée
+  à l'axe de la caméra arrière, ce qui donne directement un cap et une élévation, indépendants de
+  la rotation de l'écran. iOS exige `DeviceOrientationEvent.requestPermission()` depuis un geste
+  de l'utilisateur : c'est le bouton « Lancer la partie ».
+- La scène est projetée à la main sur un canvas 2D (repère caméra orthonormé + distance focale
+  déduite du champ de vision), triée par profondeur. Pas de WebGL : ça démarre instantanément et
+  ça consomme peu de batterie.
+- Les ennemis hors champ sont signalés par des flèches et par un radar — indispensable quand
+  l'action se déroule derrière toi.
+
+## À savoir
+
+Ce dépôt est un hommage indépendant, écrit de zéro : aucun code, image ni son de Nintendo n'y
+figure. *Face Raiders* est une marque de Nintendo / HAL Laboratory.
+
+Le jeu se joue **debout, en tournant sur soi-même**. Regarde autour de toi avant de commencer.

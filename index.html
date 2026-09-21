@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1a">
+<meta name="description" content="La Guerre des Têtes 2.0 — jeu de tir en réalité augmentée pour téléphone, inspiré de Face Raiders sur Nintendo 3DS.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon.svg">
+<link rel="stylesheet" href="styles.css">
+<title>La Guerre des Têtes 2.0</title>
+</head>
+<body>
+
+<!-- Flux caméra arrière : décor de réalité augmentée -->
+<video id="world-video" playsinline muted autoplay></video>
+<!-- Scène de jeu -->
+<canvas id="scene"></canvas>
+
+<!-- ======================= HUD ======================= -->
+<div id="hud" class="hidden" aria-hidden="true">
+  <div class="hud-top">
+    <div class="hud-left">
+      <div id="hud-hearts" class="hearts"></div>
+      <div id="hud-level" class="hud-level">Niveau 1</div>
+    </div>
+    <div class="hud-right">
+      <div id="hud-score" class="score">0</div>
+      <div id="hud-remaining" class="remaining">Têtes : 0</div>
+    </div>
+  </div>
+
+  <div id="combo" class="combo hidden"><span id="combo-x">x2</span></div>
+
+  <div id="boss-bar" class="boss-bar hidden">
+    <div class="boss-bar-label">TÊTE DE GUERRE</div>
+    <div class="boss-bar-track"><div id="boss-bar-fill"></div></div>
+  </div>
+
+  <canvas id="radar" width="160" height="160" aria-label="Radar des ennemis"></canvas>
+
+  <div id="crosshair" class="crosshair"><span></span></div>
+
+  <div class="hud-bottom">
+    <button id="btn-pause" class="round-btn" aria-label="Pause">❚❚</button>
+    <button id="btn-fire" class="fire-btn" aria-label="Tirer">TIR</button>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<!-- ======================= ÉCRANS ======================= -->
+<main id="screens">
+
+  <!-- Accueil -->
+  <section id="screen-title" class="screen active">
+    <div class="logo">
+      <span class="logo-small">LA GUERRE DES</span>
+      <span class="logo-big">TÊTES</span>
+      <span class="logo-version">2.0 — Réalité augmentée</span>
+    </div>
+    <p class="tagline">Photographie un visage. Il devient ton ennemi.<br>Tourne sur toi-même : ils arrivent de partout.</p>
+    <div class="menu">
+      <button class="btn primary" data-go="screen-levels">Jouer</button>
+      <button class="btn" data-go="screen-faces">Visages</button>
+      <button class="btn" data-go="screen-settings">Réglages</button>
+      <button class="btn ghost" data-go="screen-howto">Comment jouer</button>
+    </div>
+    <p class="footnote">Hommage libre à <em>Face Raiders</em> (HAL Laboratory / Nintendo, 3DS).</p>
+  </section>
+
+  <!-- Sélection de niveau -->
+  <section id="screen-levels" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Niveaux</h1>
+    </header>
+    <div class="tabs">
+      <button class="tab active" data-mode="expert">Campagne</button>
+      <button class="tab" data-mode="ami">Montrer à un ami</button>
+    </div>
+    <div id="level-list" class="level-list"></div>
+  </section>
+
+  <!-- Collection de visages -->
+  <section id="screen-faces" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Collection de visages</h1>
+    </header>
+    <p class="hint">Chaque visage capturé peut devenir une tête ennemie. Vaincs son boss pour le « sauver ».</p>
+    <div id="face-grid" class="face-grid"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-new-face">Capturer un visage</button>
+      <label class="btn file-btn">Importer une photo
+        <input type="file" id="file-face" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <!-- Capture de visage -->
+  <section id="screen-capture" class="screen capture">
+    <header class="screen-head">
+      <button class="back" id="capture-back" aria-label="Retour">←</button>
+      <h1>Aligne le visage</h1>
+    </header>
+    <div class="capture-stage">
+      <video id="capture-video" playsinline muted autoplay></video>
+      <canvas id="capture-preview"></canvas>
+      <svg class="capture-guide" viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="50" rx="30" ry="38" />
+        <circle cx="39" cy="42" r="3.2" />
+        <circle cx="61" cy="42" r="3.2" />
+        <path d="M50 48 L50 58 M46 60 q4 3 8 0" />
+      </svg>
+      <div id="capture-count" class="capture-count hidden"></div>
+    </div>
+    <p class="hint" id="capture-hint">Place les yeux et le nez sur les repères, puis capture.</p>
+    <div class="capture-controls" id="capture-controls">
+      <button class="round-btn" id="btn-switch-cam" aria-label="Changer de caméra">⟳</button>
+      <button class="shutter" id="btn-shutter" aria-label="Capturer"></button>
+      <button class="round-btn" id="btn-capture-cancel" aria-label="Annuler">✕</button>
+    </div>
+    <div class="capture-controls hidden" id="import-controls">
+      <input type="range" id="import-zoom" min="100" max="300" value="120" aria-label="Zoom">
+    </div>
+    <div class="menu hidden" id="capture-confirm">
+      <button class="btn primary" id="btn-face-save">Garder ce visage</button>
+      <button class="btn" id="btn-face-retry">Recommencer</button>
+    </div>
+  </section>
+
+  <!-- Réglages -->
+  <section id="screen-settings" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Réglages</h1>
+    </header>
+    <div class="settings">
+      <label class="row"><span>Sensibilité de visée</span>
+        <input type="range" id="set-sens" min="50" max="250" step="5"></label>
+      <label class="row"><span>Inverser l'axe vertical</span>
+        <input type="checkbox" id="set-inverty"></label>
+      <label class="row"><span>Viser au toucher (sans gyroscope)</span>
+        <input type="checkbox" id="set-touchaim"></label>
+      <label class="row"><span>Caméra (réalité augmentée)</span>
+        <input type="checkbox" id="set-camera"></label>
+      <label class="row"><span>Sons</span>
+        <input type="checkbox" id="set-sound"></label>
+      <label class="row"><span>Vibrations</span>
+        <input type="checkbox" id="set-vibrate"></label>
+      <label class="row"><span>Difficulté</span>
+        <select id="set-difficulty">
+          <option value="facile">Facile</option>
+          <option value="normal">Normale</option>
+          <option value="intense">Intense</option>
+        </select></label>
+    </div>
+    <div class="menu">
+      <button class="btn ghost danger" id="btn-reset">Effacer la progression</button>
+    </div>
+  </section>
+
+  <!-- Aide -->
+  <section id="screen-howto" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Comment jouer</h1>
+    </header>
+    <div class="howto">
+      <p><strong>1.</strong> Capture un visage : le tien, celui d'un ami, ou une photo de ta galerie.</p>
+      <p><strong>2.</strong> Le décor est filmé par la caméra arrière. Les têtes traversent les murs de ta pièce.</p>
+      <p><strong>3.</strong> <strong>Bouge le téléphone</strong> pour viser : le gyroscope fait tourner ta vue sur 360°. Lève-toi, ce jeu ne se joue pas assis.</p>
+      <p><strong>4.</strong> Touche l'écran (ou le bouton TIR) pour tirer sur le réticule.</p>
+      <p><strong>5.</strong> Enchaîne les tirs sans rater pour monter le <strong>combo</strong> et multiplier les points.</p>
+      <p><strong>6.</strong> 🦋 Les papillons rendent de la vie. 💣 Les bombes explosent et nettoient tout autour.</p>
+      <p><strong>7.</strong> À la fin de chaque niveau, un <strong>boss</strong> coiffé d'un casque de samouraï apparaît : vise la <strong>gemme</strong> sur son front.</p>
+      <p class="hint">Sans gyroscope (ordinateur, tablette bloquée) : glisse le doigt ou la souris pour tourner la vue.</p>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen overlay">
+    <h1>Pause</h1>
+    <div class="menu">
+      <button class="btn primary" id="btn-resume">Reprendre</button>
+      <button class="btn" id="btn-recenter">Recentrer la vue</button>
+      <button class="btn" id="btn-restart">Recommencer</button>
+      <button class="btn ghost" id="btn-quit">Quitter le niveau</button>
+    </div>
+  </section>
+
+  <!-- Fin de partie -->
+  <section id="screen-result" class="screen overlay">
+    <h1 id="result-title">Niveau terminé</h1>
+    <div class="result-face"><canvas id="result-portrait" width="180" height="180"></canvas></div>
+    <div class="result-stats">
+      <div><span>Score</span><strong id="result-score">0</strong></div>
+      <div><span>Meilleur combo</span><strong id="result-combo">x1</strong></div>
+      <div><span>Précision</span><strong id="result-acc">0 %</strong></div>
+      <div><span>Record</span><strong id="result-best">0</strong></div>
+    </div>
+    <div id="result-unlock" class="unlock hidden"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-next">Niveau suivant</button>
+      <button class="btn" id="btn-replay">Rejouer</button>
+      <button class="btn ghost" id="btn-result-menu">Menu</button>
+    </div>
+  </section>
+
+  <!-- Écran de démarrage de niveau (permissions) -->
+  <section id="screen-ready" class="screen overlay">
+    <h1 id="ready-title">Niveau 1</h1>
+    <p id="ready-desc" class="tagline"></p>
+    <div id="ready-face" class="ready-face"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-start-level">Lancer la partie</button>
+      <button class="btn ghost" id="btn-ready-back">Retour</button>
+    </div>
+    <p class="footnote" id="ready-perm">Le jeu demandera l'accès à la caméra et aux capteurs de mouvement.</p>
+  </section>
+
+</main>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

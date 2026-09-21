@@ -1,0 +1,16 @@
+{
+  "name": "La Guerre des Têtes 2.0",
+  "short_name": "Guerre des Têtes",
+  "description": "Jeu de tir en réalité augmentée pour téléphone : photographie un visage, il devient ton ennemi.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b0d1a",
+  "theme_color": "#0b0d1a",
+  "lang": "fr",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
