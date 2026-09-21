@@ -1,214 +1,269 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>En développement — La guerre des têtes 2.0</title>
-<style>
-  :root {
-    --bg: #F0EEE6;
-    --surface: #FAF9F5;
-    --border: #E3DED1;
-    --text: #1F1E1D;
-    --muted: #6C6A63;
-    --accent: #D97757;
-    --shadow: 0 1px 2px rgba(31, 30, 29, .05), 0 12px 32px rgba(31, 30, 29, .06);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #1F1E1D;
-      --surface: #262624;
-      --border: #3A3835;
-      --text: #F5F4EF;
-      --muted: #A3A099;
-      --accent: #E08A6C;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px rgba(0, 0, 0, .28);
-    }
-  }
-
-  :root[data-theme="dark"] {
-    --bg: #1F1E1D;
-    --surface: #262624;
-    --border: #3A3835;
-    --text: #F5F4EF;
-    --muted: #A3A099;
-    --accent: #E08A6C;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px rgba(0, 0, 0, .28);
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body { height: 100%; }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 16px;
-  }
-
-  /* Soft halo behind the card, in the accent tone. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(60vmin 60vmin at 50% 42%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
-    pointer-events: none;
-  }
-
-  .card {
-    position: relative;
-    width: 100%;
-    max-width: 560px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    box-shadow: var(--shadow);
-    padding: 56px 40px 44px;
-    text-align: center;
-    animation: rise .7s cubic-bezier(.2, .7, .3, 1) both;
-  }
-
-  .logo {
-    width: 88px;
-    height: 88px;
-    display: block;
-    margin: 0 auto 28px;
-    color: var(--accent);
-    animation: spin 24s linear infinite, breathe 4s ease-in-out infinite;
-  }
-
-  .logo, .mark { fill: currentColor; }
-
-  h1 {
-    margin: 0 0 14px;
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    font-size: clamp(2rem, 7vw, 2.75rem);
-    font-weight: 400;
-    letter-spacing: -.02em;
-    line-height: 1.15;
-  }
-
-  .project {
-    margin: 0 0 32px;
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-
-  .project strong { color: var(--text); font-weight: 500; }
-
-  .dots {
-    display: flex;
-    gap: 7px;
-    justify-content: center;
-    margin-bottom: 32px;
-  }
-
-  .dots span {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 1.4s ease-in-out infinite;
-  }
-
-  .dots span:nth-child(2) { animation-delay: .2s; }
-  .dots span:nth-child(3) { animation-delay: .4s; }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg);
-    color: var(--muted);
-    font-size: .8125rem;
-    letter-spacing: .01em;
-  }
-
-  .badge::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .byline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    margin: 26px 0 0;
-    color: var(--muted);
-    font-size: .8125rem;
-    letter-spacing: .01em;
-  }
-
-  .byline .mark {
-    width: 13px;
-    height: 13px;
-    color: var(--accent);
-    flex: none;
-  }
-
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes breathe {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .72; }
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: .25; transform: translateY(0); }
-    50% { opacity: 1; transform: translateY(-3px); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card, .logo, .dots span { animation: none; }
-  }
-
-  @media (max-width: 480px) {
-    .card { padding: 44px 24px 36px; border-radius: 16px; }
-    .logo { width: 72px; height: 72px; }
-  }
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1a">
+<meta name="description" content="La Guerre des Têtes 2.0 — jeu de tir en réalité augmentée pour téléphone, inspiré de Face Raiders sur Nintendo 3DS.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon.svg">
+<link rel="stylesheet" href="styles.css">
+<title>La Guerre des Têtes 2.0</title>
 </head>
 <body>
-  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
-    <symbol id="claude-mark" viewBox="0 0 24 24">
-      <path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z" />
-    </symbol>
-  </svg>
 
-  <main class="card">
-    <svg class="logo" role="img" aria-label="Logo Claude"><use href="#claude-mark" /></svg>
+<!-- Flux caméra arrière : décor de réalité augmentée -->
+<video id="world-video" playsinline muted autoplay></video>
+<!-- Scène de jeu -->
+<canvas id="scene"></canvas>
 
-    <h1>En développement</h1>
+<!-- ======================= HUD ======================= -->
+<div id="hud" class="hidden" aria-hidden="true">
+  <div class="hud-top">
+    <div class="hud-left">
+      <div id="hud-hearts" class="hearts"></div>
+      <div id="hud-level" class="hud-level">Niveau 1</div>
+    </div>
+    <div class="hud-right">
+      <div id="hud-score" class="score">0</div>
+      <div id="hud-remaining" class="remaining">Têtes : 0</div>
+    </div>
+  </div>
 
-    <p class="project"><strong>La guerre des têtes 2.0</strong><br />Cette page arrive bientôt.</p>
+  <div id="combo" class="combo hidden"><span id="combo-x">x2</span></div>
 
-    <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div id="boss-bar" class="boss-bar hidden">
+    <span class="boss-bar-label">LA GRANDE TÊTE</span>
+    <div class="boss-bar-track"><div id="boss-bar-fill"></div></div>
+  </div>
 
-    <span class="badge">Travaux en cours</span>
+  <canvas id="radar" width="160" height="160" aria-label="Radar des ennemis"></canvas>
 
-    <p class="byline"><svg class="mark" aria-hidden="true"><use href="#claude-mark" /></svg>avec Claude</p>
-  </main>
+  <div id="crosshair" class="crosshair">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="ring-out" cx="50" cy="50" r="34"/>
+      <g class="tick-out">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="ring" cx="50" cy="50" r="34"/>
+      <g class="tick">
+        <line x1="50" y1="6" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="94"/>
+        <line x1="6" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="94" y2="50"/>
+      </g>
+      <circle class="dot" cx="50" cy="50" r="5"/>
+    </svg>
+  </div>
+
+  <div class="hud-bottom">
+    <button id="btn-pause" class="round-btn" aria-label="Pause">❚❚</button>
+    <button id="btn-fire" class="fire-btn" aria-label="Tirer">TIR</button>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<!-- ======================= ÉCRANS ======================= -->
+<main id="screens">
+
+  <!-- Accueil -->
+  <section id="screen-title" class="screen active">
+    <div class="logo">
+      <span class="logo-small">LA GUERRE DES</span>
+      <span class="logo-big">TÊTES</span>
+      <span class="logo-version">2.0 — Réalité augmentée</span>
+    </div>
+    <p class="tagline">Photographie un visage. Il devient ton ennemi.<br>Tourne sur toi-même : ils arrivent de partout.</p>
+    <div class="menu">
+      <button class="btn primary" data-go="screen-levels">Jouer</button>
+      <button class="btn" data-go="screen-faces">Visages</button>
+      <button class="btn" data-go="screen-settings">Réglages</button>
+      <button class="btn ghost" data-go="screen-howto">Comment jouer</button>
+    </div>
+    <p class="footnote">Hommage libre à <em>Face Raiders</em> (HAL Laboratory / Nintendo, 3DS).</p>
+  </section>
+
+  <!-- Sélection de niveau -->
+  <section id="screen-levels" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Niveaux</h1>
+    </header>
+    <div class="tabs">
+      <button class="tab active" data-mode="expert">Campagne</button>
+      <button class="tab" data-mode="ami">Montrer à un ami</button>
+    </div>
+    <div id="level-list" class="level-list"></div>
+  </section>
+
+  <!-- Collection de visages -->
+  <section id="screen-faces" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Collection de visages</h1>
+    </header>
+    <p class="hint">Chaque visage capturé peut devenir une tête ennemie. Vaincs son boss pour le « sauver ».</p>
+    <div id="face-grid" class="face-grid"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-new-face">Capturer un visage</button>
+      <label class="btn file-btn">Importer une photo
+        <input type="file" id="file-face" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <!-- Capture de visage -->
+  <section id="screen-capture" class="screen capture">
+    <header class="screen-head">
+      <button class="back" id="capture-back" aria-label="Retour">←</button>
+      <h1>Aligne le visage</h1>
+    </header>
+    <div class="capture-stage">
+      <video id="capture-video" playsinline muted autoplay></video>
+      <canvas id="capture-preview"></canvas>
+      <svg class="capture-guide" viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="50" rx="30" ry="38" />
+        <circle cx="39" cy="42" r="3.2" />
+        <circle cx="61" cy="42" r="3.2" />
+        <path d="M50 48 L50 58 M46 60 q4 3 8 0" />
+      </svg>
+      <div id="capture-count" class="capture-count hidden"></div>
+    </div>
+    <p class="hint" id="capture-hint">Place les yeux et le nez sur les repères, puis capture.</p>
+    <div class="capture-controls" id="capture-controls">
+      <button class="round-btn" id="btn-switch-cam" aria-label="Changer de caméra">⟳</button>
+      <button class="shutter" id="btn-shutter" aria-label="Capturer"></button>
+      <button class="round-btn" id="btn-capture-cancel" aria-label="Annuler">✕</button>
+    </div>
+    <div class="capture-controls hidden" id="import-controls">
+      <input type="range" id="import-zoom" min="100" max="300" value="120" aria-label="Zoom">
+    </div>
+    <div class="menu hidden" id="capture-confirm">
+      <button class="btn primary" id="btn-face-save">Garder ce visage</button>
+      <button class="btn" id="btn-face-retry">Recommencer</button>
+    </div>
+  </section>
+
+  <!-- Réglages -->
+  <section id="screen-settings" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Réglages</h1>
+    </header>
+    <div class="settings">
+      <label class="row"><span>Sensibilité de visée</span>
+        <input type="range" id="set-sens" min="50" max="250" step="5"></label>
+      <label class="row"><span>Inverser l'axe vertical</span>
+        <input type="checkbox" id="set-inverty"></label>
+      <label class="row"><span>Viser au toucher (sans gyroscope)</span>
+        <input type="checkbox" id="set-touchaim"></label>
+      <label class="row"><span>Caméra (réalité augmentée)</span>
+        <input type="checkbox" id="set-camera"></label>
+      <label class="row"><span>Sons</span>
+        <input type="checkbox" id="set-sound"></label>
+      <label class="row"><span>Vibrations</span>
+        <input type="checkbox" id="set-vibrate"></label>
+      <label class="row"><span>Difficulté</span>
+        <select id="set-difficulty">
+          <option value="facile">Facile</option>
+          <option value="normal">Normale</option>
+          <option value="intense">Intense</option>
+        </select></label>
+    </div>
+    <div class="menu">
+      <button class="btn" id="btn-gyro-test">Tester le gyroscope</button>
+      <button class="btn ghost danger" id="btn-reset">Effacer la progression</button>
+    </div>
+  </section>
+
+  <!-- Diagnostic du gyroscope -->
+  <section id="screen-gyro" class="screen gyro">
+    <header class="screen-head">
+      <button class="back" id="gyro-back" aria-label="Retour">←</button>
+      <h1>Test du gyroscope</h1>
+    </header>
+    <p class="hint">Les repères ci-dessous sont <strong>fixes dans la pièce</strong>. Pose le téléphone :
+      s'ils ne bougent plus, le gyroscope va bien et ce sont les têtes qui volent. S'ils dérivent
+      tout seuls, c'est le capteur.</p>
+    <div class="settings" id="gyro-readout">
+      <div class="row"><span>Source</span><strong id="gyro-source">—</strong></div>
+      <div class="row"><span>Fréquence</span><strong id="gyro-rate">—</strong></div>
+      <div class="row"><span>Cap / élévation / roulis</span><strong id="gyro-angles">—</strong></div>
+      <div class="row"><span>Tremblement (1 s)</span><strong id="gyro-jitter">—</strong></div>
+      <div class="row"><span>Dérive depuis l'ouverture</span><strong id="gyro-drift">—</strong></div>
+    </div>
+    <div class="menu">
+      <button class="btn" id="gyro-recenter">Recentrer</button>
+    </div>
+  </section>
+
+  <!-- Aide -->
+  <section id="screen-howto" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Comment jouer</h1>
+    </header>
+    <div class="howto">
+      <p><strong>1.</strong> Capture un visage : le tien, celui d'un ami, ou une photo de ta galerie.</p>
+      <p><strong>2.</strong> Le décor est filmé par la caméra arrière. Les têtes traversent les murs de ta pièce.</p>
+      <p><strong>3.</strong> <strong>Bouge le téléphone</strong> pour viser : le gyroscope fait tourner ta vue sur 360°. Lève-toi, ce jeu ne se joue pas assis.</p>
+      <p><strong>4.</strong> Touche l'écran (ou le bouton TIR) pour tirer sur le réticule.</p>
+      <p><strong>5.</strong> Enchaîne les tirs sans rater pour monter le <strong>combo</strong> et multiplier les points.</p>
+      <p><strong>6.</strong> 🦋 Les papillons rendent de la vie. 💣 Les bombes explosent et nettoient tout autour.</p>
+      <p><strong>7.</strong> À la fin de chaque niveau, un <strong>boss</strong> coiffé d'un casque de samouraï apparaît : vise la <strong>gemme</strong> sur son front.</p>
+      <p class="hint">Sans gyroscope (ordinateur, tablette bloquée) : glisse le doigt ou la souris pour tourner la vue.</p>
+      <p class="hint">Les têtes volent en permanence : c'est normal qu'elles se déplacent quand tu ne bouges pas.
+        Pour vérifier le capteur lui-même, ouvre <strong>Réglages → Tester le gyroscope</strong>.</p>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen overlay">
+    <h1>Pause</h1>
+    <div class="menu">
+      <button class="btn primary" id="btn-resume">Reprendre</button>
+      <button class="btn" id="btn-recenter">Recentrer la vue</button>
+      <button class="btn" id="btn-restart">Recommencer</button>
+      <button class="btn ghost" id="btn-quit">Quitter le niveau</button>
+    </div>
+  </section>
+
+  <!-- Fin de partie -->
+  <section id="screen-result" class="screen overlay">
+    <h1 id="result-title">Niveau terminé</h1>
+    <div class="result-face"><canvas id="result-portrait" width="180" height="180"></canvas></div>
+    <div class="result-stats">
+      <div><span>Score</span><strong id="result-score">0</strong></div>
+      <div><span>Meilleur combo</span><strong id="result-combo">x1</strong></div>
+      <div><span>Précision</span><strong id="result-acc">0 %</strong></div>
+      <div><span>Record</span><strong id="result-best">0</strong></div>
+    </div>
+    <div id="result-unlock" class="unlock hidden"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-next">Niveau suivant</button>
+      <button class="btn" id="btn-replay">Rejouer</button>
+      <button class="btn ghost" id="btn-result-menu">Menu</button>
+    </div>
+  </section>
+
+  <!-- Écran de démarrage de niveau (permissions) -->
+  <section id="screen-ready" class="screen overlay">
+    <h1 id="ready-title">Niveau 1</h1>
+    <p id="ready-desc" class="tagline"></p>
+    <div id="ready-face" class="ready-face"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-start-level">Lancer la partie</button>
+      <button class="btn ghost" id="btn-ready-back">Retour</button>
+    </div>
+    <p class="footnote" id="ready-perm">Le jeu demandera l'accès à la caméra et aux capteurs de mouvement.</p>
+  </section>
+
+</main>
+
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
