@@ -1,0 +1,13 @@
+{
+  "name": "guerre-des-tetes-2",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "La Guerre des Têtes 2.0 — jeu de tir en réalité augmentée pour téléphone, hommage à Face Raiders (3DS).",
+  "scripts": {
+    "start": "node outils/serveur.mjs",
+    "http": "node outils/serveur.mjs --http",
+    "hors-ligne": "node outils/build-fichier-unique.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

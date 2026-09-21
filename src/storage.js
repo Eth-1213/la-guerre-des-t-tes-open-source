@@ -22,13 +22,22 @@ const DEFAULTS = {
 
 function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
 
+/**
+ * Fusionne la sauvegarde sur les valeurs par défaut.
+ * L'union des clés est nécessaire : `best` et `cleared` sont des
+ * dictionnaires vides par défaut, dont tout le contenu est dynamique.
+ */
 function merge(base, over) {
-  const out = deepClone(base);
-  if (!over || typeof over !== "object") return out;
-  for (const k of Object.keys(base)) {
-    const b = base[k], o = over[k];
-    if (o === undefined) continue;
-    out[k] = b && typeof b === "object" && !Array.isArray(b) ? merge(b, o) : o;
+  if (base === null || typeof base !== "object" || Array.isArray(base)) {
+    return over === undefined ? deepClone(base) : over;
+  }
+  const out = {};
+  const surcharge = over && typeof over === "object" ? over : {};
+  for (const k of new Set([...Object.keys(base), ...Object.keys(surcharge)])) {
+    const b = base[k], o = surcharge[k];
+    if (o === undefined) out[k] = deepClone(b);
+    else if (b && typeof b === "object" && !Array.isArray(b)) out[k] = merge(b, o);
+    else out[k] = o;
   }
   return out;
 }

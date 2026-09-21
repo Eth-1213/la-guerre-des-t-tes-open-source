@@ -11,26 +11,68 @@ kabuto dont la gemme frontale est le point faible.
 Tout tient dans une page web : ni moteur de jeu, ni dépendance, ni build. HTML, CSS et
 JavaScript modules, un canvas 2D avec sa propre projection 3D, et des sons synthétisés à la volée.
 
-## Jouer
+## Tester sans rien publier
 
-Le jeu a besoin d'**HTTPS** (ou de `localhost`) pour accéder à la caméra et aux capteurs de
-mouvement — c'est une exigence des navigateurs, pas du jeu.
+Le jeu a besoin d'une **origine sécurisée** (HTTPS ou `localhost`) pour accéder à la caméra et
+aux capteurs de mouvement : c'est une règle des navigateurs, pas du jeu. Deux façons de tester
+sur ton téléphone sans mettre quoi que ce soit en ligne.
 
-### En local
+### 1. Serveur HTTPS local — réalité augmentée complète
+
+Sur un ordinateur relié au **même Wi-Fi** que le téléphone :
 
 ```bash
-npx http-server -p 8080 .
-# puis ouvre http://localhost:8080 sur l'ordinateur,
-# ou http://<ip-de-ton-ordi>:8080 depuis le téléphone (caméra désactivée hors HTTPS)
+npm start          # ou : node outils/serveur.mjs
 ```
 
-### Sur ton téléphone (recommandé)
+Le serveur fabrique un certificat auto-signé (via OpenSSL, une seule fois) et affiche les
+adresses à ouvrir, par exemple :
 
-Publie le dossier sur n'importe quel hébergement statique en HTTPS. Avec GitHub Pages :
-*Settings → Pages → Source : Deploy from a branch*, puis choisis la branche et le dossier `/`.
-Ouvre ensuite l'URL sur le téléphone et accepte les demandes de caméra et de mouvement.
-« Ajouter à l'écran d'accueil » installe le jeu comme une application (manifeste + service worker,
-jouable hors connexion).
+```
+  Sur ton téléphone (même réseau Wi-Fi) :
+    https://192.168.1.24:8443   (wlan0)
+```
+
+Tape cette adresse dans le navigateur du téléphone. Comme le certificat est auto-signé, une page
+d'avertissement apparaît : accepte-la une fois (*Paramètres avancés → Continuer* sur Android,
+*Afficher les détails → Visiter ce site web* sur iPhone). Ensuite la caméra, le gyroscope, les
+vibrations et la sauvegarde fonctionnent normalement. Rien n'est publié : tout reste sur ton
+réseau local.
+
+Aucune dépendance à installer, le serveur n'utilise que Node (18 ou plus récent).
+
+> Un message d'erreur de certificat concernant le *service worker* peut apparaître dans la
+> console : les navigateurs refusent de l'installer derrière un certificat auto-signé. Cela n'a
+> aucun effet sur le jeu.
+
+Variante sans certificat : `npm run http` sert en HTTP simple. Pratique pour vérifier
+l'interface, mais les navigateurs y bloquent la caméra et les capteurs — le jeu bascule alors
+sur le décor de secours et la visée au doigt.
+
+### 2. Fichier unique — rien à installer
+
+```bash
+npm run hors-ligne   # écrit hors-ligne/guerre-des-tetes.html
+```
+
+Le fichier `hors-ligne/guerre-des-tetes.html` (~115 Ko) contient **tout le jeu** : interface,
+styles et code. Envoie-le au téléphone comme tu veux (AirDrop, message, clé USB, téléchargement
+depuis ce dépôt) et ouvre-le. Il est aussi versionné ici, donc téléchargeable directement sans
+rien lancer.
+
+Limite à connaître : sur une URL `file://`, les navigateurs interdisent la caméra. Le jeu le
+détecte, l'annonce sur l'écran d'accueil et passe au décor de secours avec visée au doigt (ou au
+gyroscope s'il répond). Tout le reste — niveaux, boss, capture par import de photo, scores —
+fonctionne. C'est l'aperçu rapide ; pour la vraie AR, prends la méthode 1.
+
+Ce fichier est **généré** à partir de `src/` : après une modification du code, relance
+`npm run hors-ligne` pour le régénérer.
+
+## Publier plus tard (facultatif)
+
+Sur n'importe quel hébergement statique en HTTPS. Avec GitHub Pages : *Settings → Pages →
+Source : Deploy from a branch*, puis la branche et le dossier `/`. « Ajouter à l'écran d'accueil »
+installe alors le jeu comme une application (manifeste + service worker, jouable hors connexion).
 
 ## Commandes
 
@@ -91,6 +133,9 @@ src/levels.js       les 9 niveaux et les difficultés
 src/game.js         boucle de jeu, vagues, tir, score, rendu, radar
 src/ui.js           navigation entre écrans, HUD, listes
 src/main.js         assemblage et enchaînement des écrans
+outils/serveur.mjs  serveur local HTTP/HTTPS (certificat auto-signé), sans dépendance
+outils/build-fichier-unique.mjs   assemble tout le jeu en un seul .html
+hors-ligne/         le fichier unique généré
 ```
 
 Points techniques notables :

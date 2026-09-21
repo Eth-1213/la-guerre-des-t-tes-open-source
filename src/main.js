@@ -6,7 +6,7 @@ import { sfx } from "./audio.js";
 import { Orientation, CameraFeed } from "./sensors.js";
 import * as F from "./faces.js";
 import { Game } from "./game.js";
-import { indexInMode, nextLevel } from "./levels.js";
+import { LEVELS, indexInMode, nextLevel } from "./levels.js";
 import { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } from "./ui.js";
 import { clamp } from "./util.js";
 
@@ -14,6 +14,10 @@ store.load();
 const settings = store.settings();
 audio.setEnabled(settings.sound);
 audio.setVibrate(settings.vibrate);
+
+// Ouvert par double-clic depuis le système de fichiers : les navigateurs
+// interdisent la caméra sur une URL file://, on le dit plutôt que d'échouer.
+const FICHIER_LOCAL = location.protocol === "file:";
 
 const video = $("#world-video");
 const scene = $("#scene");
@@ -86,9 +90,11 @@ function openReady(level) {
     drawFaceInto(cv, f.tex);
     holder.appendChild(cv);
   });
-  $("#ready-perm").textContent = settings.camera
-    ? "Le jeu va demander l'accès à la caméra et aux capteurs de mouvement."
-    : "Mode sans caméra : glisse le doigt pour tourner la vue.";
+  $("#ready-perm").textContent = FICHIER_LOCAL
+    ? "Fichier local : la caméra est indisponible ici. Décor de secours et visée au doigt."
+    : settings.camera
+      ? "Le jeu va demander l'accès à la caméra et aux capteurs de mouvement."
+      : "Mode sans caméra : glisse le doigt pour tourner la vue.";
   showScreen("screen-ready");
 }
 
@@ -123,7 +129,7 @@ async function startLevel(level) {
 
   // Caméra arrière
   let camOk = false;
-  if (settings.camera) {
+  if (settings.camera && !FICHIER_LOCAL) {
     camOk = await feed.start("environment");
     video.classList.toggle("on", camOk);
     if (!camOk) toast("Caméra indisponible : décor de secours activé.", 3200);
@@ -548,6 +554,15 @@ async function boot() {
   renderLevels(levelMode, store.progress(), openReady);
   showScreen("screen-title");
 
+  if (FICHIER_LOCAL) {
+    const note = document.createElement("p");
+    note.className = "footnote";
+    note.innerHTML = "Version hors ligne : le navigateur interdit la caméra sur un fichier local.<br>" +
+      "Tu joues avec le décor de secours et la visée au doigt. Pour la réalité augmentée complète, " +
+      "lance le serveur HTTPS local (voir le README).";
+    $("#screen-title").appendChild(note);
+  }
+
   // Le gyroscope n'est lu qu'en jeu, mais on détecte sa présence pour l'aide.
   if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission !== "function") {
     orientation.start();
@@ -560,7 +575,7 @@ async function boot() {
 }
 
 // Point d'accès pour le débogage et les tests automatisés.
-window.GDT = { game, orientation, store, faces: () => faces, startLevel };
+window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel };
 
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("dblclick", (e) => e.preventDefault());

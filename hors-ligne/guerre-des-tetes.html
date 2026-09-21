@@ -1,0 +1,3278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1a">
+<meta name="description" content="La Guerre des Têtes 2.0 — jeu de tir en réalité augmentée pour téléphone, inspiré de Face Raiders sur Nintendo 3DS.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iMzUlIiBjeT0iMjglIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMmEzMTYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBiMGQxYSIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0ic2tpbiIgY3g9IjM4JSIgY3k9IjMyJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZDliOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNjMDdhNGEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxnPgogICAgPGVsbGlwc2UgY3g9IjEyOCIgY3k9IjI1MCIgcng9Ijc4IiByeT0iMzQiIGZpbGw9IiMzOGU4ZmYiIG9wYWNpdHk9Ii4yOCIvPgogICAgPGVsbGlwc2UgY3g9IjM4NCIgY3k9IjI1MCIgcng9Ijc4IiByeT0iMzQiIGZpbGw9IiMzOGU4ZmYiIG9wYWNpdHk9Ii4yOCIvPgogICAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjYyIiByPSIxMTgiIGZpbGw9InVybCgjc2tpbikiLz4KICAgIDxwYXRoIGQ9Ik0xMzggMjIyYTExOCAxMTggMCAwIDEgMjM2IDB6IiBmaWxsPSIjMmUzNTUwIi8+CiAgICA8cGF0aCBkPSJNMjE0IDE3NmMxOC01OCA2Ni01OCA4NCAwLTI4LTE4LTU2LTE4LTg0IDB6IiBmaWxsPSIjZmZjYzRkIi8+CiAgICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIxOTYiIHI9IjIwIiBmaWxsPSIjZmYzYjZiIi8+CiAgICA8Y2lyY2xlIGN4PSIyMTQiIGN5PSIyNzIiIHI9IjE2IiBmaWxsPSIjMjAyNDJlIi8+CiAgICA8Y2lyY2xlIGN4PSIyOTgiIGN5PSIyNzIiIHI9IjE2IiBmaWxsPSIjMjAyNDJlIi8+CiAgICA8cGF0aCBkPSJNMjEyIDMzMnE0NCAzMCA4OCAwIiBzdHJva2U9IiM4YzNiM2IiIHN0cm9rZS13aWR0aD0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZjNiNmIiIHN0cm9rZS13aWR0aD0iMTYiPgogICAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjYyIiByPSIxNzYiIHN0cm9rZS1kYXNoYXJyYXk9IjQ4IDYwIiBvcGFjaXR5PSIuODUiLz4KICA8L2c+Cjwvc3ZnPgo=">
+<style>
+/* La Guerre des Têtes 2.0 — interface mobile plein écran */
+
+:root {
+  --bg: #0b0d1a;
+  --ink: #f4f6ff;
+  --accent: #ff3b6b;
+  --accent-2: #38e8ff;
+  --gold: #ffcc4d;
+  --panel: rgba(10, 13, 28, 0.82);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#world-video, #scene {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+}
+#world-video { object-fit: cover; background: #05060d; z-index: 0; display: none; }
+#world-video.on { display: block; }
+#scene { z-index: 1; pointer-events: none; }
+
+.hidden { display: none !important; }
+
+/* ---------------------------- HUD ---------------------------- */
+#hud {
+  position: fixed; inset: 0; z-index: 3;
+  pointer-events: none;
+  padding: calc(var(--safe-t) + 10px) calc(var(--safe-r) + 12px)
+           calc(var(--safe-b) + 10px) calc(var(--safe-l) + 12px);
+  display: flex; flex-direction: column; justify-content: space-between;
+  text-shadow: 0 2px 6px rgba(0,0,0,.8);
+}
+
+.hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.hud-right { text-align: right; }
+.hearts { display: flex; gap: 4px; font-size: 22px; line-height: 1; }
+.hud-level { margin-top: 6px; font-size: 13px; letter-spacing: .12em; opacity: .85; text-transform: uppercase; }
+.score { font-size: 30px; font-weight: bold; color: var(--gold); letter-spacing: .04em; }
+.remaining { font-size: 13px; opacity: .85; }
+
+.combo {
+  position: absolute; top: 24%; left: 50%; transform: translateX(-50%);
+  font-size: 44px; font-weight: bold; color: var(--accent-2);
+  animation: pop .25s ease-out;
+}
+@keyframes pop { from { transform: translateX(-50%) scale(.5); opacity: 0 } to { transform: translateX(-50%) scale(1); opacity: 1 } }
+
+.boss-bar { position: absolute; top: calc(var(--safe-t) + 74px); left: 12%; width: 76%; }
+.boss-bar-label { font-size: 11px; letter-spacing: .3em; text-align: center; color: var(--accent); margin-bottom: 4px; }
+.boss-bar-track { height: 10px; border: 2px solid rgba(255,255,255,.7); border-radius: 6px; overflow: hidden; background: rgba(0,0,0,.45); }
+#boss-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width .2s; }
+
+#radar {
+  position: absolute; right: calc(var(--safe-r) + 12px); top: 50%;
+  transform: translateY(-50%);
+  width: 92px; height: 92px; opacity: .85;
+}
+
+.crosshair {
+  position: absolute; left: 50%; top: 50%;
+  width: 62px; height: 62px; margin: -31px 0 0 -31px;
+  border: 2px solid rgba(255,255,255,.75);
+  border-radius: 50%;
+  transition: transform .08s, border-color .1s;
+}
+.crosshair span {
+  position: absolute; inset: 44%;
+  background: var(--accent-2); border-radius: 50%;
+}
+.crosshair.lock { border-color: var(--accent); transform: scale(.82); }
+.crosshair.shoot { transform: scale(1.25); }
+
+.hud-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+.round-btn, .fire-btn {
+  pointer-events: auto;
+  border: 2px solid rgba(255,255,255,.5);
+  background: rgba(10,13,28,.55);
+  color: var(--ink);
+  border-radius: 50%;
+  font-family: inherit;
+}
+.round-btn { width: 48px; height: 48px; font-size: 15px; }
+.fire-btn {
+  width: 92px; height: 92px; font-size: 19px; font-weight: bold;
+  letter-spacing: .1em;
+  background: radial-gradient(circle at 35% 30%, rgba(255,59,107,.9), rgba(120,10,40,.75));
+  border-color: rgba(255,255,255,.75);
+}
+.fire-btn:active { transform: scale(.94); }
+
+.toast {
+  position: absolute; left: 50%; bottom: 26%; transform: translateX(-50%);
+  background: var(--panel); border: 1px solid rgba(255,255,255,.25);
+  padding: 8px 16px; border-radius: 20px; font-size: 14px; white-space: nowrap;
+}
+
+/* --------------------------- Écrans --------------------------- */
+#screens { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+
+.screen {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: calc(var(--safe-t) + 18px) calc(var(--safe-r) + 20px)
+           calc(var(--safe-b) + 18px) calc(var(--safe-l) + 20px);
+  background: linear-gradient(170deg, #121634 0%, #0b0d1a 60%, #14091a 100%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+}
+.screen.active { display: flex; }
+.screen.overlay { background: rgba(6, 8, 20, .88); backdrop-filter: blur(6px); align-items: center; justify-content: center; text-align: center; }
+
+.screen-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.screen-head h1 { font-size: 22px; margin: 0; letter-spacing: .04em; }
+.back {
+  width: 40px; height: 40px; flex: 0 0 40px;
+  border-radius: 50%; border: 2px solid rgba(255,255,255,.4);
+  background: transparent; color: var(--ink); font-size: 20px; font-family: inherit;
+}
+
+.logo { margin: 8vh 0 10px; text-align: center; line-height: 1; }
+.logo-small { display: block; font-size: 15px; letter-spacing: .5em; opacity: .8; }
+.logo-big {
+  display: block; font-size: 17vw; font-weight: bold; letter-spacing: .02em;
+  line-height: 1.08; padding-top: .1em;
+  background: linear-gradient(180deg, #fff, var(--accent) 60%, #7a0f2c);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 12px rgba(255,59,107,.35));
+}
+.logo-version { display: block; font-size: 13px; letter-spacing: .28em; color: var(--accent-2); margin-top: 6px; }
+.tagline { text-align: center; opacity: .85; font-size: 15px; line-height: 1.5; margin: 6px 20px 18px; }
+.footnote { margin-top: auto; text-align: center; font-size: 11px; opacity: .5; line-height: 1.5; }
+.hint { font-size: 13px; opacity: .7; line-height: 1.5; margin: 0 0 12px; }
+
+.menu { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin: 8px auto 0; }
+.btn {
+  pointer-events: auto;
+  width: 100%; padding: 15px 18px;
+  font-size: 17px; font-family: inherit; color: var(--ink);
+  background: rgba(255,255,255,.07);
+  border: 2px solid rgba(255,255,255,.22);
+  border-radius: 14px;
+  text-align: center;
+}
+.btn:active { transform: scale(.98); }
+.btn.primary { background: linear-gradient(120deg, var(--accent), #b3154a); border-color: rgba(255,255,255,.5); font-weight: bold; }
+.btn.ghost { background: transparent; opacity: .8; }
+.btn.danger { border-color: rgba(255,59,107,.6); color: #ff8ea8; }
+.file-btn { position: relative; overflow: hidden; display: block; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; }
+
+/* Niveaux */
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; }
+.tab {
+  flex: 1; padding: 11px; border-radius: 10px; font-family: inherit; font-size: 14px;
+  background: rgba(255,255,255,.06); border: 2px solid transparent; color: var(--ink);
+}
+.tab.active { border-color: var(--accent); background: rgba(255,59,107,.16); }
+
+.level-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; width: 100%; max-width: 560px; margin: 0 auto; }
+.level-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px; border-radius: 14px; text-align: left;
+  background: rgba(255,255,255,.06);
+  border: 2px solid rgba(255,255,255,.14);
+  color: var(--ink); font-family: inherit; width: 100%;
+}
+.level-card.locked { opacity: .45; }
+.level-card .num {
+  width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 19px; font-weight: bold;
+  background: rgba(255,59,107,.22); border: 1px solid rgba(255,59,107,.5);
+}
+.level-card .meta { flex: 1; min-width: 0; }
+.level-card .meta b { display: block; font-size: 16px; margin-bottom: 3px; }
+.level-card .meta small { opacity: .7; font-size: 12px; display: block; line-height: 1.4; }
+.level-card .best { font-size: 12px; color: var(--gold); white-space: nowrap; }
+
+/* Visages */
+.face-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.face-cell { position: relative; text-align: center; }
+.face-cell canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); background: #000; }
+.face-cell.saved canvas { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,204,77,.4); }
+.face-cell span { display: block; font-size: 11px; margin-top: 4px; opacity: .75; }
+.face-cell .del {
+  position: absolute; top: -4px; right: -4px; width: 24px; height: 24px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,.8); color: #fff; font-size: 13px; font-family: inherit;
+}
+.face-empty { grid-column: 1/-1; opacity: .6; font-size: 14px; text-align: center; padding: 22px 0; }
+
+/* Capture */
+.screen.capture { padding-bottom: calc(var(--safe-b) + 10px); }
+.capture-stage {
+  position: relative; flex: 1; min-height: 240px;
+  border-radius: 20px; overflow: hidden; background: #000;
+  margin-bottom: 12px;
+}
+#capture-video, #capture-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#capture-preview { display: none; }
+#capture-preview.on { display: block; }
+#capture-video.mirror { transform: scaleX(-1); }
+.capture-guide { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: rgba(56,232,255,.85); stroke-width: .8; }
+.capture-guide ellipse { stroke-dasharray: 3 2.2; }
+.capture-count {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 22vw; font-weight: bold; color: #fff; text-shadow: 0 0 30px var(--accent);
+}
+.capture-controls { display: flex; align-items: center; justify-content: space-around; gap: 16px; padding: 4px 0 8px; }
+.shutter {
+  width: 74px; height: 74px; border-radius: 50%;
+  border: 4px solid #fff; background: var(--accent);
+}
+.shutter:active { transform: scale(.92); }
+#import-zoom { width: 100%; }
+
+/* Réglages */
+.settings { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; }
+.row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 14px 4px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 15px;
+}
+.row input[type="range"] { flex: 0 0 48%; }
+.row input[type="checkbox"] { width: 26px; height: 26px; accent-color: var(--accent); }
+.row select { padding: 8px; border-radius: 8px; background: rgba(255,255,255,.1); color: var(--ink); border: 1px solid rgba(255,255,255,.2); font-family: inherit; font-size: 14px; }
+
+.howto p { font-size: 15px; line-height: 1.6; margin: 0 0 14px; opacity: .92; }
+
+/* Résultat */
+.screen.overlay h1 { font-size: 28px; margin: 0 0 12px; }
+.result-face canvas { width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--gold); background: #000; }
+.result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin: 18px 0; }
+.result-stats div { display: flex; flex-direction: column; }
+.result-stats span { font-size: 11px; letter-spacing: .16em; opacity: .6; text-transform: uppercase; }
+.result-stats strong { font-size: 22px; color: var(--gold); }
+.unlock {
+  border: 1px dashed var(--accent-2); border-radius: 12px;
+  padding: 10px 14px; font-size: 14px; color: var(--accent-2); margin-bottom: 14px; max-width: 320px;
+}
+.ready-face { margin: 10px 0 4px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.ready-face canvas { width: 66px; height: 66px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); }
+
+@media (min-height: 760px) { .logo-big { font-size: 15vw; } }
+@media (orientation: landscape) {
+  .logo { margin-top: 2vh; }
+  .logo-big { font-size: 10vh; }
+  .fire-btn { width: 76px; height: 76px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combo { animation: none; }
+}
+
+</style>
+<title>La Guerre des Têtes 2.0</title>
+</head>
+<body>
+
+<!-- Flux caméra arrière : décor de réalité augmentée -->
+<video id="world-video" playsinline muted autoplay></video>
+<!-- Scène de jeu -->
+<canvas id="scene"></canvas>
+
+<!-- ======================= HUD ======================= -->
+<div id="hud" class="hidden" aria-hidden="true">
+  <div class="hud-top">
+    <div class="hud-left">
+      <div id="hud-hearts" class="hearts"></div>
+      <div id="hud-level" class="hud-level">Niveau 1</div>
+    </div>
+    <div class="hud-right">
+      <div id="hud-score" class="score">0</div>
+      <div id="hud-remaining" class="remaining">Têtes : 0</div>
+    </div>
+  </div>
+
+  <div id="combo" class="combo hidden"><span id="combo-x">x2</span></div>
+
+  <div id="boss-bar" class="boss-bar hidden">
+    <div class="boss-bar-label">TÊTE DE GUERRE</div>
+    <div class="boss-bar-track"><div id="boss-bar-fill"></div></div>
+  </div>
+
+  <canvas id="radar" width="160" height="160" aria-label="Radar des ennemis"></canvas>
+
+  <div id="crosshair" class="crosshair"><span></span></div>
+
+  <div class="hud-bottom">
+    <button id="btn-pause" class="round-btn" aria-label="Pause">❚❚</button>
+    <button id="btn-fire" class="fire-btn" aria-label="Tirer">TIR</button>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<!-- ======================= ÉCRANS ======================= -->
+<main id="screens">
+
+  <!-- Accueil -->
+  <section id="screen-title" class="screen active">
+    <div class="logo">
+      <span class="logo-small">LA GUERRE DES</span>
+      <span class="logo-big">TÊTES</span>
+      <span class="logo-version">2.0 — Réalité augmentée</span>
+    </div>
+    <p class="tagline">Photographie un visage. Il devient ton ennemi.<br>Tourne sur toi-même : ils arrivent de partout.</p>
+    <div class="menu">
+      <button class="btn primary" data-go="screen-levels">Jouer</button>
+      <button class="btn" data-go="screen-faces">Visages</button>
+      <button class="btn" data-go="screen-settings">Réglages</button>
+      <button class="btn ghost" data-go="screen-howto">Comment jouer</button>
+    </div>
+    <p class="footnote">Hommage libre à <em>Face Raiders</em> (HAL Laboratory / Nintendo, 3DS).</p>
+  </section>
+
+  <!-- Sélection de niveau -->
+  <section id="screen-levels" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Niveaux</h1>
+    </header>
+    <div class="tabs">
+      <button class="tab active" data-mode="expert">Campagne</button>
+      <button class="tab" data-mode="ami">Montrer à un ami</button>
+    </div>
+    <div id="level-list" class="level-list"></div>
+  </section>
+
+  <!-- Collection de visages -->
+  <section id="screen-faces" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Collection de visages</h1>
+    </header>
+    <p class="hint">Chaque visage capturé peut devenir une tête ennemie. Vaincs son boss pour le « sauver ».</p>
+    <div id="face-grid" class="face-grid"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-new-face">Capturer un visage</button>
+      <label class="btn file-btn">Importer une photo
+        <input type="file" id="file-face" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <!-- Capture de visage -->
+  <section id="screen-capture" class="screen capture">
+    <header class="screen-head">
+      <button class="back" id="capture-back" aria-label="Retour">←</button>
+      <h1>Aligne le visage</h1>
+    </header>
+    <div class="capture-stage">
+      <video id="capture-video" playsinline muted autoplay></video>
+      <canvas id="capture-preview"></canvas>
+      <svg class="capture-guide" viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="50" rx="30" ry="38" />
+        <circle cx="39" cy="42" r="3.2" />
+        <circle cx="61" cy="42" r="3.2" />
+        <path d="M50 48 L50 58 M46 60 q4 3 8 0" />
+      </svg>
+      <div id="capture-count" class="capture-count hidden"></div>
+    </div>
+    <p class="hint" id="capture-hint">Place les yeux et le nez sur les repères, puis capture.</p>
+    <div class="capture-controls" id="capture-controls">
+      <button class="round-btn" id="btn-switch-cam" aria-label="Changer de caméra">⟳</button>
+      <button class="shutter" id="btn-shutter" aria-label="Capturer"></button>
+      <button class="round-btn" id="btn-capture-cancel" aria-label="Annuler">✕</button>
+    </div>
+    <div class="capture-controls hidden" id="import-controls">
+      <input type="range" id="import-zoom" min="100" max="300" value="120" aria-label="Zoom">
+    </div>
+    <div class="menu hidden" id="capture-confirm">
+      <button class="btn primary" id="btn-face-save">Garder ce visage</button>
+      <button class="btn" id="btn-face-retry">Recommencer</button>
+    </div>
+  </section>
+
+  <!-- Réglages -->
+  <section id="screen-settings" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Réglages</h1>
+    </header>
+    <div class="settings">
+      <label class="row"><span>Sensibilité de visée</span>
+        <input type="range" id="set-sens" min="50" max="250" step="5"></label>
+      <label class="row"><span>Inverser l'axe vertical</span>
+        <input type="checkbox" id="set-inverty"></label>
+      <label class="row"><span>Viser au toucher (sans gyroscope)</span>
+        <input type="checkbox" id="set-touchaim"></label>
+      <label class="row"><span>Caméra (réalité augmentée)</span>
+        <input type="checkbox" id="set-camera"></label>
+      <label class="row"><span>Sons</span>
+        <input type="checkbox" id="set-sound"></label>
+      <label class="row"><span>Vibrations</span>
+        <input type="checkbox" id="set-vibrate"></label>
+      <label class="row"><span>Difficulté</span>
+        <select id="set-difficulty">
+          <option value="facile">Facile</option>
+          <option value="normal">Normale</option>
+          <option value="intense">Intense</option>
+        </select></label>
+    </div>
+    <div class="menu">
+      <button class="btn ghost danger" id="btn-reset">Effacer la progression</button>
+    </div>
+  </section>
+
+  <!-- Aide -->
+  <section id="screen-howto" class="screen">
+    <header class="screen-head">
+      <button class="back" data-go="screen-title" aria-label="Retour">←</button>
+      <h1>Comment jouer</h1>
+    </header>
+    <div class="howto">
+      <p><strong>1.</strong> Capture un visage : le tien, celui d'un ami, ou une photo de ta galerie.</p>
+      <p><strong>2.</strong> Le décor est filmé par la caméra arrière. Les têtes traversent les murs de ta pièce.</p>
+      <p><strong>3.</strong> <strong>Bouge le téléphone</strong> pour viser : le gyroscope fait tourner ta vue sur 360°. Lève-toi, ce jeu ne se joue pas assis.</p>
+      <p><strong>4.</strong> Touche l'écran (ou le bouton TIR) pour tirer sur le réticule.</p>
+      <p><strong>5.</strong> Enchaîne les tirs sans rater pour monter le <strong>combo</strong> et multiplier les points.</p>
+      <p><strong>6.</strong> 🦋 Les papillons rendent de la vie. 💣 Les bombes explosent et nettoient tout autour.</p>
+      <p><strong>7.</strong> À la fin de chaque niveau, un <strong>boss</strong> coiffé d'un casque de samouraï apparaît : vise la <strong>gemme</strong> sur son front.</p>
+      <p class="hint">Sans gyroscope (ordinateur, tablette bloquée) : glisse le doigt ou la souris pour tourner la vue.</p>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen overlay">
+    <h1>Pause</h1>
+    <div class="menu">
+      <button class="btn primary" id="btn-resume">Reprendre</button>
+      <button class="btn" id="btn-recenter">Recentrer la vue</button>
+      <button class="btn" id="btn-restart">Recommencer</button>
+      <button class="btn ghost" id="btn-quit">Quitter le niveau</button>
+    </div>
+  </section>
+
+  <!-- Fin de partie -->
+  <section id="screen-result" class="screen overlay">
+    <h1 id="result-title">Niveau terminé</h1>
+    <div class="result-face"><canvas id="result-portrait" width="180" height="180"></canvas></div>
+    <div class="result-stats">
+      <div><span>Score</span><strong id="result-score">0</strong></div>
+      <div><span>Meilleur combo</span><strong id="result-combo">x1</strong></div>
+      <div><span>Précision</span><strong id="result-acc">0 %</strong></div>
+      <div><span>Record</span><strong id="result-best">0</strong></div>
+    </div>
+    <div id="result-unlock" class="unlock hidden"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-next">Niveau suivant</button>
+      <button class="btn" id="btn-replay">Rejouer</button>
+      <button class="btn ghost" id="btn-result-menu">Menu</button>
+    </div>
+  </section>
+
+  <!-- Écran de démarrage de niveau (permissions) -->
+  <section id="screen-ready" class="screen overlay">
+    <h1 id="ready-title">Niveau 1</h1>
+    <p id="ready-desc" class="tagline"></p>
+    <div id="ready-face" class="ready-face"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-start-level">Lancer la partie</button>
+      <button class="btn ghost" id="btn-ready-back">Retour</button>
+    </div>
+    <p class="footnote" id="ready-perm">Le jeu demandera l'accès à la caméra et aux capteurs de mouvement.</p>
+  </section>
+
+</main>
+
+<script>
+/* La Guerre des Têtes 2.0 — version fichier unique, générée par outils/build-fichier-unique.mjs */
+
+"use strict";
+
+const __modules = {};
+
+__modules["util.js"] = (function () {
+// Outils mathématiques et petites fonctions partagées.
+
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a = 1, b) => (b === undefined ? Math.random() * a : a + Math.random() * (b - a));
+const randInt = (a, b) => Math.floor(rand(a, b + 1));
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const deg = (r) => (r * 180) / Math.PI;
+const rad = (d) => (d * Math.PI) / 180;
+
+/** Ramène un angle dans l'intervalle ]-PI, PI]. */
+function wrapAngle(a) {
+  a = (a + Math.PI) % TAU;
+  if (a < 0) a += TAU;
+  return a - Math.PI;
+}
+
+/** Interpolation d'angles par le plus court chemin. */
+function lerpAngle(a, b, t) {
+  return a + wrapAngle(b - a) * t;
+}
+
+const v3 = (x = 0, y = 0, z = 0) => ({ x, y, z });
+const vAdd = (a, b) => v3(a.x + b.x, a.y + b.y, a.z + b.z);
+const vSub = (a, b) => v3(a.x - b.x, a.y - b.y, a.z - b.z);
+const vScale = (a, s) => v3(a.x * s, a.y * s, a.z * s);
+const vDot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+const vLen = (a) => Math.hypot(a.x, a.y, a.z);
+
+function vNorm(a) {
+  const l = vLen(a) || 1;
+  return v3(a.x / l, a.y / l, a.z / l);
+}
+
+/** Point sur une sphère de rayon r, vu depuis le joueur (yaw horizontal, pitch vertical). */
+function sphere(yaw, pitch, r) {
+  const cp = Math.cos(pitch);
+  return v3(Math.sin(yaw) * cp * r, Math.sin(pitch) * r, -Math.cos(yaw) * cp * r);
+}
+
+/** Direction (yaw, pitch) d'un point du monde. */
+function toSpherical(p) {
+  const r = vLen(p) || 1e-6;
+  return { yaw: Math.atan2(p.x, -p.z), pitch: Math.asin(clamp(p.y / r, -1, 1)), r };
+}
+
+/** Caméra : repère orthonormé construit depuis yaw/pitch. */
+class Camera {
+  constructor() {
+    this.yaw = 0;
+    this.pitch = 0;
+    this.fov = rad(68);
+    this.w = 1;
+    this.h = 1;
+    this.focal = 1;
+    this.right = v3(1, 0, 0);
+    this.up = v3(0, 1, 0);
+    this.fwd = v3(0, 0, -1);
+  }
+
+  resize(w, h) {
+    this.w = w;
+    this.h = h;
+    // Champ de vision vertical constant : la scène colle au cadrage de la caméra du téléphone.
+    this.focal = h / 2 / Math.tan(this.fov / 2);
+  }
+
+  update() {
+    const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw);
+    const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    this.fwd = v3(sy * cp, sp, -cy * cp);
+    this.right = v3(cy, 0, sy);
+    this.up = v3(-sy * sp, cp, cy * sp);
+  }
+
+  /** Projette un point du monde ; renvoie null si derrière la caméra. */
+  project(p, out = {}) {
+    const z = vDot(p, this.fwd);
+    if (z <= 0.08) return null;
+    const x = vDot(p, this.right);
+    const y = vDot(p, this.up);
+    const k = this.focal / z;
+    out.x = this.w / 2 + x * k;
+    out.y = this.h / 2 - y * k;
+    out.z = z;
+    out.scale = k;
+    return out;
+  }
+}
+
+/** File d'événements simple (écrans, sons, succès…). */
+class Emitter {
+  constructor() { this.map = new Map(); }
+  on(evt, fn) {
+    if (!this.map.has(evt)) this.map.set(evt, new Set());
+    this.map.get(evt).add(fn);
+    return () => this.map.get(evt).delete(fn);
+  }
+  emit(evt, data) {
+    const set = this.map.get(evt);
+    if (set) for (const fn of set) fn(data);
+  }
+}
+
+function formatScore(n) {
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+return { TAU, clamp, lerp, rand, randInt, pick, deg, rad, wrapAngle, lerpAngle, v3, vAdd, vSub, vScale, vDot, vLen, vNorm, sphere, toSpherical, Camera, Emitter, formatScore };
+})();
+
+__modules["storage.js"] = (function () {
+// Sauvegarde locale : réglages, progression, collection de visages.
+
+const KEY = "gdt2:save:v1";
+
+const DEFAULTS = {
+  settings: {
+    sensitivity: 120,     // % appliqué au balayage tactile (le gyroscope reste 1:1)
+    invertY: false,
+    touchAim: false,      // tirer là où le doigt touche plutôt qu'au réticule
+    camera: true,
+    sound: true,
+    vibrate: true,
+    difficulty: "normal",
+  },
+  progress: {
+    unlocked: { expert: 1, ami: 1 },  // nombre de niveaux ouverts par mode
+    best: {},                          // id de niveau -> meilleur score
+    cleared: {},                       // id de niveau -> true
+  },
+  faces: [],   // { id, name, data (dataURL), saved, created }
+};
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+/**
+ * Fusionne la sauvegarde sur les valeurs par défaut.
+ * L'union des clés est nécessaire : `best` et `cleared` sont des
+ * dictionnaires vides par défaut, dont tout le contenu est dynamique.
+ */
+function merge(base, over) {
+  if (base === null || typeof base !== "object" || Array.isArray(base)) {
+    return over === undefined ? deepClone(base) : over;
+  }
+  const out = {};
+  const surcharge = over && typeof over === "object" ? over : {};
+  for (const k of new Set([...Object.keys(base), ...Object.keys(surcharge)])) {
+    const b = base[k], o = surcharge[k];
+    if (o === undefined) out[k] = deepClone(b);
+    else if (b && typeof b === "object" && !Array.isArray(b)) out[k] = merge(b, o);
+    else out[k] = o;
+  }
+  return out;
+}
+
+let state = deepClone(DEFAULTS);
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) state = merge(DEFAULTS, JSON.parse(raw));
+  } catch (err) {
+    console.warn("Sauvegarde illisible, remise à zéro.", err);
+    state = deepClone(DEFAULTS);
+  }
+  return state;
+}
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch (err) {
+    // Quota dépassé : on sacrifie les plus vieux visages plutôt que de tout perdre.
+    console.warn("Sauvegarde impossible, purge des visages les plus anciens.", err);
+    while (state.faces.length > 1) {
+      state.faces.shift();
+      try { localStorage.setItem(KEY, JSON.stringify(state)); return; } catch (e) { /* on continue */ }
+    }
+  }
+}
+
+const get = () => state;
+const settings = () => state.settings;
+const progress = () => state.progress;
+const faces = () => state.faces;
+
+function setSetting(key, value) {
+  state.settings[key] = value;
+  save();
+}
+
+function addFace(dataURL, name) {
+  const face = {
+    id: "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name: name || "Visage " + (state.faces.length + 1),
+    data: dataURL,
+    saved: false,
+    created: Date.now(),
+  };
+  state.faces.push(face);
+  if (state.faces.length > 12) state.faces.shift(); // limite raisonnable pour localStorage
+  save();
+  return face;
+}
+
+function removeFace(id) {
+  state.faces = state.faces.filter((f) => f.id !== id);
+  save();
+}
+
+function markFaceSaved(id) {
+  const f = state.faces.find((x) => x.id === id);
+  if (f && !f.saved) { f.saved = true; save(); return true; }
+  return false;
+}
+
+function recordResult(levelId, score, cleared) {
+  const p = state.progress;
+  if (!p.best[levelId] || score > p.best[levelId]) p.best[levelId] = Math.round(score);
+  if (cleared) p.cleared[levelId] = true;
+  save();
+}
+
+function unlock(mode, count) {
+  const p = state.progress;
+  if (count > (p.unlocked[mode] || 0)) { p.unlocked[mode] = count; save(); return true; }
+  return false;
+}
+
+function reset() {
+  state = deepClone(DEFAULTS);
+  try { localStorage.removeItem(KEY); } catch (e) { /* rien à faire */ }
+}
+
+return { load, save, get, settings, progress, faces, setSetting, addFace, removeFace, markFaceSaved, recordResult, unlock, reset };
+})();
+
+__modules["audio.js"] = (function () {
+// Sons synthétisés à la volée : aucun fichier à télécharger.
+
+let ctx = null;
+let master = null;
+let enabled = true;
+let vibeOn = true;
+
+function setEnabled(v) { enabled = v; }
+function setVibrate(v) { vibeOn = v; }
+
+/** À appeler depuis un geste utilisateur (iOS exige un déverrouillage). */
+function unlock() {
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.35;
+    master.connect(ctx.destination);
+  }
+  if (ctx.state === "suspended") ctx.resume();
+}
+
+function tone({ freq = 440, to = freq, dur = 0.12, type = "square", gain = 0.3, delay = 0 }) {
+  if (!enabled || !ctx) return;
+  const t0 = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (to !== freq) osc.frequency.exponentialRampToValueAtTime(Math.max(20, to), t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g).connect(master);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+}
+
+function noise({ dur = 0.25, gain = 0.3, freq = 900, q = 1, delay = 0 }) {
+  if (!enabled || !ctx) return;
+  const t0 = ctx.currentTime + delay;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const filt = ctx.createBiquadFilter();
+  filt.type = "bandpass";
+  filt.frequency.value = freq;
+  filt.Q.value = q;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(gain, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(filt).connect(g).connect(master);
+  src.start(t0);
+}
+
+const sfx = {
+  shoot: () => tone({ freq: 880, to: 220, dur: 0.09, type: "square", gain: 0.18 }),
+  miss: () => tone({ freq: 200, to: 120, dur: 0.08, type: "triangle", gain: 0.1 }),
+  hit: (combo = 1) => {
+    const f = 420 + Math.min(combo, 12) * 55;
+    tone({ freq: f, to: f * 1.6, dur: 0.13, type: "square", gain: 0.22 });
+    noise({ dur: 0.18, freq: 1600, gain: 0.16 });
+  },
+  armor: () => tone({ freq: 160, to: 90, dur: 0.14, type: "sawtooth", gain: 0.2 }),
+  hurt: () => {
+    tone({ freq: 240, to: 70, dur: 0.32, type: "sawtooth", gain: 0.3 });
+    noise({ dur: 0.3, freq: 320, gain: 0.25 });
+  },
+  heal: () => {
+    tone({ freq: 660, dur: 0.1, type: "sine", gain: 0.2 });
+    tone({ freq: 990, dur: 0.16, type: "sine", gain: 0.18, delay: 0.09 });
+  },
+  bomb: () => {
+    noise({ dur: 0.7, freq: 180, q: 0.6, gain: 0.45 });
+    tone({ freq: 90, to: 30, dur: 0.6, type: "sawtooth", gain: 0.3 });
+  },
+  spawn: () => tone({ freq: 120, to: 420, dur: 0.22, type: "sine", gain: 0.14 }),
+  bossIn: () => {
+    [110, 138, 165].forEach((f, i) => tone({ freq: f, to: f * 1.5, dur: 0.5, type: "sawtooth", gain: 0.22, delay: i * 0.16 }));
+  },
+  bossHit: () => {
+    tone({ freq: 300, to: 900, dur: 0.2, type: "square", gain: 0.3 });
+    noise({ dur: 0.25, freq: 2200, gain: 0.2 });
+  },
+  win: () => [523, 659, 784, 1047].forEach((f, i) => tone({ freq: f, dur: 0.22, type: "triangle", gain: 0.24, delay: i * 0.13 })),
+  lose: () => [440, 392, 330, 247].forEach((f, i) => tone({ freq: f, dur: 0.3, type: "triangle", gain: 0.24, delay: i * 0.17 })),
+  ui: () => tone({ freq: 620, to: 780, dur: 0.06, type: "sine", gain: 0.12 }),
+  shutter: () => { noise({ dur: 0.08, freq: 3000, gain: 0.3 }); tone({ freq: 1400, to: 600, dur: 0.07, type: "square", gain: 0.12 }); },
+};
+
+function vibrate(pattern) {
+  if (!vibeOn || !navigator.vibrate) return;
+  try { navigator.vibrate(pattern); } catch (e) { /* ignoré */ }
+}
+
+return { setEnabled, setVibrate, unlock, sfx, vibrate };
+})();
+
+__modules["sensors.js"] = (function () {
+// Capteurs du téléphone : gyroscope (orientation de la vue) et caméra (décor AR).
+
+const { clamp, wrapAngle, lerpAngle, rad } = __modules["util.js"];
+/* ------------------------------------------------------------------ */
+/*  Orientation : gyroscope + repli au doigt                          */
+/* ------------------------------------------------------------------ */
+
+class Orientation {
+  constructor() {
+    this.yaw = 0;            // lissé, consommé par la caméra de jeu
+    this.pitch = 0;
+    this.rawYaw = 0;         // brut, issu du capteur ou du doigt
+    this.rawPitch = 0;
+    this.offsetYaw = 0;      // « recentrer la vue »
+    this.hasGyro = false;
+    this.active = false;
+    this.sensitivity = 1.2;
+    this.invertY = false;
+    this._onDevice = this._onDevice.bind(this);
+    this._drag = null;
+  }
+
+  /** iOS : la permission doit être demandée depuis un geste utilisateur. */
+  async requestPermission() {
+    const DOE = window.DeviceOrientationEvent;
+    if (DOE && typeof DOE.requestPermission === "function") {
+      try {
+        const res = await DOE.requestPermission();
+        return res === "granted";
+      } catch (err) {
+        return false;
+      }
+    }
+    return true; // Android / navigateurs sans garde-fou
+  }
+
+  start() {
+    if (this.active) return;
+    this.active = true;
+    window.addEventListener("deviceorientation", this._onDevice, true);
+    window.addEventListener("deviceorientationabsolute", this._onDevice, true);
+  }
+
+  stop() {
+    this.active = false;
+    window.removeEventListener("deviceorientation", this._onDevice, true);
+    window.removeEventListener("deviceorientationabsolute", this._onDevice, true);
+  }
+
+  _onDevice(e) {
+    if (e.alpha == null && e.beta == null && e.gamma == null) return;
+    const a = rad(e.alpha || 0), b = rad(e.beta || 0), g = rad(e.gamma || 0);
+    const cA = Math.cos(a), sA = Math.sin(a);
+    const cB = Math.cos(b), sB = Math.sin(b);
+    const cG = Math.cos(g), sG = Math.sin(g);
+
+    // Direction visée par la caméra arrière = R(alpha,beta,gamma) appliqué à (0,0,-1),
+    // exprimée dans le repère terrestre (x est, y nord, z haut).
+    const ex = -(cA * sG + cG * sA * sB);
+    const ny = -(sA * sG - cA * cG * sB);
+    const uz = -(cB * cG);
+
+    this.hasGyro = true;
+    this.rawYaw = Math.atan2(ex, ny);
+    this.rawPitch = Math.asin(clamp(uz, -1, 1));
+  }
+
+  /** Repli sans gyroscope : glisser le doigt (ou la souris) pour tourner. */
+  attachDrag(el) {
+    const down = (x, y, id) => { this._drag = { x, y, id }; };
+    const move = (x, y) => {
+      if (!this._drag) return;
+      const dx = x - this._drag.x, dy = y - this._drag.y;
+      this._drag.x = x; this._drag.y = y;
+      if (this.hasGyro) return; // le capteur a pris la main
+      const k = 0.0032 * this.sensitivity;
+      this.rawYaw = wrapAngle(this.rawYaw - dx * k);
+      this.rawPitch = clamp(this.rawPitch + dy * k * (this.invertY ? -1 : 1), -rad(85), rad(85));
+    };
+    const up = () => { this._drag = null; };
+
+    el.addEventListener("touchstart", (e) => {
+      const t = e.changedTouches[0];
+      down(t.clientX, t.clientY, t.identifier);
+    }, { passive: true });
+    el.addEventListener("touchmove", (e) => {
+      if (!this._drag) return;
+      for (const t of e.changedTouches) if (t.identifier === this._drag.id) move(t.clientX, t.clientY);
+    }, { passive: true });
+    el.addEventListener("touchend", up, { passive: true });
+    el.addEventListener("touchcancel", up, { passive: true });
+
+    el.addEventListener("mousedown", (e) => down(e.clientX, e.clientY, "m"));
+    window.addEventListener("mousemove", (e) => { if (this._drag) move(e.clientX, e.clientY); });
+    window.addEventListener("mouseup", up);
+  }
+
+  recenter() {
+    this.offsetYaw = this.rawYaw;
+    this.yaw = 0;
+  }
+
+  /** Lissage : évite les tremblements du capteur sans ajouter de latence perceptible. */
+  update(dt) {
+    const target = wrapAngle(this.rawYaw - this.offsetYaw);
+    const tp = clamp(this.invertY && this.hasGyro ? -this.rawPitch : this.rawPitch, -rad(88), rad(88));
+    const k = 1 - Math.pow(0.0001, dt); // ~ suivi immédiat, filtré à haute fréquence
+    this.yaw = lerpAngle(this.yaw, target, k);
+    this.pitch = this.pitch + (tp - this.pitch) * k;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Caméra                                                             */
+/* ------------------------------------------------------------------ */
+
+class CameraFeed {
+  constructor(videoEl) {
+    this.video = videoEl;
+    this.stream = null;
+    this.facing = "environment";
+    this.error = null;
+  }
+
+  get supported() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  async start(facing = this.facing) {
+    this.facing = facing;
+    this.stop();
+    if (!this.supported) {
+      this.error = "no-api";
+      return false;
+    }
+    const tries = [
+      { video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      { video: { facingMode: facing }, audio: false },
+      { video: true, audio: false },
+    ];
+    for (const constraints of tries) {
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.video.srcObject = this.stream;
+        this.video.setAttribute("playsinline", "");
+        await this.video.play().catch(() => {});
+        this.error = null;
+        return true;
+      } catch (err) {
+        this.error = err && err.name ? err.name : "error";
+      }
+    }
+    return false;
+  }
+
+  stop() {
+    if (this.stream) {
+      for (const track of this.stream.getTracks()) track.stop();
+      this.stream = null;
+    }
+    if (this.video) this.video.srcObject = null;
+  }
+
+  get ready() {
+    return !!this.stream && this.video.readyState >= 2;
+  }
+}
+
+return { Orientation, CameraFeed };
+})();
+
+__modules["faces.js"] = (function () {
+// Fabrique des « textures de visage » : capture caméra, import photo,
+// masque circulaire et visages de secours dessinés par le code.
+
+const { rand, pick, TAU } = __modules["util.js"];
+const TEX_SIZE = 256;
+const CROP_SIZE = 192; // taille stockée (JPEG) : compromis qualité / quota localStorage
+
+function makeCanvas(size) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  return c;
+}
+
+/** Géométrie du gabarit ovale affiché par-dessus la vidéo de capture. */
+function guideBox(stageW, stageH) {
+  const s = Math.min(stageW, stageH);
+  const side = s * 0.78;
+  return { x: (stageW - side) / 2, y: (stageH - side) / 2, side };
+}
+
+/** Mappe un rectangle de l'élément affiché (object-fit: cover) vers les pixels source. */
+function coverRect(srcW, srcH, boxW, boxH, rect, mirror) {
+  const scale = Math.max(boxW / srcW, boxH / srcH);
+  const dw = srcW * scale, dh = srcH * scale;
+  const ox = (boxW - dw) / 2, oy = (boxH - dh) / 2;
+  let sx = (rect.x - ox) / scale;
+  const sy = (rect.y - oy) / scale;
+  const ss = rect.side / scale;
+  if (mirror) sx = srcW - sx - ss;
+  return { sx, sy, ss };
+}
+
+/** Découpe le carré du gabarit dans la vidéo ; renvoie un canvas carré. */
+function cropFromVideo(video, boxW, boxH, mirror) {
+  const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
+  const rect = guideBox(boxW, boxH);
+  const { sx, sy, ss } = coverRect(vw, vh, boxW, boxH, rect, mirror);
+  const out = makeCanvas(CROP_SIZE);
+  const ctx = out.getContext("2d");
+  ctx.save();
+  if (mirror) { ctx.translate(CROP_SIZE, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(video, sx, sy, ss, ss, 0, 0, CROP_SIZE, CROP_SIZE);
+  ctx.restore();
+  return out;
+}
+
+/** Découpe une image importée selon un cadrage (zoom + déplacement). */
+function cropFromImage(img, view) {
+  const out = makeCanvas(CROP_SIZE);
+  const ctx = out.getContext("2d");
+  const base = Math.min(img.width, img.height);
+  const side = base / view.zoom;
+  const cx = img.width / 2 + view.px * base;
+  const cy = img.height / 2 + view.py * base;
+  const sx = Math.max(0, Math.min(img.width - side, cx - side / 2));
+  const sy = Math.max(0, Math.min(img.height - side, cy - side / 2));
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, CROP_SIZE, CROP_SIZE);
+  return out;
+}
+
+function toDataURL(canvas) {
+  return canvas.toDataURL("image/jpeg", 0.74);
+}
+
+/**
+ * Transforme un carré (canvas ou image) en tête ronde ombrée, prête à voler.
+ * Le masque circulaire est réappliqué à chaque chargement : on ne stocke que le JPEG.
+ */
+function makeTexture(src) {
+  const c = makeCanvas(TEX_SIZE);
+  const ctx = c.getContext("2d");
+  const r = TEX_SIZE / 2;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(r, r, r - 2, 0, TAU);
+  ctx.clip();
+  ctx.drawImage(src, 0, 0, TEX_SIZE, TEX_SIZE);
+
+  // Volume : lumière en haut à gauche, ombre en bas à droite.
+  const shade = ctx.createRadialGradient(r * 0.62, r * 0.55, r * 0.15, r, r, r);
+  shade.addColorStop(0, "rgba(255,255,255,0.22)");
+  shade.addColorStop(0.55, "rgba(0,0,0,0)");
+  shade.addColorStop(1, "rgba(0,0,0,0.55)");
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, TEX_SIZE, TEX_SIZE);
+  ctx.restore();
+
+  // Liseré lumineux
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(r, r, r - 3, 0, TAU);
+  ctx.stroke();
+  return c;
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Visages de secours : le jeu est jouable avant toute photo.         */
+/* ------------------------------------------------------------------ */
+
+const SKINS = ["#f2c39b", "#d99a6c", "#a6693f", "#7a4a2b", "#ffd9b8", "#c98a5e"];
+const HAIRS = ["#2b1d16", "#6b3f1d", "#1b1b22", "#8d5524", "#b3b3c6", "#c94f2e"];
+
+function drawDoodleFace(ctx, size, seed) {
+  const R = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const skin = SKINS[Math.floor(R() * SKINS.length)];
+  const hair = HAIRS[Math.floor(R() * HAIRS.length)];
+  const eyeY = size * (0.42 + R() * 0.05);
+  const eyeDx = size * (0.15 + R() * 0.04);
+  const eyeR = size * (0.045 + R() * 0.02);
+
+  ctx.fillStyle = skin;
+  ctx.fillRect(0, 0, size, size);
+
+  // Cheveux
+  ctx.fillStyle = hair;
+  ctx.beginPath();
+  ctx.ellipse(size / 2, size * 0.26, size * 0.42, size * 0.26, 0, 0, TAU);
+  ctx.fill();
+
+  // Yeux
+  for (const s of [-1, 1]) {
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(size / 2 + s * eyeDx, eyeY, eyeR * 1.5, eyeR, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#20242e";
+    ctx.beginPath();
+    ctx.arc(size / 2 + s * eyeDx, eyeY, eyeR * 0.75, 0, TAU);
+    ctx.fill();
+  }
+
+  // Sourcils
+  ctx.strokeStyle = hair;
+  ctx.lineWidth = size * 0.022;
+  ctx.lineCap = "round";
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(size / 2 + s * eyeDx - size * 0.06, eyeY - size * 0.075);
+    ctx.lineTo(size / 2 + s * eyeDx + size * 0.06, eyeY - size * (0.055 + R() * 0.04));
+    ctx.stroke();
+  }
+
+  // Nez
+  ctx.strokeStyle = "rgba(0,0,0,.35)";
+  ctx.lineWidth = size * 0.018;
+  ctx.beginPath();
+  ctx.moveTo(size / 2, eyeY + size * 0.04);
+  ctx.lineTo(size / 2 - size * 0.03, eyeY + size * 0.14);
+  ctx.lineTo(size / 2 + size * 0.02, eyeY + size * 0.155);
+  ctx.stroke();
+
+  // Bouche
+  ctx.strokeStyle = "#8c3b3b";
+  ctx.lineWidth = size * 0.028;
+  ctx.beginPath();
+  const my = size * 0.72;
+  ctx.moveTo(size / 2 - size * 0.12, my);
+  ctx.quadraticCurveTo(size / 2, my + size * (R() > 0.5 ? 0.08 : -0.05), size / 2 + size * 0.12, my);
+  ctx.stroke();
+}
+
+/** Trois têtes « maison » utilisées tant que le joueur n'a rien photographié. */
+function defaultFaces() {
+  const names = ["Recrue", "Sergent", "Vétéran"];
+  return names.map((name, i) => {
+    const c = makeCanvas(CROP_SIZE);
+    drawDoodleFace(c.getContext("2d"), CROP_SIZE, 1234 + i * 7717);
+    return { id: "default-" + i, name, crop: c, tex: makeTexture(c), saved: false, isDefault: true };
+  });
+}
+
+/** Charge les visages sauvegardés en textures utilisables par le jeu. */
+async function loadFaceTextures(saved) {
+  const out = [];
+  for (const f of saved) {
+    try {
+      const img = await loadImage(f.data);
+      out.push({ id: f.id, name: f.name, crop: img, tex: makeTexture(img), saved: f.saved });
+    } catch (err) {
+      console.warn("Visage illisible ignoré :", f.id);
+    }
+  }
+  return out;
+}
+
+/** Petite fantaisie clin d'œil à la 3DS : un « profil » tiré au sort, pas une analyse. */
+function funProfile() {
+  return `${pick(["Sujet", "Cible", "Spécimen", "Individu"])} ${pick(["A", "B", "C", "D", "X"])}-${Math.floor(rand(10, 99))} · ` +
+    `menace ${pick(["faible", "modérée", "élevée", "maximale"])}`;
+}
+
+return { TEX_SIZE, CROP_SIZE, guideBox, cropFromVideo, cropFromImage, toDataURL, makeTexture, loadImage, readFile, defaultFaces, loadFaceTextures, funProfile };
+})();
+
+__modules["levels.js"] = (function () {
+// Les neuf niveaux : six pour la campagne, trois « Montrer à un ami ».
+
+const LEVELS = [
+  /* ---------------------- Campagne ---------------------- */
+  {
+    id: "e1", mode: "expert", name: "Premier contact",
+    desc: "Une tête s'échappe de l'appareil photo. Tourne-toi : elle n'attaque jamais de face.",
+    quota: 10, maxAlive: 3, spawnEvery: 1.6, speed: 0.9, aggro: 0.8,
+    types: ["basic"], butterflies: 0.10, bombs: 0,
+    boss: { hp: 3, volley: 2, minions: false },
+  },
+  {
+    id: "e2", mode: "expert", name: "Vol en escadrille",
+    desc: "Elles arrivent par grappes et changent d'altitude. Garde le réticule en mouvement.",
+    quota: 14, maxAlive: 4, spawnEvery: 1.3, speed: 1.0, aggro: 1.0,
+    types: ["basic", "basic", "fast"], butterflies: 0.12, bombs: 0.05,
+    boss: { hp: 4, volley: 3, minions: false },
+  },
+  {
+    id: "e3", mode: "expert", name: "Casques de fer",
+    desc: "Certaines têtes portent un casque : un tir pour le faire sauter, un second pour la tête.",
+    quota: 16, maxAlive: 4, spawnEvery: 1.2, speed: 1.05, aggro: 1.1,
+    types: ["basic", "fast", "armor"], butterflies: 0.14, bombs: 0.10,
+    boss: { hp: 5, volley: 3, minions: false },
+  },
+  {
+    id: "e4", mode: "expert", name: "La nuée",
+    desc: "Trop nombreuses pour être visées une à une : sers-toi des bombes.",
+    quota: 22, maxAlive: 6, spawnEvery: 0.85, speed: 1.15, aggro: 1.2,
+    types: ["basic", "fast", "fast", "armor"], butterflies: 0.16, bombs: 0.18,
+    boss: { hp: 5, volley: 4, minions: true },
+  },
+  {
+    id: "e5", mode: "expert", name: "Embuscade",
+    desc: "Des cracheurs restent à distance et te bombardent. Abats leurs projectiles en vol.",
+    quota: 24, maxAlive: 6, spawnEvery: 0.9, speed: 1.15, aggro: 1.15,
+    types: ["basic", "fast", "armor", "spitter", "spitter"], butterflies: 0.16, bombs: 0.14,
+    boss: { hp: 6, volley: 4, minions: true },
+  },
+  {
+    id: "e6", mode: "expert", name: "La Grande Tête",
+    desc: "Tout ce que tu as affronté, en même temps. Puis elle arrive.",
+    quota: 28, maxAlive: 7, spawnEvery: 0.75, speed: 1.3, aggro: 1.35,
+    types: ["basic", "fast", "armor", "spitter"], butterflies: 0.18, bombs: 0.16,
+    boss: { hp: 8, volley: 5, minions: true },
+  },
+
+  /* ------------------ Montrer à un ami ------------------ */
+  {
+    id: "a1", mode: "ami", name: "Démonstration",
+    desc: "Trente secondes pour comprendre : vise, tire, tourne.",
+    quota: 8, maxAlive: 3, spawnEvery: 1.2, speed: 0.85, aggro: 0.7,
+    types: ["basic"], butterflies: 0.2, bombs: 0.1, timeLimit: 45, boss: null,
+  },
+  {
+    id: "a2", mode: "ami", name: "Chasse aux papillons",
+    desc: "Les papillons rapportent gros… mais les têtes profitent de la distraction.",
+    quota: 12, maxAlive: 4, spawnEvery: 1.4, speed: 1.0, aggro: 0.9,
+    types: ["basic", "fast"], butterflies: 0.55, bombs: 0.08, timeLimit: 60, boss: null,
+  },
+  {
+    id: "a3", mode: "ami", name: "Duel éclair",
+    desc: "Pas d'échauffement : le boss, tout de suite.",
+    quota: 4, maxAlive: 3, spawnEvery: 1.8, speed: 1.1, aggro: 1.2,
+    types: ["fast"], butterflies: 0.25, bombs: 0.12,
+    boss: { hp: 4, volley: 3, minions: false },
+  },
+];
+
+const byMode = (mode) => LEVELS.filter((l) => l.mode === mode);
+const byId = (id) => LEVELS.find((l) => l.id === id);
+const indexInMode = (level) => byMode(level.mode).findIndex((l) => l.id === level.id);
+const nextLevel = (level) => byMode(level.mode)[indexInMode(level) + 1] || null;
+
+const DIFFICULTY = {
+  facile:  { speed: 0.82, aggro: 0.75, hearts: 5, damage: 1 },
+  normal:  { speed: 1.00, aggro: 1.00, hearts: 4, damage: 1 },
+  intense: { speed: 1.22, aggro: 1.35, hearts: 3, damage: 1 },
+};
+
+return { LEVELS, byMode, byId, indexInMode, nextLevel, DIFFICULTY };
+})();
+
+__modules["entities.js"] = (function () {
+// Habitants du monde AR : têtes volantes, papillons, bombes, projectiles, boss.
+// Chaque entité sait se comporter (update) et se dessiner (draw) une fois projetée.
+
+const { TAU, clamp, lerp, rand, randInt, v3, vAdd, vScale, vLen, vNorm, sphere, toSpherical } = __modules["util.js"];
+const HIT_DIST = 1.35;          // distance à laquelle une tête bouscule le joueur
+const SPAWN_MIN = 8;
+const SPAWN_MAX = 13;
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+
+class Entity {
+  constructor(pos) {
+    this.pos = pos;
+    this.vel = v3();
+    this.radius = 0.75;
+    this.dead = false;
+    this.t = 0;
+    this.flash = 0;
+    this.shootable = true;
+  }
+  get dist() { return vLen(this.pos); }
+  damage() { this.dead = true; return true; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tête volante                                                       */
+/* ------------------------------------------------------------------ */
+
+const HEAD_TYPES = {
+  basic:   { hp: 1, speed: 1.00, radius: 0.52, score: 100, color: "#ff3b6b" },
+  fast:    { hp: 1, speed: 1.85, radius: 0.40, score: 160, color: "#38e8ff" },
+  armor:   { hp: 2, speed: 0.80, radius: 0.60, score: 220, color: "#ffcc4d" },
+  spitter: { hp: 1, speed: 0.70, radius: 0.54, score: 260, color: "#b47dff" },
+};
+
+class Head extends Entity {
+  constructor(face, type, level, forcedYaw = null) {
+    const yaw = forcedYaw === null ? rand(0, TAU) : forcedYaw;
+    const pitch = rand(-0.5, 0.75);
+    const spec = HEAD_TYPES[type] || HEAD_TYPES.basic;
+    super(sphere(yaw, pitch, rand(SPAWN_MAX, SPAWN_MAX + 3)));
+    this.face = face;
+    this.type = type;
+    this.spec = spec;
+    this.hp = spec.hp;
+    this.radius = spec.radius;
+    this.speed = spec.speed * (level.speed || 1);
+    this.state = "enter";
+    this.stateT = 0;
+    this.chargeIn = rand(2.2, 6.5) / (level.aggro || 1);
+    this.orbitYaw = yaw;
+    this.orbitPitch = pitch;
+    this.orbitR = rand(5.5, 9.5);
+    this.orbitDir = Math.random() < 0.5 ? -1 : 1;
+    this.bob = rand(0, TAU);
+    this.spinning = rand(-1, 1);
+    this.spitIn = rand(1.5, 3.5);
+    this.hitPlayer = false;   // relevé par le jeu quand la tête bouscule le joueur
+    this.spawnFx = 1;         // effet de traversée de mur
+  }
+
+  update(dt, world) {
+    this.t += dt;
+    this.stateT += dt;
+    this.spawnFx = Math.max(0, this.spawnFx - dt * 1.6);
+    this.flash = Math.max(0, this.flash - dt * 5);
+
+    const d = this.dist;
+
+    if (this.state === "enter") {
+      // Arrive de l'extérieur, comme si elle traversait le mur de la pièce.
+      const dir = vNorm(vScale(this.pos, -1));
+      this.pos = vAdd(this.pos, vScale(dir, this.speed * 4.5 * dt));
+      if (d < this.orbitR) this.setState("orbit");
+    } else if (this.state === "orbit") {
+      this.orbitYaw += this.orbitDir * this.speed * 0.22 * dt;
+      this.orbitPitch = clamp(this.orbitPitch + Math.sin(this.t * 0.7) * 0.25 * dt, -0.55, 0.9);
+      const r = this.orbitR + Math.sin(this.t * 1.4 + this.bob) * 0.6;
+      this.pos = sphere(this.orbitYaw, this.orbitPitch, r);
+      this.chargeIn -= dt;
+      if (this.type === "spitter") {
+        this.spitIn -= dt;
+        if (this.spitIn <= 0) {
+          this.spitIn = rand(2.4, 4.2);
+          world.spawnProjectile(this.pos, 3.4, "#b47dff");
+        }
+      } else if (this.chargeIn <= 0) {
+        this.setState("charge");
+      }
+    } else if (this.state === "charge") {
+      const dir = vNorm(vScale(this.pos, -1));
+      this.pos = vAdd(this.pos, vScale(dir, this.speed * 4.2 * dt));
+      if (d <= HIT_DIST) {
+        this.hitPlayer = true;
+        this.setState("flee");
+      }
+      if (this.stateT > 6) this.setState("flee");
+    } else if (this.state === "flee") {
+      const dir = vNorm(this.pos);
+      this.pos = vAdd(this.pos, vScale(dir, this.speed * 3.4 * dt));
+      if (d > SPAWN_MAX) {
+        const s = toSpherical(this.pos);
+        this.orbitYaw = s.yaw;
+        this.orbitPitch = clamp(s.pitch, -0.5, 0.8);
+        this.orbitR = rand(5.5, 9.5);
+        this.chargeIn = rand(2.5, 5.5);
+        this.setState("orbit");
+      }
+    }
+  }
+
+  setState(s) { this.state = s; this.stateT = 0; }
+
+  damage() {
+    this.hp--;
+    this.flash = 1;
+    if (this.hp <= 0) { this.dead = true; return "kill"; }
+    return "armor";
+  }
+
+  draw(ctx, p) {
+    const r = this.radius * p.scale;
+    if (r < 2) return;
+    const wob = Math.sin(this.t * 6 + this.bob) * 0.08;
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+
+    // Onde de choc à l'apparition : la tête « traverse le mur ».
+    if (this.spawnFx > 0) {
+      ctx.globalAlpha = this.spawnFx * 0.6;
+      ctx.strokeStyle = this.spec.color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * (1.4 + (1 - this.spawnFx) * 2.4), 0, TAU);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // Ailes
+    const flap = Math.sin(this.t * 14) * 0.5 + 0.5;
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.strokeStyle = this.spec.color;
+    ctx.lineWidth = Math.max(1, r * 0.05);
+    for (const s of [-1, 1]) {
+      ctx.save();
+      ctx.translate(s * r * 0.72, -r * 0.1);
+      ctx.rotate(s * (0.35 + flap * 0.55));
+      ctx.beginPath();
+      ctx.ellipse(s * r * 0.34, 0, r * 0.42, r * 0.17, 0, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.rotate(wob + this.spinning * 0.1);
+
+    // Le visage
+    const img = this.face && this.face.tex;
+    if (img) {
+      ctx.drawImage(img, -r, -r, r * 2, r * 2);
+    } else {
+      ctx.fillStyle = this.spec.color;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, TAU);
+      ctx.fill();
+    }
+
+    // Casque de fer : la première touche le fait sauter.
+    if (this.type === "armor" && this.hp > 1) {
+      ctx.fillStyle = "rgba(190,196,214,0.92)";
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.04, Math.PI * 1.06, Math.PI * 1.94);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#6f7590";
+      ctx.lineWidth = Math.max(1, r * 0.06);
+      ctx.stroke();
+    }
+
+    // Aura du cracheur
+    if (this.type === "spitter") {
+      ctx.strokeStyle = "rgba(180,125,255,0.75)";
+      ctx.lineWidth = Math.max(1, r * 0.07);
+      ctx.beginPath();
+      ctx.arc(0, 0, r * (1.12 + Math.sin(this.t * 4) * 0.06), 0, TAU);
+      ctx.stroke();
+    }
+
+    // Éclair blanc quand elle encaisse
+    if (this.flash > 0) {
+      ctx.globalAlpha = this.flash * 0.8;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Signal rouge lorsqu'elle fonce sur le joueur
+    if (this.state === "charge") {
+      ctx.strokeStyle = "rgba(255,59,107," + (0.5 + Math.sin(this.t * 18) * 0.4) + ")";
+      ctx.lineWidth = Math.max(2, r * 0.09);
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.22, 0, TAU);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Papillon : rend de la vie                                          */
+/* ------------------------------------------------------------------ */
+
+class Butterfly extends Entity {
+  constructor() {
+    const yaw = rand(0, TAU);
+    super(sphere(yaw, rand(-0.2, 0.7), rand(6, 9)));
+    this.radius = 0.5;
+    this.yaw = yaw;
+    this.pitch = rand(-0.2, 0.7);
+    this.r = vLen(this.pos);
+    this.life = 14;
+    this.hue = randInt(0, 360);
+  }
+  update(dt) {
+    this.t += dt;
+    this.life -= dt;
+    if (this.life <= 0) this.dead = true;
+    this.yaw += 0.28 * dt;
+    this.pitch = clamp(this.pitch + Math.sin(this.t * 1.6) * 0.5 * dt, -0.4, 0.9);
+    this.pos = sphere(this.yaw, this.pitch, this.r + Math.sin(this.t * 2) * 0.4);
+  }
+  draw(ctx, p) {
+    const r = this.radius * p.scale;
+    if (r < 1.5) return;
+    const flap = Math.abs(Math.sin(this.t * 9));
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.globalAlpha = this.life < 3 ? 0.35 + Math.abs(Math.sin(this.t * 10)) * 0.65 : 1;
+    for (const s of [-1, 1]) {
+      ctx.fillStyle = `hsl(${this.hue + (s > 0 ? 25 : 0)},90%,65%)`;
+      ctx.beginPath();
+      ctx.ellipse(s * r * 0.55 * (0.35 + flap), 0, r * 0.62 * (0.35 + flap), r * 0.85, s * 0.2, 0, TAU);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#2a2233";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.12, r * 0.55, 0, 0, TAU);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Bombe : détruit tout autour d'elle quand on la touche              */
+/* ------------------------------------------------------------------ */
+
+class Bomb extends Entity {
+  constructor() {
+    const yaw = rand(0, TAU);
+    super(sphere(yaw, rand(-0.3, 0.6), rand(5, 8)));
+    this.radius = 0.62;
+    this.yaw = yaw;
+    this.pitch = rand(-0.3, 0.6);
+    this.r = vLen(this.pos);
+    this.life = 12;
+    this.blast = 5.5;
+  }
+  update(dt) {
+    this.t += dt;
+    this.life -= dt;
+    if (this.life <= 0) this.dead = true;
+    this.yaw += 0.12 * dt;
+    this.pos = sphere(this.yaw, this.pitch + Math.sin(this.t) * 0.06, this.r);
+  }
+  draw(ctx, p) {
+    const r = this.radius * p.scale;
+    if (r < 1.5) return;
+    const pulse = 0.5 + Math.sin(this.t * (this.life < 4 ? 14 : 5)) * 0.5;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    const g = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.1, 0, 0, r);
+    g.addColorStop(0, "#5a5f75");
+    g.addColorStop(1, "#14161f");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255,120,60,${0.45 + pulse * 0.55})`;
+    ctx.lineWidth = Math.max(1.5, r * 0.12);
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.15, 0, TAU);
+    ctx.stroke();
+    // Mèche
+    ctx.strokeStyle = "#c8a06a";
+    ctx.lineWidth = Math.max(1, r * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(0, -r);
+    ctx.quadraticCurveTo(r * 0.35, -r * 1.35, r * 0.15, -r * 1.6);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(255,${150 + pulse * 100},60,1)`;
+    ctx.beginPath();
+    ctx.arc(r * 0.15, -r * 1.6, r * (0.16 + pulse * 0.12), 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Projectile ennemi : à abattre ou à encaisser                       */
+/* ------------------------------------------------------------------ */
+
+class Projectile extends Entity {
+  constructor(pos, speed, color) {
+    super(v3(pos.x, pos.y, pos.z));
+    this.radius = 0.34;
+    this.dir = vNorm(vScale(this.pos, -1));
+    this.speed = speed;
+    this.color = color || "#ff8a3b";
+    this.hitPlayer = false;
+  }
+  update(dt) {
+    this.t += dt;
+    this.pos = vAdd(this.pos, vScale(this.dir, this.speed * dt));
+    if (this.dist <= HIT_DIST * 0.8) { this.hitPlayer = true; this.dead = true; }
+    if (this.t > 12) this.dead = true;
+  }
+  draw(ctx, p) {
+    const r = Math.max(2, this.radius * p.scale);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 1.8);
+    g.addColorStop(0, "#fff");
+    g.addColorStop(0.4, this.color);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.8, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Boss : tête géante casquée (kabuto), gemme au front                */
+/* ------------------------------------------------------------------ */
+
+class Boss extends Entity {
+  constructor(face, cfg) {
+    super(sphere(0, 0.12, 13));
+    this.face = face;
+    this.cfg = cfg;
+    this.maxHp = cfg.hp;
+    this.hp = cfg.hp;
+    this.radius = 1.85;
+    this.yaw = 0;
+    this.pitch = 0.12;
+    this.r = 13;
+    this.state = "intro";
+    this.stateT = 0;
+    this.openT = 0;
+    this.vulnerable = false;
+    this.hitPlayer = false;
+    this.shootable = true;
+    this.rage = 1;
+  }
+
+  /** Position de la gemme (point faible) : légèrement au-dessus du centre. */
+  gemPos() {
+    const up = v3(0, 1, 0);
+    return vAdd(this.pos, vScale(up, this.radius * 0.62));
+  }
+
+  setState(s) {
+    this.state = s;
+    this.stateT = 0;
+    if (s === "attack") this.fired = 0;
+  }
+
+  update(dt, world) {
+    this.t += dt;
+    this.stateT += dt;
+    this.flash = Math.max(0, this.flash - dt * 4);
+    this.rage = 1 + (1 - this.hp / this.maxHp) * 1.1;
+
+    switch (this.state) {
+      case "intro":
+        this.r = lerp(this.r, 9.5, 1 - Math.pow(0.2, dt));
+        if (this.stateT > 2.2) this.setState("move");
+        break;
+
+      case "move":
+        this.yaw += 0.55 * this.rage * dt * (Math.sin(this.t * 0.4) > 0 ? 1 : -1);
+        this.pitch = 0.12 + Math.sin(this.t * 0.9) * 0.18;
+        this.r = 9.5 + Math.sin(this.t * 0.7) * 1.3;
+        if (this.stateT > 2.6 / this.rage) {
+          this.setState(Math.random() < 0.55 ? "open" : "attack");
+        }
+        break;
+
+      case "open":       // visière relevée : la gemme est exposée
+        this.vulnerable = true;
+        this.openT = 1 - this.stateT / (2.6 / this.rage);
+        if (this.stateT > 2.6 / this.rage) { this.vulnerable = false; this.setState("attack"); }
+        break;
+
+      case "attack": {
+        // Salve égrenée : chaque projectile part d'une direction différente,
+        // ce qui laisse le temps de les abattre un par un.
+        this.vulnerable = false;
+        const n = this.cfg.volley || 3;
+        const gap = 0.34;
+        while (this.fired < n && this.stateT > 0.5 + this.fired * gap) {
+          const off = sphere(this.yaw + rand(-0.45, 0.45), this.pitch + rand(-0.25, 0.25), this.r);
+          world.spawnProjectile(off, 3.6 + this.rage * 0.6, "#ff8a3b");
+          this.fired++;
+        }
+        if (this.stateT > 0.9 + n * gap) {
+          if (this.cfg.minions && Math.random() < 0.5) world.spawnMinion();
+          this.setState("move");
+        }
+        break;
+      }
+
+      case "charge": {
+        this.r = Math.max(HIT_DIST + this.radius, this.r - 7 * dt);
+        if (this.r <= HIT_DIST + this.radius + 0.1) { this.hitPlayer = true; this.setState("move"); }
+        break;
+      }
+
+      case "dying":
+        this.r += 2.5 * dt;
+        this.pitch += 0.4 * dt;
+        if (this.stateT > 2.4) this.dead = true;
+        break;
+    }
+
+    this.pos = sphere(this.yaw, this.pitch, this.r);
+  }
+
+  /** Seule la gemme exposée compte ; le reste du casque renvoie les tirs. */
+  damage(onGem) {
+    if (this.state === "dying") return "none";
+    if (!this.vulnerable || !onGem) { this.flash = 0.5; return "armor"; }
+    this.hp--;
+    this.flash = 1;
+    this.vulnerable = false;
+    if (this.hp <= 0) { this.setState("dying"); return "kill"; }
+    this.setState("move");
+    return "hit";
+  }
+
+  draw(ctx, p) {
+    const r = this.radius * p.scale;
+    if (r < 3) return;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    if (this.state === "dying") {
+      ctx.globalAlpha = clamp(1 - this.stateT / 2.4, 0, 1);
+      ctx.rotate(Math.sin(this.stateT * 12) * 0.25);
+    }
+
+    // Visage géant
+    const img = this.face && this.face.tex;
+    if (img) ctx.drawImage(img, -r, -r, r * 2, r * 2);
+    else { ctx.fillStyle = "#c0392b"; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); }
+
+    // Kabuto : bombe du casque
+    ctx.fillStyle = "#2e3550";
+    ctx.beginPath();
+    ctx.arc(0, -r * 0.12, r * 1.06, Math.PI * 1.02, Math.PI * 1.98);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#8a93b8";
+    ctx.lineWidth = Math.max(1.5, r * 0.04);
+    ctx.stroke();
+
+    // Fukigaeshi (rabats latéraux) et cornes maedate
+    ctx.fillStyle = "#3c4468";
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.85, -r * 0.35);
+      ctx.quadraticCurveTo(s * r * 1.45, -r * 0.1, s * r * 1.15, r * 0.35);
+      ctx.quadraticCurveTo(s * r * 0.95, r * 0.05, s * r * 0.8, -r * 0.1);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = "#ffcc4d";
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.18, -r * 0.95);
+      ctx.quadraticCurveTo(s * r * 0.75, -r * 1.75, s * r * 1.25, -r * 1.45);
+      ctx.quadraticCurveTo(s * r * 0.7, -r * 1.35, s * r * 0.42, -r * 0.88);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Visière : elle se relève pour découvrir la gemme
+    const open = this.vulnerable ? clamp(this.openT * 1.6, 0, 1) : 0;
+    const gemY = -r * 0.62;
+    ctx.save();
+    ctx.translate(0, gemY);
+    ctx.rotate(-open * 0.9);
+    ctx.fillStyle = "#1d2236";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.62, r * 0.3, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+
+    // Gemme
+    if (open > 0.05) {
+      const pulse = 0.65 + Math.sin(this.t * 9) * 0.35;
+      ctx.save();
+      ctx.translate(0, gemY);
+      ctx.globalAlpha = open;
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.42);
+      g.addColorStop(0, "#fff");
+      g.addColorStop(0.35, "#ff3b6b");
+      g.addColorStop(1, "rgba(255,59,107,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.42 * (0.85 + pulse * 0.25), 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = "#ff5c86";
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 0.2);
+      ctx.lineTo(r * 0.16, 0);
+      ctx.lineTo(0, r * 0.2);
+      ctx.lineTo(-r * 0.16, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (this.flash > 0) {
+      ctx.globalAlpha = this.flash * 0.65;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.1, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Effets : particules et points flottants                            */
+/* ------------------------------------------------------------------ */
+
+class Particles {
+  constructor() { this.list = []; }
+
+  burst(pos, count, color, spread = 3.2) {
+    for (let i = 0; i < count; i++) {
+      this.list.push({
+        pos: v3(pos.x, pos.y, pos.z),
+        vel: vScale(vNorm(v3(rand(-1, 1), rand(-1, 1), rand(-1, 1))), rand(0.4, spread)),
+        life: rand(0.35, 0.9),
+        max: 0.9,
+        color,
+        size: rand(0.05, 0.18),
+      });
+    }
+  }
+
+  text(pos, label, color) {
+    this.list.push({ pos: v3(pos.x, pos.y, pos.z), vel: v3(0, 1.1, 0), life: 0.9, max: 0.9, color, label });
+  }
+
+  update(dt) {
+    for (const p of this.list) {
+      p.pos = vAdd(p.pos, vScale(p.vel, dt));
+      if (!p.label) p.vel = vScale(p.vel, 1 - 1.6 * dt);
+      p.life -= dt;
+    }
+    this.list = this.list.filter((p) => p.life > 0);
+  }
+
+  draw(ctx, cam) {
+    const out = {};
+    for (const p of this.list) {
+      const pr = cam.project(p.pos, out);
+      if (!pr) continue;
+      const a = clamp(p.life / p.max, 0, 1);
+      ctx.globalAlpha = a;
+      if (p.label) {
+        const s = Math.max(11, Math.min(46, 0.55 * pr.scale));
+        ctx.fillStyle = p.color;
+        ctx.font = `bold ${s}px "Trebuchet MS", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(p.label, pr.x, pr.y);
+      } else {
+        ctx.fillStyle = p.color;
+        const r = Math.max(1, p.size * pr.scale);
+        ctx.beginPath();
+        ctx.arc(pr.x, pr.y, r, 0, TAU);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  clear() { this.list.length = 0; }
+}
+
+
+return { HIT_DIST, SPAWN_MIN, SPAWN_MAX, HEAD_TYPES, Head, Butterfly, Bomb, Projectile, Boss, Particles, Entity };
+})();
+
+__modules["ui.js"] = (function () {
+// Navigation entre écrans, HUD et listes (niveaux, visages).
+
+const { formatScore } = __modules["util.js"];
+const { byMode, indexInMode } = __modules["levels.js"];
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+let toastTimer = null;
+
+function showScreen(id) {
+  $$(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+  const el = id ? $("#" + id) : null;
+  if (el) el.scrollTop = 0;
+}
+
+function hideScreens() {
+  $$(".screen").forEach((s) => s.classList.remove("active"));
+}
+
+function currentScreen() {
+  const el = $(".screen.active");
+  return el ? el.id : null;
+}
+
+function setHud(visible) {
+  const hud = $("#hud");
+  hud.classList.toggle("hidden", !visible);
+  hud.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+function toast(msg, ms = 2200) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add("hidden"), ms);
+}
+
+/* ----------------------------- HUD ----------------------------- */
+
+const hud = {
+  hearts({ hearts, max }) {
+    const el = $("#hud-hearts");
+    let out = "";
+    for (let i = 0; i < max; i++) out += i < hearts ? "❤️" : "🖤";
+    el.textContent = out;
+  },
+  score(v) { $("#hud-score").textContent = formatScore(v); },
+  remaining(n) { $("#hud-remaining").textContent = "Têtes : " + n; },
+  time(t) { $("#hud-remaining").textContent = "Temps : " + Math.ceil(t) + " s"; },
+  level(label) { $("#hud-level").textContent = label; },
+  combo(n) {
+    const el = $("#combo");
+    if (n > 1) {
+      $("#combo-x").textContent = "x" + n;
+      el.classList.remove("hidden");
+      // relance l'animation
+      el.style.animation = "none";
+      void el.offsetWidth;
+      el.style.animation = "";
+    } else {
+      el.classList.add("hidden");
+    }
+  },
+  boss(info) {
+    const bar = $("#boss-bar");
+    if (!info) { bar.classList.add("hidden"); return; }
+    bar.classList.remove("hidden");
+    $("#boss-bar-fill").style.width = Math.max(0, (info.hp / info.max) * 100) + "%";
+  },
+  crosshair(state) {
+    const el = $("#crosshair");
+    el.classList.toggle("lock", state === "lock");
+    if (state === "shoot") {
+      el.classList.add("shoot");
+      setTimeout(() => el.classList.remove("shoot"), 90);
+    }
+  },
+};
+
+/* --------------------------- Niveaux --------------------------- */
+
+function renderLevels(mode, progress, onPick) {
+  const list = $("#level-list");
+  list.innerHTML = "";
+  const unlocked = progress.unlocked[mode] || 1;
+
+  byMode(mode).forEach((lvl) => {
+    const idx = indexInMode(lvl);
+    const locked = idx >= unlocked;
+    const best = progress.best[lvl.id] || 0;
+    const cleared = !!progress.cleared[lvl.id];
+
+    const card = document.createElement("button");
+    card.className = "level-card" + (locked ? " locked" : "");
+    card.disabled = locked;
+    card.innerHTML = `
+      <span class="num">${locked ? "🔒" : idx + 1}</span>
+      <span class="meta">
+        <b>${lvl.name}${cleared ? " ✔" : ""}</b>
+        <small>${locked ? "Termine le niveau précédent pour l'ouvrir." : lvl.desc}</small>
+      </span>
+      <span class="best">${best ? formatScore(best) : ""}</span>`;
+    if (!locked) card.addEventListener("click", () => onPick(lvl));
+    list.appendChild(card);
+  });
+}
+
+/* --------------------------- Visages --------------------------- */
+
+function renderFaces(faces, { onDelete }) {
+  const grid = $("#face-grid");
+  grid.innerHTML = "";
+  if (!faces.length) {
+    grid.innerHTML = '<p class="face-empty">Aucun visage capturé.<br>Les têtes de secours prendront le relais.</p>';
+    return;
+  }
+  faces.forEach((f) => {
+    const cell = document.createElement("div");
+    cell.className = "face-cell" + (f.saved ? " saved" : "");
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 128;
+    cv.getContext("2d").drawImage(f.tex, 0, 0, 128, 128);
+    const label = document.createElement("span");
+    label.textContent = f.saved ? f.name + " ✔" : f.name;
+    cell.append(cv, label);
+    if (!f.isDefault) {
+      const del = document.createElement("button");
+      del.className = "del";
+      del.textContent = "✕";
+      del.setAttribute("aria-label", "Supprimer " + f.name);
+      del.addEventListener("click", () => onDelete(f));
+      cell.appendChild(del);
+    }
+    grid.appendChild(cell);
+  });
+}
+
+function drawFaceInto(canvas, tex) {
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (tex) ctx.drawImage(tex, 0, 0, canvas.width, canvas.height);
+}
+
+return { $, $$, showScreen, hideScreens, currentScreen, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto };
+})();
+
+__modules["game.js"] = (function () {
+// Boucle de jeu : vagues de têtes, tir au réticule, boss, score et combos.
+
+const { TAU, clamp, rand, pick, v3, vDot, Camera, Emitter, toSpherical } = __modules["util.js"];
+const { Head, Butterfly, Bomb, Projectile, Boss, Particles } = __modules["entities.js"];
+const { DIFFICULTY } = __modules["levels.js"];
+const { sfx, vibrate } = __modules["audio.js"];
+const COMBO_WINDOW = 2.6;   // secondes pour enchaîner
+const INVUL = 1.3;          // invincibilité après un coup encaissé
+
+class Game extends Emitter {
+  constructor(opts) {
+    super();
+    this.canvas = opts.canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.radar = opts.radar;
+    this.radarCtx = this.radar ? this.radar.getContext("2d") : null;
+    this.orientation = opts.orientation;
+    this.settings = opts.settings;
+    this.cam = new Camera();
+    this.particles = new Particles();
+
+    this.running = false;
+    this.paused = false;
+    this.entities = [];
+    this.boss = null;
+    this.faces = [];
+    this.level = null;
+    this.useCameraFeed = false;
+    this.dpr = 1;
+
+    this._loop = this._loop.bind(this);
+    this._last = 0;
+    this.time = 0;
+    this.shake = 0;
+    this.hurtFx = 0;
+    this.resize();
+    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("orientationchange", () => setTimeout(() => this.resize(), 250));
+  }
+
+  resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.canvas.width = Math.round(w * this.dpr);
+    this.canvas.height = Math.round(h * this.dpr);
+    this.canvas.style.width = w + "px";
+    this.canvas.style.height = h + "px";
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.cam.resize(w, h);
+    this.W = w; this.H = h;
+  }
+
+  /* ----------------------- Cycle de vie ----------------------- */
+
+  load(level, faces, useCameraFeed) {
+    const diff = DIFFICULTY[this.settings.difficulty] || DIFFICULTY.normal;
+    this.level = { ...level, speed: (level.speed || 1) * diff.speed, aggro: (level.aggro || 1) * diff.aggro };
+    this.diff = diff;
+    this.faces = faces.length ? faces : [];
+    this.useCameraFeed = !!useCameraFeed;
+
+    this.entities.length = 0;
+    this.particles.clear();
+    this.boss = null;
+    this.bossFace = pick(this.faces) || null;
+
+    this.hearts = diff.hearts;
+    this.maxHearts = diff.hearts;
+    this.score = 0;
+    this.combo = 0;
+    this.bestCombo = 1;
+    this.comboT = 0;
+    this.killed = 0;
+    this.spawned = 0;
+    this.shots = 0;
+    this.hits = 0;
+    this.invul = 0;
+    this.spawnT = 0.6;
+    this.phase = "wave";     // wave -> boss -> done
+    this.time = 0;
+    this.timeLeft = level.timeLimit || 0;
+    this.endReason = null;
+
+    this.emit("hearts", { hearts: this.hearts, max: this.maxHearts });
+    this.emit("score", 0);
+    this.emit("remaining", Math.max(0, this.level.quota - this.killed));
+    this.emit("boss", null);
+    this.emit("combo", 0);
+  }
+
+  start() {
+    this.running = true;
+    this.paused = false;
+    this._last = performance.now();
+    requestAnimationFrame(this._loop);
+  }
+
+  pause() { this.paused = true; }
+
+  resume() {
+    if (!this.running) return;
+    this.paused = false;
+    this._last = performance.now();
+    requestAnimationFrame(this._loop);
+  }
+
+  stop() { this.running = false; this.paused = false; }
+
+  /* ------------------------- Boucle -------------------------- */
+
+  _loop(now) {
+    if (!this.running || this.paused) return;
+    const dt = Math.min(0.05, Math.max(0, (now - this._last) / 1000));
+    this._last = now;
+    this.update(dt);
+    this.render();
+    requestAnimationFrame(this._loop);
+  }
+
+  update(dt) {
+    this.time += dt;
+    this.orientation.update(dt);
+    this.cam.yaw = this.orientation.yaw;
+    this.cam.pitch = this.orientation.pitch;
+    this.cam.update();
+
+    this.invul = Math.max(0, this.invul - dt);
+    this.shake = Math.max(0, this.shake - dt * 2.5);
+    this.hurtFx = Math.max(0, this.hurtFx - dt * 1.6);
+
+    if (this.comboT > 0) {
+      this.comboT -= dt;
+      if (this.comboT <= 0 && this.combo > 0) { this.combo = 0; this.emit("combo", 0); }
+    }
+
+    if (this.phase === "wave") this._updateWave(dt);
+
+    // Verrouillage du réticule (retour visuel)
+    const locked = !!this._pick(this.W / 2, this.H / 2);
+    if (locked !== this._locked) { this._locked = locked; this.emit("lock", locked); }
+
+    // Entités
+    for (const e of this.entities) {
+      e.update(dt, this);
+      if (e.hitPlayer) { e.hitPlayer = false; this._playerHit(e); }
+    }
+    if (this.boss) {
+      this.boss.update(dt, this);
+      if (this.boss.hitPlayer) { this.boss.hitPlayer = false; this._playerHit(this.boss); }
+      if (this.boss.dead) this._bossDefeated();
+    }
+    this.entities = this.entities.filter((e) => !e.dead);
+    this.particles.update(dt);
+
+    // Limite de temps (niveaux « Montrer à un ami »)
+    if (this.level.timeLimit) {
+      this.timeLeft = Math.max(0, this.timeLeft - dt);
+      this.emit("time", this.timeLeft);
+      if (this.timeLeft <= 0 && this.phase !== "done") {
+        this._finish(this.killed >= this.level.quota, "temps");
+      }
+    }
+  }
+
+  _updateWave(dt) {
+    const lvl = this.level;
+    const heads = this.entities.filter((e) => e instanceof Head).length;
+
+    this.spawnT -= dt;
+    if (this.spawnT <= 0 && this.spawned < lvl.quota && heads < lvl.maxAlive) {
+      this.spawnT = lvl.spawnEvery * rand(0.75, 1.25);
+      this.spawnHead();
+      if (Math.random() < (lvl.butterflies || 0)) this.entities.push(new Butterfly());
+      if (Math.random() < (lvl.bombs || 0)) this.entities.push(new Bomb());
+    }
+
+    if (this.killed >= lvl.quota) {
+      if (lvl.boss) this._startBoss();
+      else if (heads === 0) this._finish(true, "quota");
+    }
+  }
+
+  spawnHead() {
+    const type = pick(this.level.types);
+    const face = this.faces.length ? pick(this.faces) : null;
+    // Les deux premières arrivent de face : le joueur comprend la règle, puis ça tourne à 360°.
+    const front = this.spawned < 2 ? this.cam.yaw + rand(-0.7, 0.7) : null;
+    const h = new Head(face, type, this.level, front);
+    this.entities.push(h);
+    this.spawned++;
+    sfx.spawn();
+    return h;
+  }
+
+  /** Appelé par les cracheurs et le boss. */
+  spawnProjectile(pos, speed, color) {
+    this.entities.push(new Projectile(pos, speed, color));
+  }
+
+  spawnMinion() {
+    const h = new Head(this.faces.length ? pick(this.faces) : null, "fast", this.level);
+    h.isMinion = true;
+    this.entities.push(h);
+  }
+
+  _startBoss() {
+    if (this.phase !== "wave") return;
+    this.phase = "boss";
+    // Les têtes restantes fuient pour laisser la place.
+    for (const e of this.entities) if (e instanceof Head) e.setState("flee");
+    this.boss = new Boss(this.bossFace, this.level.boss);
+    sfx.bossIn();
+    vibrate([40, 60, 40, 60, 120]);
+    this.emit("boss", { hp: this.boss.hp, max: this.boss.maxHp });
+    this.emit("toast", "La Grande Tête arrive ! Vise la gemme du casque.");
+  }
+
+  _bossDefeated() {
+    this.boss = null;
+    this._finish(true, "boss");
+  }
+
+  _finish(won, reason) {
+    if (this.phase === "done") return;
+    this.phase = "done";
+    this.endReason = reason;
+    this.running = false;
+    if (won) sfx.win(); else sfx.lose();
+    vibrate(won ? [60, 40, 60, 40, 160] : [220]);
+    this.emit("end", {
+      won,
+      reason,
+      score: Math.round(this.score),
+      bestCombo: this.bestCombo,
+      accuracy: this.shots ? Math.round((this.hits / this.shots) * 100) : 0,
+      face: this.bossFace,
+      level: this.level,
+    });
+  }
+
+  /* -------------------------- Tir ---------------------------- */
+
+  /** Tire vers un point de l'écran (par défaut le réticule central). */
+  shoot(sx = this.W / 2, sy = this.H / 2) {
+    if (!this.running || this.paused || this.phase === "done") return;
+    this.shots++;
+    sfx.shoot();
+    this.emit("shot");
+
+    const target = this._pick(sx, sy);
+    if (!target) {
+      this._miss();
+      return;
+    }
+
+    const { entity, onGem } = target;
+
+    if (entity instanceof Butterfly) {
+      entity.dead = true;
+      this.hits++;
+      this._heal();
+      this._award(entity.pos, 150, "🦋");
+      return;
+    }
+
+    if (entity instanceof Bomb) {
+      entity.dead = true;
+      this.hits++;
+      this._explode(entity);
+      return;
+    }
+
+    if (entity instanceof Projectile) {
+      entity.dead = true;
+      this.hits++;
+      this.particles.burst(entity.pos, 10, entity.color, 2.2);
+      this._award(entity.pos, 60, null, false);
+      sfx.hit(1);
+      return;
+    }
+
+    if (entity === this.boss) {
+      const res = this.boss.damage(onGem);
+      if (res === "armor") {
+        sfx.armor();
+        this.particles.burst(entity.pos, 6, "#8a93b8", 1.6);
+        this._miss(true);
+      } else {
+        this.hits++;
+        sfx.bossHit();
+        vibrate(50);
+        this.particles.burst(entity.gemPos(), 22, "#ff3b6b", 3.4);
+        this._award(entity.gemPos(), 500, "GEMME !");
+        this.emit("boss", { hp: Math.max(0, this.boss.hp), max: this.boss.maxHp });
+        this.shake = 0.6;
+      }
+      return;
+    }
+
+    // Tête volante
+    const res = entity.damage();
+    this.hits++;
+    if (res === "armor") {
+      sfx.armor();
+      this.particles.burst(entity.pos, 8, "#bec4d6", 2.4);
+      this._bumpCombo(false);
+    } else {
+      sfx.hit(this.combo + 1);
+      vibrate(25);
+      this.killed++;
+      this.particles.burst(entity.pos, 16, entity.spec.color, 3);
+      this._award(entity.pos, entity.spec.score);
+      this.emit("remaining", Math.max(0, this.level.quota - this.killed));
+    }
+  }
+
+  /** Cible la plus proche du point de visée (petite aide à la visée incluse). */
+  _pick(sx, sy) {
+    const out = {};
+    let best = null;
+    const consider = (entity, pos, radius, onGem, assist) => {
+      const p = this.cam.project(pos, out);
+      if (!p) return;
+      const r = radius * p.scale * assist;
+      const d = Math.hypot(p.x - sx, p.y - sy);
+      if (d > r) return;
+      const score = d - r; // privilégie ce qui englobe franchement le réticule
+      if (!best || score < best.score || (onGem && !best.onGem && d < r)) {
+        best = { entity, onGem, score, proj: p };
+      }
+    };
+
+    for (const e of this.entities) {
+      if (!e.shootable || e.dead) continue;
+      const assist = e instanceof Projectile ? 1.6 : e instanceof Bomb || e instanceof Butterfly ? 1.35 : 1.18;
+      consider(e, e.pos, e.radius, false, assist);
+    }
+    if (this.boss && !this.boss.dead) {
+      consider(this.boss, this.boss.pos, this.boss.radius, false, 1.0);
+      if (this.boss.vulnerable) consider(this.boss, this.boss.gemPos(), this.boss.radius * 0.45, true, 1.5);
+    }
+    return best;
+  }
+
+  _miss(silent) {
+    if (!silent) sfx.miss();
+    if (this.combo > 0) { this.combo = 0; this.emit("combo", 0); }
+  }
+
+  _bumpCombo(count = true) {
+    this.comboT = COMBO_WINDOW;
+    if (count) {
+      this.combo++;
+      this.bestCombo = Math.max(this.bestCombo, this.combo);
+      this.emit("combo", this.combo);
+    }
+  }
+
+  _award(pos, base, label, combo = true) {
+    if (combo) this._bumpCombo();
+    const mult = Math.max(1, this.combo);
+    const pts = base * mult;
+    this.score += pts;
+    this.emit("score", this.score);
+    this.particles.text(pos, label || "+" + pts, mult > 1 ? "#38e8ff" : "#ffcc4d");
+  }
+
+  _heal() {
+    if (this.hearts < this.maxHearts) {
+      this.hearts++;
+      this.emit("hearts", { hearts: this.hearts, max: this.maxHearts });
+      this.emit("toast", "Vie récupérée !");
+    }
+    sfx.heal();
+  }
+
+  _explode(bomb) {
+    sfx.bomb();
+    vibrate([60, 30, 90]);
+    this.shake = 0.9;
+    this.particles.burst(bomb.pos, 46, "#ff8a3b", 6);
+    let caught = 0;
+    for (const e of this.entities) {
+      if (e.dead || !(e instanceof Head)) continue;
+      if (this._dist(e.pos, bomb.pos) < bomb.blast) {
+        e.dead = true;
+        caught++;
+        this.killed++;
+        this.particles.burst(e.pos, 10, "#ffcc4d", 2.6);
+      }
+    }
+    if (this.boss && this.boss.vulnerable && this._dist(this.boss.pos, bomb.pos) < bomb.blast) {
+      this.boss.damage(true);
+      this.emit("boss", { hp: Math.max(0, this.boss.hp), max: this.boss.maxHp });
+    }
+    this._award(bomb.pos, 120 + caught * 180, caught ? `💥 x${caught}` : "💥");
+    this.emit("remaining", Math.max(0, this.level.quota - this.killed));
+  }
+
+  _dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
+
+  _playerHit(source) {
+    if (this.invul > 0 || this.phase === "done") return;
+    this.invul = INVUL;
+    this.hearts -= this.diff.damage;
+    this.hurtFx = 1;
+    this.shake = 1;
+    this.combo = 0;
+    this.emit("combo", 0);
+    this.emit("hearts", { hearts: Math.max(0, this.hearts), max: this.maxHearts });
+    sfx.hurt();
+    vibrate([120, 40, 120]);
+    if (this.hearts <= 0) this._finish(false, "vie");
+  }
+
+  /* ------------------------ Rendu ------------------------ */
+
+  render() {
+    const ctx = this.ctx;
+    const W = this.W, H = this.H;
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.save();
+    if (this.shake > 0) {
+      const s = this.shake * 8;
+      ctx.translate(rand(-s, s), rand(-s, s));
+    }
+
+    if (!this.useCameraFeed) this._drawRoom(ctx);
+
+    // Tri par profondeur : le plus loin d'abord.
+    const list = [];
+    for (const e of this.entities) {
+      const p = this.cam.project(e.pos, {});
+      if (p) list.push({ e, p });
+    }
+    if (this.boss && !this.boss.dead) {
+      const p = this.cam.project(this.boss.pos, {});
+      if (p) list.push({ e: this.boss, p });
+    }
+    list.sort((a, b) => b.p.z - a.p.z);
+    for (const item of list) item.e.draw(ctx, item.p);
+
+    this.particles.draw(ctx, this.cam);
+    ctx.restore();
+
+    this._drawOffscreenHints(ctx);
+    if (this.hurtFx > 0) this._drawHurt(ctx);
+    if (this.invul > 0 && Math.floor(this.time * 12) % 2 === 0) {
+      ctx.fillStyle = "rgba(255,59,107,0.05)";
+      ctx.fillRect(0, 0, W, H);
+    }
+    this._drawRadar();
+  }
+
+  /** Décor de repli : une salle en fil de fer quand la caméra n'est pas disponible. */
+  _drawRoom(ctx) {
+    const W = this.W, H = this.H;
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#131a33");
+    g.addColorStop(0.5, "#0a0c18");
+    g.addColorStop(1, "#1a0f1f");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!this._stars) {
+      this._stars = [];
+      for (let i = 0; i < 140; i++) {
+        const a = rand(0, TAU), b = Math.asin(rand(-0.3, 1));
+        this._stars.push({ p: v3(Math.sin(a) * Math.cos(b) * 24, Math.sin(b) * 24, -Math.cos(a) * Math.cos(b) * 24), s: rand(0.6, 2) });
+      }
+    }
+
+    const out = {};
+    // Étoiles / poussières lumineuses
+    for (const st of this._stars) {
+      const p = this.cam.project(st.p, out);
+      if (!p) continue;
+      ctx.fillStyle = "rgba(190,215,255," + (0.25 + st.s * 0.2) + ")";
+      ctx.fillRect(p.x, p.y, st.s, st.s);
+    }
+
+    // Sol quadrillé : donne immédiatement le sens de la rotation
+    const FLOOR = -2.4, EXT = 22, STEP = 2.2;
+    ctx.lineWidth = 1;
+    const line = (fixed, axis) => {
+      ctx.beginPath();
+      let started = false;
+      for (let t = -EXT; t <= EXT; t += STEP) {
+        const p = this.cam.project(axis === "x" ? v3(fixed, FLOOR, t) : v3(t, FLOOR, fixed), out);
+        if (!p) { started = false; continue; }
+        if (!started) { ctx.moveTo(p.x, p.y); started = true; } else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    };
+    for (let k = -EXT; k <= EXT; k += STEP) {
+      const fade = 1 - Math.abs(k) / (EXT * 1.4);
+      ctx.strokeStyle = "rgba(56,232,255," + (0.05 + fade * 0.16).toFixed(3) + ")";
+      line(k, "x");
+      line(k, "z");
+    }
+
+    // Ligne d'horizon
+    ctx.strokeStyle = "rgba(255,59,107,0.22)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let started = false;
+    for (let a = 0; a <= 64; a++) {
+      const ang = (a / 64) * TAU;
+      const p = this.cam.project(v3(Math.sin(ang) * 26, 0, -Math.cos(ang) * 26), out);
+      if (!p) { started = false; continue; }
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; } else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  }
+
+  /** Flèches vers les menaces hors champ : indispensable sur 360°. */
+  _drawOffscreenHints(ctx) {
+    const W = this.W, H = this.H, cx = W / 2, cy = H / 2;
+    const threats = this.entities.filter((e) => e instanceof Head || e instanceof Projectile);
+    if (this.boss && !this.boss.dead) threats.push(this.boss);
+    const radius = Math.min(W, H) * 0.36;
+
+    for (const e of threats) {
+      const p = this.cam.project(e.pos, {});
+      if (p && p.x > -30 && p.x < W + 30 && p.y > -30 && p.y < H + 30) continue;
+
+      // Direction dans le plan de l'écran, valable même lorsque la cible est derrière.
+      const sx = vDot(e.pos, this.cam.right);
+      const sy = -vDot(e.pos, this.cam.up);
+      const len = Math.hypot(sx, sy) || 1;
+      const ux = sx / len, uy = sy / len;
+      const urgent = e instanceof Projectile || (e instanceof Head && e.state === "charge");
+
+      ctx.save();
+      ctx.translate(cx + ux * radius, cy + uy * radius);
+      ctx.rotate(Math.atan2(uy, ux));
+      ctx.globalAlpha = urgent ? 0.95 : 0.5;
+      ctx.fillStyle = urgent ? "#ff3b6b" : "rgba(255,255,255,.85)";
+      ctx.beginPath();
+      ctx.moveTo(12, 0); ctx.lineTo(-8, 8); ctx.lineTo(-8, -8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  _drawHurt(ctx) {
+    const W = this.W, H = this.H;
+    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.7);
+    g.addColorStop(0, "rgba(255,0,60,0)");
+    g.addColorStop(1, `rgba(255,0,60,${0.55 * this.hurtFx})`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  _drawRadar() {
+    const c = this.radarCtx;
+    if (!c) return;
+    const S = this.radar.width, R = S / 2 - 6;
+    c.clearRect(0, 0, S, S);
+    c.save();
+    c.translate(S / 2, S / 2);
+
+    c.fillStyle = "rgba(6,10,24,0.55)";
+    c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fill();
+    c.strokeStyle = "rgba(255,255,255,0.35)";
+    c.lineWidth = 2;
+    c.stroke();
+
+    // Cône de vision
+    c.fillStyle = "rgba(56,232,255,0.16)";
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.arc(0, 0, R, -Math.PI / 2 - this.cam.fov / 2, -Math.PI / 2 + this.cam.fov / 2);
+    c.closePath();
+    c.fill();
+
+    const plot = (e, color, size) => {
+      const s = toSpherical(e.pos);
+      const a = s.yaw - this.cam.yaw - Math.PI / 2;
+      const d = clamp(s.r / 14, 0.12, 1) * R;
+      c.fillStyle = color;
+      c.beginPath();
+      c.arc(Math.cos(a) * d, Math.sin(a) * d, size, 0, TAU);
+      c.fill();
+    };
+
+    for (const e of this.entities) {
+      if (e instanceof Head) plot(e, e.state === "charge" ? "#ff3b6b" : "rgba(255,255,255,.85)", e.state === "charge" ? 5 : 3.5);
+      else if (e instanceof Butterfly) plot(e, "#7dffa8", 3);
+      else if (e instanceof Bomb) plot(e, "#ff8a3b", 3.5);
+      else if (e instanceof Projectile) plot(e, "#b47dff", 2.5);
+    }
+    if (this.boss && !this.boss.dead) plot(this.boss, "#ffcc4d", 7);
+
+    c.fillStyle = "#fff";
+    c.beginPath(); c.arc(0, 0, 3, 0, TAU); c.fill();
+    c.restore();
+  }
+}
+
+
+return { Game };
+})();
+
+__modules["main.js"] = (function () {
+// Point d'entrée : assemble capteurs, visages, écrans et boucle de jeu.
+
+const store = __modules["storage.js"];
+const audio = __modules["audio.js"];
+const { sfx } = __modules["audio.js"];
+const { Orientation, CameraFeed } = __modules["sensors.js"];
+const F = __modules["faces.js"];
+const { Game } = __modules["game.js"];
+const { LEVELS, indexInMode, nextLevel } = __modules["levels.js"];
+const { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } = __modules["ui.js"];
+const { clamp } = __modules["util.js"];
+store.load();
+const settings = store.settings();
+audio.setEnabled(settings.sound);
+audio.setVibrate(settings.vibrate);
+
+// Ouvert par double-clic depuis le système de fichiers : les navigateurs
+// interdisent la caméra sur une URL file://, on le dit plutôt que d'échouer.
+const FICHIER_LOCAL = location.protocol === "file:";
+
+const video = $("#world-video");
+const scene = $("#scene");
+const orientation = new Orientation();
+const feed = new CameraFeed(video);
+const captureFeed = new CameraFeed($("#capture-video"));
+
+const game = new Game({ canvas: scene, radar: $("#radar"), orientation, settings });
+
+let faces = [];          // visages jouables (sauvegardés + secours)
+let currentLevel = null;
+let lastResult = null;
+let wakeLock = null;
+let levelMode = "expert";
+
+/* ------------------------------------------------------------------ */
+/*  Visages                                                            */
+/* ------------------------------------------------------------------ */
+
+async function refreshFaces() {
+  const saved = await F.loadFaceTextures(store.faces());
+  faces = saved.length ? saved : F.defaultFaces();
+  renderFaces(faces, { onDelete: onDeleteFace });
+}
+
+function onDeleteFace(face) {
+  if (face.isDefault) return;
+  store.removeFace(face.id);
+  sfx.ui();
+  refreshFaces();
+}
+
+/* ------------------------------------------------------------------ */
+/*  Navigation                                                         */
+/* ------------------------------------------------------------------ */
+
+$$("[data-go]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    audio.unlock();
+    sfx.ui();
+    const target = btn.dataset.go;
+    if (target === "screen-levels") renderLevels(levelMode, store.progress(), openReady);
+    if (target === "screen-faces") refreshFaces();
+    showScreen(target);
+  });
+});
+
+$$(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    levelMode = tab.dataset.mode;
+    $$(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+    renderLevels(levelMode, store.progress(), openReady);
+    sfx.ui();
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Lancement d'un niveau                                              */
+/* ------------------------------------------------------------------ */
+
+function openReady(level) {
+  currentLevel = level;
+  $("#ready-title").textContent = `${level.mode === "ami" ? "Démo" : "Niveau"} ${indexInMode(level) + 1} — ${level.name}`;
+  $("#ready-desc").textContent = level.desc;
+  const holder = $("#ready-face");
+  holder.innerHTML = "";
+  faces.slice(0, 5).forEach((f) => {
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 132;
+    drawFaceInto(cv, f.tex);
+    holder.appendChild(cv);
+  });
+  $("#ready-perm").textContent = FICHIER_LOCAL
+    ? "Fichier local : la caméra est indisponible ici. Décor de secours et visée au doigt."
+    : settings.camera
+      ? "Le jeu va demander l'accès à la caméra et aux capteurs de mouvement."
+      : "Mode sans caméra : glisse le doigt pour tourner la vue.";
+  showScreen("screen-ready");
+}
+
+$("#btn-ready-back").addEventListener("click", () => {
+  sfx.ui();
+  renderLevels(levelMode, store.progress(), openReady);
+  showScreen("screen-levels");
+});
+
+$("#btn-start-level").addEventListener("click", async () => {
+  audio.unlock();
+  sfx.ui();
+  await startLevel(currentLevel);
+});
+
+async function startLevel(level) {
+  if (!level) return;
+  currentLevel = level;
+
+  // Plein écran : gagne la place des barres de navigation sur mobile.
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+    }
+  } catch (err) { /* facultatif */ }
+
+  // Gyroscope
+  const granted = await orientation.requestPermission();
+  orientation.sensitivity = settings.sensitivity / 100;
+  orientation.invertY = settings.invertY;
+  if (granted) orientation.start();
+
+  // Caméra arrière
+  let camOk = false;
+  if (settings.camera && !FICHIER_LOCAL) {
+    camOk = await feed.start("environment");
+    video.classList.toggle("on", camOk);
+    if (!camOk) toast("Caméra indisponible : décor de secours activé.", 3200);
+  } else {
+    video.classList.remove("on");
+  }
+
+  await requestWakeLock();
+
+  hideScreens();
+  setHud(true);
+  hud.level(`${level.mode === "ami" ? "Démo" : "Niveau"} ${indexInMode(level) + 1} · ${level.name}`);
+  game.load(level, faces, camOk);
+  orientation.recenter();
+  game.start();
+
+  if (!orientation.hasGyro) {
+    setTimeout(() => {
+      if (!orientation.hasGyro) toast("Pas de gyroscope : glisse le doigt pour tourner la vue.", 3600);
+    }, 1200);
+  } else {
+    toast("Tourne sur toi-même : elles arrivent de partout !", 2600);
+  }
+}
+
+function stopPlaying() {
+  game.stop();
+  feed.stop();
+  video.classList.remove("on");
+  orientation.stop();
+  releaseWakeLock();
+  setHud(false);
+}
+
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen");
+  } catch (err) { /* non critique */ }
+}
+function releaseWakeLock() {
+  if (wakeLock) { try { wakeLock.release(); } catch (e) { /* ignoré */ } wakeLock = null; }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && game.running && !game.paused) doPause();
+  else if (!document.hidden && wakeLock === null && game.running) requestWakeLock();
+});
+
+/* ------------------------------------------------------------------ */
+/*  HUD et événements de jeu                                           */
+/* ------------------------------------------------------------------ */
+
+game.on("hearts", hud.hearts);
+game.on("score", hud.score);
+game.on("combo", hud.combo);
+game.on("boss", hud.boss);
+game.on("remaining", (n) => { if (!currentLevel || !currentLevel.timeLimit) hud.remaining(n); });
+let lastShownSecond = -1;
+game.on("time", (t) => {
+  const s = Math.ceil(t);
+  if (s !== lastShownSecond) { lastShownSecond = s; hud.time(t); }
+});
+game.on("toast", (m) => toast(m));
+game.on("lock", (v) => hud.crosshair(v ? "lock" : ""));
+game.on("shot", () => hud.crosshair("shoot"));
+game.on("end", onLevelEnd);
+
+/* ------------------------------------------------------------------ */
+/*  Tir                                                                */
+/* ------------------------------------------------------------------ */
+
+function isUiTarget(el) {
+  return !!(el && el.closest && el.closest("button, input, label, select, .screen"));
+}
+
+window.addEventListener("pointerdown", (e) => {
+  if (!game.running || game.paused) return;
+  if (isUiTarget(e.target)) return;
+  if (settings.touchAim) game.shoot(e.clientX, e.clientY);
+  else game.shoot();
+});
+
+$("#btn-fire").addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  if (game.running && !game.paused) game.shoot();
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && game.running && !game.paused) { e.preventDefault(); game.shoot(); }
+  if (e.code === "Escape" && game.running && !game.paused) doPause();
+});
+
+orientation.attachDrag(document.body);
+
+/* ------------------------------------------------------------------ */
+/*  Pause                                                              */
+/* ------------------------------------------------------------------ */
+
+function doPause() {
+  if (!game.running) return;
+  game.pause();
+  showScreen("screen-pause");
+}
+
+$("#btn-pause").addEventListener("click", () => { sfx.ui(); doPause(); });
+$("#btn-resume").addEventListener("click", () => {
+  sfx.ui();
+  hideScreens();
+  game.resume();
+});
+$("#btn-recenter").addEventListener("click", () => {
+  orientation.recenter();
+  sfx.ui();
+  toast("Vue recentrée.");
+});
+$("#btn-restart").addEventListener("click", () => {
+  sfx.ui();
+  hideScreens();
+  game.load(currentLevel, faces, game.useCameraFeed);
+  orientation.recenter();
+  game.start();
+});
+$("#btn-quit").addEventListener("click", () => {
+  sfx.ui();
+  stopPlaying();
+  renderLevels(levelMode, store.progress(), openReady);
+  showScreen("screen-levels");
+});
+
+/* ------------------------------------------------------------------ */
+/*  Fin de niveau                                                      */
+/* ------------------------------------------------------------------ */
+
+function onLevelEnd(res) {
+  lastResult = res;
+  stopPlaying();
+
+  const level = res.level;
+  store.recordResult(level.id, res.score, res.won);
+
+  const messages = { boss: "Grande Tête vaincue !", quota: "Zone nettoyée !", temps: "Temps écoulé", vie: "Tu as été submergé" };
+  $("#result-title").textContent = res.won ? messages[res.reason] || "Niveau terminé" : messages[res.reason] || "Partie perdue";
+  $("#result-score").textContent = res.score.toLocaleString("fr-FR");
+  $("#result-combo").textContent = "x" + res.bestCombo;
+  $("#result-acc").textContent = res.accuracy + " %";
+  $("#result-best").textContent = (store.progress().best[level.id] || 0).toLocaleString("fr-FR");
+  drawFaceInto($("#result-portrait"), res.face ? res.face.tex : null);
+
+  const unlockBox = $("#result-unlock");
+  const notes = [];
+
+  if (res.won) {
+    const next = nextLevel(level);
+    if (next && store.unlock(level.mode, indexInMode(next) + 1)) {
+      notes.push(`Niveau débloqué : ${next.name}`);
+    }
+    // Vaincre le boss « sauve » le visage utilisé, comme sur 3DS.
+    if (res.reason === "boss" && res.face && !res.face.isDefault && store.markFaceSaved(res.face.id)) {
+      res.face.saved = true;
+      notes.push(`Visage sauvé : ${res.face.name}`);
+    }
+    if (level.mode === "expert" && !nextLevel(level)) {
+      notes.push("Campagne terminée ! Les démos « Montrer à un ami » t'attendent.");
+    }
+  }
+
+  unlockBox.classList.toggle("hidden", notes.length === 0);
+  unlockBox.innerHTML = notes.map((n) => `<div>🏅 ${n}</div>`).join("");
+  $("#btn-next").classList.toggle("hidden", !(res.won && nextLevel(level)));
+  showScreen("screen-result");
+}
+
+$("#btn-next").addEventListener("click", async () => {
+  sfx.ui();
+  const next = nextLevel(lastResult.level);
+  if (next) await startLevel(next);
+});
+$("#btn-replay").addEventListener("click", async () => {
+  sfx.ui();
+  await startLevel(lastResult.level);
+});
+$("#btn-result-menu").addEventListener("click", () => {
+  sfx.ui();
+  showScreen("screen-title");
+});
+
+/* ------------------------------------------------------------------ */
+/*  Capture de visage                                                  */
+/* ------------------------------------------------------------------ */
+
+const capVideo = $("#capture-video");
+const capPreview = $("#capture-preview");
+const capStage = $(".capture-stage");
+let capFacing = "user";
+let pendingCrop = null;         // canvas carré prêt à être enregistré
+let importImage = null;         // image en cours de cadrage
+const importView = { zoom: 1.2, px: 0, py: 0 };
+
+async function openCapture() {
+  audio.unlock();
+  showScreen("screen-capture");
+  resetCaptureUi();
+  const ok = await captureFeed.start(capFacing);
+  capVideo.classList.toggle("mirror", capFacing === "user");
+  if (!ok) {
+    $("#capture-hint").textContent = "Caméra inaccessible. Utilise « Importer une photo ».";
+    $("#btn-shutter").disabled = true;
+  }
+}
+
+function resetCaptureUi() {
+  pendingCrop = null;
+  importImage = null;
+  capPreview.classList.remove("on");
+  $("#capture-confirm").classList.add("hidden");
+  $("#capture-controls").classList.remove("hidden");
+  $("#import-controls").classList.add("hidden");
+  $("#capture-count").classList.add("hidden");
+  $("#btn-shutter").disabled = false;
+  $("#btn-face-save").textContent = "Garder ce visage";
+  $("#capture-hint").textContent = "Place les yeux et le nez sur les repères, puis capture.";
+}
+
+function closeCapture() {
+  captureFeed.stop();
+  resetCaptureUi();
+  refreshFaces();
+  showScreen("screen-faces");
+}
+
+$("#btn-new-face").addEventListener("click", () => { sfx.ui(); openCapture(); });
+$("#capture-back").addEventListener("click", () => { sfx.ui(); closeCapture(); });
+$("#btn-capture-cancel").addEventListener("click", () => { sfx.ui(); closeCapture(); });
+
+$("#btn-switch-cam").addEventListener("click", async () => {
+  sfx.ui();
+  capFacing = capFacing === "user" ? "environment" : "user";
+  const ok = await captureFeed.start(capFacing);
+  capVideo.classList.toggle("mirror", ok && capFacing === "user");
+});
+
+$("#btn-shutter").addEventListener("click", async () => {
+  if (!captureFeed.ready) { toast("La caméra n'est pas prête."); return; }
+  const count = $("#capture-count");
+  count.classList.remove("hidden");
+  for (let i = 3; i > 0; i--) {
+    count.textContent = i;
+    sfx.ui();
+    await wait(650);
+  }
+  count.classList.add("hidden");
+  sfx.shutter();
+  const rect = capStage.getBoundingClientRect();
+  pendingCrop = F.cropFromVideo(capVideo, rect.width, rect.height, capFacing === "user");
+  showCropPreview();
+});
+
+function showCropPreview() {
+  const rect = capStage.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  capPreview.width = Math.round(rect.width * dpr);
+  capPreview.height = Math.round(rect.height * dpr);
+  const ctx = capPreview.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+  ctx.fillStyle = "#05060d";
+  ctx.fillRect(0, 0, rect.width, rect.height);
+  const tex = F.makeTexture(pendingCrop);
+  const size = Math.min(rect.width, rect.height) * 0.72;
+  ctx.drawImage(tex, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
+  capPreview.classList.add("on");
+  $("#capture-controls").classList.add("hidden");
+  $("#import-controls").classList.add("hidden");
+  $("#capture-confirm").classList.remove("hidden");
+  $("#capture-hint").textContent = F.funProfile();
+}
+
+$("#btn-face-retry").addEventListener("click", async () => {
+  sfx.ui();
+  if (importImage) { resetCaptureUi(); startImportFraming(importImage); return; }
+  resetCaptureUi();
+  if (!captureFeed.stream) await captureFeed.start(capFacing);
+});
+
+$("#btn-face-save").addEventListener("click", () => {
+  if (!pendingCrop) return;
+  const face = store.addFace(F.toDataURL(pendingCrop), "Visage " + (store.faces().length + 1));
+  sfx.heal();
+  toast(`${face.name} enrôlé dans la guerre des têtes.`, 2600);
+  closeCapture();
+});
+
+/* ---- Import depuis la galerie ---- */
+
+$("#file-face").addEventListener("change", async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    const url = await F.readFile(file);
+    const img = await F.loadImage(url);
+    showScreen("screen-capture");
+    captureFeed.stop();
+    resetCaptureUi();
+    startImportFraming(img);
+  } catch (err) {
+    toast("Image illisible.");
+  }
+});
+
+function startImportFraming(img) {
+  importImage = img;
+  importView.zoom = 1.2; importView.px = 0; importView.py = 0;
+  capVideo.classList.remove("mirror");
+  $("#capture-controls").classList.add("hidden");
+  $("#import-controls").classList.remove("hidden");
+  $("#capture-confirm").classList.remove("hidden");
+  $("#btn-face-save").textContent = "Garder ce cadrage";
+  $("#capture-hint").textContent = "Cadre le visage : glisse pour déplacer, le curseur pour zoomer.";
+  $("#import-zoom").value = String(Math.round(importView.zoom * 100));
+  drawImportPreview();
+}
+
+function drawImportPreview() {
+  if (!importImage) return;
+  pendingCrop = F.cropFromImage(importImage, importView);
+  const rect = capStage.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  capPreview.width = Math.round(rect.width * dpr);
+  capPreview.height = Math.round(rect.height * dpr);
+  const ctx = capPreview.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "#05060d";
+  ctx.fillRect(0, 0, rect.width, rect.height);
+  const size = Math.min(rect.width, rect.height) * 0.78;
+  ctx.drawImage(pendingCrop, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
+  // Aperçu de la tête finale, en petit
+  const tex = F.makeTexture(pendingCrop);
+  const mini = size * 0.32;
+  ctx.drawImage(tex, rect.width - mini - 12, 12, mini, mini);
+  capPreview.classList.add("on");
+}
+
+$("#import-zoom").addEventListener("input", (e) => {
+  importView.zoom = Number(e.target.value) / 100;
+  drawImportPreview();
+});
+
+let importDrag = null;
+capPreview.addEventListener("pointerdown", (e) => {
+  if (!importImage) return;
+  importDrag = { x: e.clientX, y: e.clientY };
+  capPreview.setPointerCapture(e.pointerId);
+});
+capPreview.addEventListener("pointermove", (e) => {
+  if (!importDrag || !importImage) return;
+  const rect = capStage.getBoundingClientRect();
+  const k = 1 / (Math.min(rect.width, rect.height) * importView.zoom);
+  importView.px = clamp(importView.px - (e.clientX - importDrag.x) * k, -0.5, 0.5);
+  importView.py = clamp(importView.py - (e.clientY - importDrag.y) * k, -0.5, 0.5);
+  importDrag = { x: e.clientX, y: e.clientY };
+  drawImportPreview();
+});
+capPreview.addEventListener("pointerup", () => { importDrag = null; });
+capPreview.addEventListener("pointercancel", () => { importDrag = null; });
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ------------------------------------------------------------------ */
+/*  Réglages                                                           */
+/* ------------------------------------------------------------------ */
+
+function bindSettings() {
+  const sens = $("#set-sens"), inv = $("#set-inverty"), touchAim = $("#set-touchaim");
+  const cam = $("#set-camera"), snd = $("#set-sound"), vib = $("#set-vibrate"), diff = $("#set-difficulty");
+
+  sens.value = settings.sensitivity;
+  inv.checked = settings.invertY;
+  touchAim.checked = settings.touchAim;
+  cam.checked = settings.camera;
+  snd.checked = settings.sound;
+  vib.checked = settings.vibrate;
+  diff.value = settings.difficulty;
+
+  sens.addEventListener("input", () => {
+    store.setSetting("sensitivity", Number(sens.value));
+    orientation.sensitivity = Number(sens.value) / 100;
+  });
+  inv.addEventListener("change", () => {
+    store.setSetting("invertY", inv.checked);
+    orientation.invertY = inv.checked;
+  });
+  touchAim.addEventListener("change", () => store.setSetting("touchAim", touchAim.checked));
+  cam.addEventListener("change", () => store.setSetting("camera", cam.checked));
+  snd.addEventListener("change", () => {
+    store.setSetting("sound", snd.checked);
+    audio.setEnabled(snd.checked);
+    if (snd.checked) { audio.unlock(); sfx.ui(); }
+  });
+  vib.addEventListener("change", () => {
+    store.setSetting("vibrate", vib.checked);
+    audio.setVibrate(vib.checked);
+    if (vib.checked) audio.vibrate(40);
+  });
+  diff.addEventListener("change", () => store.setSetting("difficulty", diff.value));
+}
+
+$("#btn-reset").addEventListener("click", () => {
+  if (!confirm("Effacer la progression, les réglages et les visages ?")) return;
+  store.reset();
+  location.reload();
+});
+
+/* ------------------------------------------------------------------ */
+/*  Démarrage                                                          */
+/* ------------------------------------------------------------------ */
+
+async function boot() {
+  bindSettings();
+  orientation.sensitivity = settings.sensitivity / 100;
+  orientation.invertY = settings.invertY;
+  await refreshFaces();
+  renderLevels(levelMode, store.progress(), openReady);
+  showScreen("screen-title");
+
+  if (FICHIER_LOCAL) {
+    const note = document.createElement("p");
+    note.className = "footnote";
+    note.innerHTML = "Version hors ligne : le navigateur interdit la caméra sur un fichier local.<br>" +
+      "Tu joues avec le décor de secours et la visée au doigt. Pour la réalité augmentée complète, " +
+      "lance le serveur HTTPS local (voir le README).";
+    $("#screen-title").appendChild(note);
+  }
+
+  // Le gyroscope n'est lu qu'en jeu, mais on détecte sa présence pour l'aide.
+  if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission !== "function") {
+    orientation.start();
+    setTimeout(() => { if (!game.running) orientation.stop(); }, 2500);
+  }
+
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+}
+
+// Point d'accès pour le débogage et les tests automatisés.
+window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel };
+
+document.addEventListener("gesturestart", (e) => e.preventDefault());
+document.addEventListener("dblclick", (e) => e.preventDefault());
+
+boot();
+
+return {  };
+})();
+</script>
+</body>
+</html>
