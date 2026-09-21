@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>En développement — La guerre des têtes 2.0</title>
+<style>
+  :root {
+    --bg: #F0EEE6;
+    --surface: #FAF9F5;
+    --border: #E3DED1;
+    --text: #1F1E1D;
+    --muted: #6C6A63;
+    --accent: #D97757;
+    --shadow: 0 1px 2px rgba(31, 30, 29, .05), 0 12px 32px rgba(31, 30, 29, .06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1F1E1D;
+      --surface: #262624;
+      --border: #3A3835;
+      --text: #F5F4EF;
+      --muted: #A3A099;
+      --accent: #E08A6C;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px rgba(0, 0, 0, .28);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1F1E1D;
+    --surface: #262624;
+    --border: #3A3835;
+    --text: #F5F4EF;
+    --muted: #A3A099;
+    --accent: #E08A6C;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 32px rgba(0, 0, 0, .28);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+  }
+
+  /* Soft halo behind the card, in the accent tone. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(60vmin 60vmin at 50% 42%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 56px 40px 44px;
+    text-align: center;
+    animation: rise .7s cubic-bezier(.2, .7, .3, 1) both;
+  }
+
+  .logo {
+    width: 88px;
+    height: 88px;
+    display: block;
+    margin: 0 auto 28px;
+    color: var(--accent);
+    animation: spin 24s linear infinite, breathe 4s ease-in-out infinite;
+  }
+
+  .logo path { fill: currentColor; }
+
+  h1 {
+    margin: 0 0 14px;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    font-weight: 400;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+  }
+
+  .project {
+    margin: 0 0 32px;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .project strong { color: var(--text); font-weight: 500; }
+
+  .dots {
+    display: flex;
+    gap: 7px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .dots span:nth-child(2) { animation-delay: .2s; }
+  .dots span:nth-child(3) { animation-delay: .4s; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: .8125rem;
+    letter-spacing: .01em;
+  }
+
+  .badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .72; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: .25; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-3px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .logo, .dots span { animation: none; }
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 44px 24px 36px; border-radius: 16px; }
+    .logo { width: 72px; height: 72px; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <svg class="logo" viewBox="-110 -110 220 220" role="img" aria-label="Logo Claude">
+      <path d="M-5.00 -5.00 L-12.50 -87.50 A12.50 12.50 0 0 1 12.50 -87.50 L5.00 -5.00 Z" />
+      <path d="M-1.83 -6.83 L18.92 -57.78 A12.50 12.50 0 0 1 40.58 -45.28 L6.83 -1.83 Z" />
+      <path d="M1.83 -6.83 L60.87 -49.58 A12.50 12.50 0 0 1 73.37 -27.92 L6.83 1.83 Z" />
+      <path d="M5.00 -5.00 L53.50 -12.50 A12.50 12.50 0 0 1 53.50 12.50 L5.00 5.00 Z" />
+      <path d="M6.83 -1.83 L82.03 32.92 A12.50 12.50 0 0 1 69.53 54.58 L1.83 6.83 Z" />
+      <path d="M6.83 1.83 L40.58 45.28 A12.50 12.50 0 0 1 18.92 57.78 L-1.83 6.83 Z" />
+      <path d="M5.00 5.00 L12.50 77.50 A12.50 12.50 0 0 1 -12.50 77.50 L-5.00 5.00 Z" />
+      <path d="M1.83 6.83 L-15.92 52.58 A12.50 12.50 0 0 1 -37.58 40.08 L-6.83 1.83 Z" />
+      <path d="M-1.83 6.83 L-69.53 54.58 A12.50 12.50 0 0 1 -82.03 32.92 L-6.83 -1.83 Z" />
+      <path d="M-5.00 5.00 L-59.50 12.50 A12.50 12.50 0 0 1 -59.50 -12.50 L-5.00 -5.00 Z" />
+      <path d="M-6.83 1.83 L-73.37 -27.92 A12.50 12.50 0 0 1 -60.87 -49.58 L-1.83 -6.83 Z" />
+      <path d="M-6.83 -1.83 L-37.58 -40.08 A12.50 12.50 0 0 1 -15.92 -52.58 L1.83 -6.83 Z" />
+    </svg>
+
+    <h1>En développement</h1>
+
+    <p class="project"><strong>La guerre des têtes 2.0</strong><br />Cette page arrive bientôt.</p>
+
+    <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    <span class="badge">Travaux en cours</span>
+  </main>
+</body>
+</html>
