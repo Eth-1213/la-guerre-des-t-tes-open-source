@@ -394,7 +394,7 @@ $("#btn-shutter").addEventListener("click", async () => {
   count.classList.add("hidden");
   sfx.shutter();
   const rect = capStage.getBoundingClientRect();
-  pendingCrop = F.cropFromVideo(capVideo, rect.width, rect.height, capFacing === "user");
+  pendingCrop = F.cropFromVideo(capVideo, rect.width, rect.height);
   showCropPreview();
 });
 
@@ -484,7 +484,7 @@ async function prendreVueScan() {
   const rect = capStage.getBoundingClientRect();
   const etape = SCAN_STEPS[scan.etape];
   scan.vues.push({
-    image: F.cropFromVideo(capVideo, rect.width, rect.height, capFacing === "user"),
+    image: F.cropFromVideo(capVideo, rect.width, rect.height),
     lon: etape.lon,
     lat: etape.lat,
   });

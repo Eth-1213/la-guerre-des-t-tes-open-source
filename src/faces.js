@@ -21,28 +21,31 @@ export function guideBox(stageW, stageH) {
 }
 
 /** Mappe un rectangle de l'élément affiché (object-fit: cover) vers les pixels source. */
-function coverRect(srcW, srcH, boxW, boxH, rect, mirror) {
+function coverRect(srcW, srcH, boxW, boxH, rect) {
   const scale = Math.max(boxW / srcW, boxH / srcH);
   const dw = srcW * scale, dh = srcH * scale;
   const ox = (boxW - dw) / 2, oy = (boxH - dh) / 2;
-  let sx = (rect.x - ox) / scale;
-  const sy = (rect.y - oy) / scale;
-  const ss = rect.side / scale;
-  if (mirror) sx = srcW - sx - ss;
-  return { sx, sy, ss };
+  return {
+    sx: (rect.x - ox) / scale,
+    sy: (rect.y - oy) / scale,
+    ss: rect.side / scale,
+  };
 }
 
-/** Découpe le carré du gabarit dans la vidéo ; renvoie un canvas carré. */
-export function cropFromVideo(video, boxW, boxH, mirror) {
+/**
+ * Découpe le carré du gabarit dans la vidéo ; renvoie un canvas carré.
+ *
+ * L'aperçu de la caméra frontale est retourné par CSS, par confort : on se
+ * voit comme dans un miroir. Le flux, lui, arrive déjà dans le bon sens.
+ * Le retourner à la capture donnait un portrait inversé — sans conséquence
+ * pour une photo de face, mais désastreux pour le scan : les profils se
+ * retrouvaient collés du mauvais côté du crâne.
+ */
+export function cropFromVideo(video, boxW, boxH) {
   const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
-  const rect = guideBox(boxW, boxH);
-  const { sx, sy, ss } = coverRect(vw, vh, boxW, boxH, rect, mirror);
+  const { sx, sy, ss } = coverRect(vw, vh, boxW, boxH, guideBox(boxW, boxH));
   const out = makeCanvas(CROP_SIZE);
-  const ctx = out.getContext("2d");
-  ctx.save();
-  if (mirror) { ctx.translate(CROP_SIZE, 0); ctx.scale(-1, 1); }
-  ctx.drawImage(video, sx, sy, ss, ss, 0, 0, CROP_SIZE, CROP_SIZE);
-  ctx.restore();
+  out.getContext("2d").drawImage(video, sx, sy, ss, ss, 0, 0, CROP_SIZE, CROP_SIZE);
   return out;
 }
 
