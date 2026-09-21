@@ -2,6 +2,7 @@
 // masque circulaire et visages de secours dessinés par le code.
 
 import { rand, pick, TAU } from "./util.js";
+import { buildEquirect, buildAtlas, renderView, EQUI_W, EQUI_H } from "./head3d.js";
 
 export const TEX_SIZE = 256;
 export const CROP_SIZE = 192; // taille stockée (JPEG) : compromis qualité / quota localStorage
@@ -102,6 +103,36 @@ export function makeTexture(src) {
   return c;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Têtes en relief                                                     */
+/* ------------------------------------------------------------------ */
+
+export const PORTRAIT = 256;
+
+/**
+ * Assemble une tête jouable à partir de prises de vue.
+ * `equirect` est la seule chose à conserver : portrait et planche de
+ * sprites s'en déduisent, et se reconstruisent au chargement en ~150 ms.
+ */
+export function buildHead(vues) {
+  const equirect = buildEquirect(vues);
+  return {
+    equirect,
+    tex: renderView(equirect, 0, 0, PORTRAIT),  // vue de face, pleine résolution
+    atlas: null,                                 // construite à la demande
+  };
+}
+
+/** La planche de sprites ne sert qu'aux têtes qui volent : on la bâtit tard. */
+export function ensureAtlas(face) {
+  if (!face.atlas && face.equirect) face.atlas = buildAtlas(face.equirect);
+  return face.atlas;
+}
+
+export function equirectToDataURL(equirect) {
+  return equirect.toDataURL("image/jpeg", 0.78);
+}
+
 export function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -127,62 +158,66 @@ export function readFile(file) {
 const SKINS = ["#f2c39b", "#d99a6c", "#a6693f", "#7a4a2b", "#ffd9b8", "#c98a5e"];
 const HAIRS = ["#2b1d16", "#6b3f1d", "#1b1b22", "#8d5524", "#b3b3c6", "#c94f2e"];
 
-function drawDoodleFace(ctx, size, seed) {
+/**
+ * Tête de secours peinte directement en coordonnées longitude/latitude :
+ * cheveux sur tout l'arrière, oreilles sur les côtés, traits devant. Bien
+ * meilleur qu'une photo de face extrapolée, puisque rien n'est inventé.
+ */
+function drawDoodleEquirect(ctx, seed) {
   const R = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
   const skin = SKINS[Math.floor(R() * SKINS.length)];
   const hair = HAIRS[Math.floor(R() * HAIRS.length)];
-  const eyeY = size * (0.42 + R() * 0.05);
-  const eyeDx = size * (0.15 + R() * 0.04);
-  const eyeR = size * (0.045 + R() * 0.02);
+  const W = EQUI_W, H = EQUI_H;
+  // lon -PI..PI sur la largeur, lat +PI/2..-PI/2 sur la hauteur
+  const X = (lon) => ((lon + Math.PI) / (Math.PI * 2)) * W;
+  const Y = (lat) => (0.5 - lat / Math.PI) * H;
+  const ellipse = (lon, lat, rlon, rlat, couleur) => {
+    ctx.fillStyle = couleur;
+    for (const d of [-Math.PI * 2, 0, Math.PI * 2]) {   // répétition pour traverser la couture
+      ctx.beginPath();
+      ctx.ellipse(X(lon + d), Y(lat), (rlon / (Math.PI * 2)) * W, (rlat / Math.PI) * H, 0, 0, TAU);
+      ctx.fill();
+    }
+  };
 
   ctx.fillStyle = skin;
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, W, H);
 
-  // Cheveux
+  // Chevelure : calotte sur le haut, et tout l'arrière du crâne
   ctx.fillStyle = hair;
-  ctx.beginPath();
-  ctx.ellipse(size / 2, size * 0.26, size * 0.42, size * 0.26, 0, 0, TAU);
-  ctx.fill();
+  ctx.fillRect(0, 0, W, Y(0.70 + R() * 0.12));
+  ellipse(Math.PI, 0.14, 1.32, 0.92, hair);
+  ellipse(0, 0.78, 1.4, 0.5, hair);
 
-  // Yeux
-  for (const s of [-1, 1]) {
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.ellipse(size / 2 + s * eyeDx, eyeY, eyeR * 1.5, eyeR, 0, 0, TAU);
-    ctx.fill();
-    ctx.fillStyle = "#20242e";
-    ctx.beginPath();
-    ctx.arc(size / 2 + s * eyeDx, eyeY, eyeR * 0.75, 0, TAU);
-    ctx.fill();
-  }
+  // Oreilles, là où le profil les place
+  for (const s of [-1, 1]) ellipse(s * 1.5, -0.02, 0.16, 0.22, skin);
+  for (const s of [-1, 1]) ellipse(s * 1.5, -0.02, 0.09, 0.13, "rgba(0,0,0,.22)");
 
-  // Sourcils
-  ctx.strokeStyle = hair;
-  ctx.lineWidth = size * 0.022;
-  ctx.lineCap = "round";
+  // Yeux, sourcils, nez, bouche
+  const ecart = 0.26 + R() * 0.05;
   for (const s of [-1, 1]) {
+    ellipse(s * ecart, 0.1, 0.11, 0.075, "#fff");
+    ellipse(s * ecart, 0.1, 0.05, 0.05, "#20242e");
+    ctx.strokeStyle = hair;
+    ctx.lineWidth = H * 0.028;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(size / 2 + s * eyeDx - size * 0.06, eyeY - size * 0.075);
-    ctx.lineTo(size / 2 + s * eyeDx + size * 0.06, eyeY - size * (0.055 + R() * 0.04));
+    ctx.moveTo(X(s * ecart - 0.13), Y(0.24));
+    ctx.lineTo(X(s * ecart + 0.13), Y(0.22 + R() * 0.05));
     ctx.stroke();
   }
-
-  // Nez
   ctx.strokeStyle = "rgba(0,0,0,.35)";
-  ctx.lineWidth = size * 0.018;
+  ctx.lineWidth = H * 0.02;
   ctx.beginPath();
-  ctx.moveTo(size / 2, eyeY + size * 0.04);
-  ctx.lineTo(size / 2 - size * 0.03, eyeY + size * 0.14);
-  ctx.lineTo(size / 2 + size * 0.02, eyeY + size * 0.155);
+  ctx.moveTo(X(0), Y(0.06));
+  ctx.lineTo(X(-0.05), Y(-0.16));
+  ctx.lineTo(X(0.04), Y(-0.19));
   ctx.stroke();
-
-  // Bouche
   ctx.strokeStyle = "#8c3b3b";
-  ctx.lineWidth = size * 0.028;
+  ctx.lineWidth = H * 0.03;
   ctx.beginPath();
-  const my = size * 0.72;
-  ctx.moveTo(size / 2 - size * 0.12, my);
-  ctx.quadraticCurveTo(size / 2, my + size * (R() > 0.5 ? 0.08 : -0.05), size / 2 + size * 0.12, my);
+  ctx.moveTo(X(-0.2), Y(-0.42));
+  ctx.quadraticCurveTo(X(0), Y(-0.42 + (R() > 0.5 ? -0.09 : 0.06)), X(0.2), Y(-0.42));
   ctx.stroke();
 }
 
@@ -190,19 +225,38 @@ function drawDoodleFace(ctx, size, seed) {
 export function defaultFaces() {
   const names = ["Recrue", "Sergent", "Vétéran"];
   return names.map((name, i) => {
-    const c = makeCanvas(CROP_SIZE);
-    drawDoodleFace(c.getContext("2d"), CROP_SIZE, 1234 + i * 7717);
-    return { id: "default-" + i, name, crop: c, tex: makeTexture(c), saved: false, isDefault: true };
+    const equirect = makeCanvas(1);
+    equirect.width = EQUI_W; equirect.height = EQUI_H;
+    drawDoodleEquirect(equirect.getContext("2d"), 1234 + i * 7717);
+    return {
+      id: "default-" + i, name, saved: false, isDefault: true,
+      equirect, tex: renderView(equirect, 0, 0, PORTRAIT), atlas: null,
+    };
   });
 }
 
-/** Charge les visages sauvegardés en textures utilisables par le jeu. */
+/**
+ * Charge les visages sauvegardés en têtes jouables.
+ * Les visages d'avant le scan n'ont qu'une photo de face : ils deviennent
+ * une tête à vue unique, dont l'arrière est extrapolé.
+ */
 export async function loadFaceTextures(saved) {
   const out = [];
   for (const f of saved) {
     try {
-      const img = await loadImage(f.data);
-      out.push({ id: f.id, name: f.name, crop: img, tex: makeTexture(img), saved: f.saved });
+      if (f.scan) {
+        const img = await loadImage(f.scan);
+        const equirect = makeCanvas(1);
+        equirect.width = img.width; equirect.height = img.height;
+        equirect.getContext("2d").drawImage(img, 0, 0);
+        out.push({
+          id: f.id, name: f.name, saved: f.saved, scan: true,
+          equirect, tex: renderView(equirect, 0, 0, PORTRAIT), atlas: null,
+        });
+      } else {
+        const img = await loadImage(f.data);
+        out.push({ id: f.id, name: f.name, saved: f.saved, crop: img, ...buildHead([{ image: img, lon: 0, lat: 0 }]) });
+      }
     } catch (err) {
       console.warn("Visage illisible ignoré :", f.id);
     }

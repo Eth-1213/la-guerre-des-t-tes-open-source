@@ -4,6 +4,7 @@ import { TAU, clamp, rand, pick, v3, vDot, Camera, Emitter, toSpherical } from "
 import { Head, Butterfly, Bomb, Projectile, Boss, Particles } from "./entities.js";
 import { DIFFICULTY } from "./levels.js";
 import { sfx, vibrate } from "./audio.js";
+import { ensureAtlas } from "./faces.js";
 
 const COMBO_WINDOW = 2.6;   // secondes pour enchaîner
 const INVUL = 1.3;          // invincibilité après un coup encaissé
@@ -57,7 +58,15 @@ export class Game extends Emitter {
     const diff = DIFFICULTY[this.settings.difficulty] || DIFFICULTY.normal;
     this.level = { ...level, speed: (level.speed || 1) * diff.speed, aggro: (level.aggro || 1) * diff.aggro };
     this.diff = diff;
-    this.faces = faces.length ? faces : [];
+    // Quatre visages au plus par niveau : on reconnaît ses ennemis, et les
+    // planches de sprites restent raisonnables en mémoire.
+    const melange = faces.slice();
+    for (let i = melange.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [melange[i], melange[j]] = [melange[j], melange[i]];
+    }
+    this.faces = melange.slice(0, 4);
+    for (const f of this.faces) ensureAtlas(f);
     this.useCameraFeed = !!useCameraFeed;
 
     this.entities.length = 0;

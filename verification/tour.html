@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#1b2440;color:#fff;font:12px sans-serif;padding:8px}
+canvas{margin:2px;vertical-align:top}h3{margin:10px 0 4px;font-size:13px}
+</style></head><body>
+<h3>Têtes de secours — tour complet (0° = de face, puis rotation vers la droite)</h3>
+<div id="t1"></div><div id="t2"></div>
+<h3>Texture longitude/latitude correspondante</h3>
+<canvas id="equi" width="320" height="160" style="width:480px;height:240px"></canvas>
+<script type="module">
+import { defaultFaces, ensureAtlas } from '/src/faces.js';
+import { tileFor } from '/src/head3d.js';
+const faces = defaultFaces();
+[0,1].forEach(n => {
+  const f = faces[n]; ensureAtlas(f);
+  const bac = document.getElementById('t' + (n+1));
+  for (let i = 0; i < 12; i++) {
+    const lon = (i / 12) * Math.PI * 2 - Math.PI;
+    const t = tileFor(f.atlas, lon, 0);
+    const c = document.createElement('canvas'); c.width = 96; c.height = 108;
+    c.getContext('2d').drawImage(f.atlas.canvas, t.sx, t.sy, t.size, t.size, 0, 0, 96, 108);
+    bac.appendChild(c);
+  }
+});
+document.getElementById('equi').getContext('2d').drawImage(faces[0].equirect, 0, 0);
+window.PRET = true;
+</script></body></html>

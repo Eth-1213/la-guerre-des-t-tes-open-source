@@ -5,6 +5,7 @@ import * as audio from "./audio.js";
 import { sfx } from "./audio.js";
 import { Orientation, CameraFeed } from "./sensors.js";
 import * as F from "./faces.js";
+import { SCAN_STEPS, tileFor } from "./head3d.js";
 import { Game } from "./game.js";
 import { LEVELS, indexInMode, nextLevel } from "./levels.js";
 import { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } from "./ui.js";
@@ -327,6 +328,9 @@ let pendingCrop = null;         // canvas carré prêt à être enregistré
 let importImage = null;         // image en cours de cadrage
 const importView = { zoom: 1.2, px: 0, py: 0 };
 
+// Scan en relief : une prise de vue par étape, puis reconstruction.
+const scan = { actif: false, etape: 0, vues: [], tete: null, apercu: 0, anim: null };
+
 async function openCapture() {
   audio.unlock();
   showScreen("screen-capture");
@@ -342,6 +346,12 @@ async function openCapture() {
 function resetCaptureUi() {
   pendingCrop = null;
   importImage = null;
+  scan.actif = false;
+  scan.vues.length = 0;
+  scan.tete = null;
+  if (scan.anim) { cancelAnimationFrame(scan.anim); scan.anim = null; }
+  $("#scan-bar").classList.add("hidden");
+  $("#capture-heading").textContent = "Aligne le visage";
   capPreview.classList.remove("on");
   $("#capture-confirm").classList.add("hidden");
   $("#capture-controls").classList.remove("hidden");
@@ -360,6 +370,7 @@ function closeCapture() {
 }
 
 $("#btn-new-face").addEventListener("click", () => { sfx.ui(); openCapture(); });
+$("#btn-scan-face").addEventListener("click", () => { sfx.ui(); ouvrirScan(); });
 $("#capture-back").addEventListener("click", () => { sfx.ui(); closeCapture(); });
 $("#btn-capture-cancel").addEventListener("click", () => { sfx.ui(); closeCapture(); });
 
@@ -372,6 +383,7 @@ $("#btn-switch-cam").addEventListener("click", async () => {
 
 $("#btn-shutter").addEventListener("click", async () => {
   if (!captureFeed.ready) { toast("La caméra n'est pas prête."); return; }
+  if (scan.actif) { await prendreVueScan(); return; }
   const count = $("#capture-count");
   count.classList.remove("hidden");
   for (let i = 3; i > 0; i--) {
@@ -408,18 +420,126 @@ function showCropPreview() {
 
 $("#btn-face-retry").addEventListener("click", async () => {
   sfx.ui();
+  if (scan.tete || scan.actif) { resetCaptureUi(); await ouvrirScan(); return; }
   if (importImage) { resetCaptureUi(); startImportFraming(importImage); return; }
   resetCaptureUi();
   if (!captureFeed.stream) await captureFeed.start(capFacing);
 });
 
 $("#btn-face-save").addEventListener("click", () => {
+  if (scan.tete) {
+    const face = store.addFace(F.equirectToDataURL(scan.tete.equirect), "Visage " + (store.faces().length + 1), true);
+    sfx.heal();
+    toast(`${face.name} scanné et enrôlé dans la guerre des têtes.`, 2800);
+    closeCapture();
+    return;
+  }
   if (!pendingCrop) return;
   const face = store.addFace(F.toDataURL(pendingCrop), "Visage " + (store.faces().length + 1));
   sfx.heal();
   toast(`${face.name} enrôlé dans la guerre des têtes.`, 2600);
   closeCapture();
 });
+
+/* ---- Scan en relief ---- */
+
+async function ouvrirScan() {
+  audio.unlock();
+  showScreen("screen-capture");
+  resetCaptureUi();
+  scan.actif = true;
+  scan.etape = 0;
+  $("#capture-heading").textContent = "Scan en relief";
+  $("#scan-bar").classList.remove("hidden");
+  majEtapeScan();
+  const ok = await captureFeed.start(capFacing);
+  capVideo.classList.toggle("mirror", ok && capFacing === "user");
+  if (!ok) {
+    $("#capture-hint").textContent = "Caméra inaccessible : le scan a besoin de l'appareil photo.";
+    $("#btn-shutter").disabled = true;
+  }
+}
+
+function majEtapeScan() {
+  const etape = SCAN_STEPS[scan.etape];
+  $("#scan-title").textContent = `${scan.etape + 1}/${SCAN_STEPS.length} · ${etape.titre}`;
+  $("#scan-help").textContent = etape.aide;
+  $("#capture-hint").textContent = "Garde le téléphone immobile : c'est ta tête qui tourne.";
+  $("#scan-dots").innerHTML = SCAN_STEPS
+    .map((_, i) => `<i class="${i < scan.etape ? "fait" : i === scan.etape ? "en-cours" : ""}"></i>`)
+    .join("");
+}
+
+async function prendreVueScan() {
+  const count = $("#capture-count");
+  count.classList.remove("hidden");
+  for (let i = 3; i > 0; i--) {
+    count.textContent = i;
+    sfx.ui();
+    await wait(600);
+  }
+  count.classList.add("hidden");
+  sfx.shutter();
+
+  const rect = capStage.getBoundingClientRect();
+  const etape = SCAN_STEPS[scan.etape];
+  scan.vues.push({
+    image: F.cropFromVideo(capVideo, rect.width, rect.height, capFacing === "user"),
+    lon: etape.lon,
+    lat: etape.lat,
+  });
+
+  scan.etape++;
+  if (scan.etape < SCAN_STEPS.length) { majEtapeScan(); return; }
+  await reconstruireScan();
+}
+
+async function reconstruireScan() {
+  const stage = capStage;
+  const voile = document.createElement("div");
+  voile.className = "scan-progress";
+  voile.textContent = "Reconstruction de la tête…";
+  stage.appendChild(voile);
+  await wait(50);   // laisse le voile s'afficher avant de bloquer le fil
+
+  scan.tete = F.buildHead(scan.vues);
+  F.ensureAtlas(scan.tete);
+  captureFeed.stop();
+  voile.remove();
+
+  $("#scan-bar").classList.add("hidden");
+  $("#capture-controls").classList.add("hidden");
+  $("#capture-confirm").classList.remove("hidden");
+  $("#btn-face-save").textContent = "Garder cette tête";
+  $("#capture-hint").textContent = "Tête reconstruite depuis " + SCAN_STEPS.length + " angles. " + F.funProfile();
+  animerApercu();
+}
+
+/** Aperçu : la tête tourne, pour montrer que le relief est bien là. */
+function animerApercu() {
+  const rect = capStage.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  capPreview.width = Math.round(rect.width * dpr);
+  capPreview.height = Math.round(rect.height * dpr);
+  const ctx = capPreview.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  capPreview.classList.add("on");
+
+  const taille = Math.min(rect.width, rect.height) * 0.76;
+  const boucle = () => {
+    if (!scan.tete) return;
+    scan.apercu += 0.018;
+    ctx.fillStyle = "#10131c";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    const lon = Math.sin(scan.apercu) * 1.5;
+    const lat = Math.sin(scan.apercu * 0.6) * 0.35;
+    const t = tileFor(scan.tete.atlas, lon, lat);
+    ctx.drawImage(scan.tete.atlas.canvas, t.sx, t.sy, t.size, t.size,
+      (rect.width - taille) / 2, (rect.height - taille * 1.12) / 2, taille, taille * 1.12);
+    scan.anim = requestAnimationFrame(boucle);
+  };
+  boucle();
+}
 
 /* ---- Import depuis la galerie ---- */
 
