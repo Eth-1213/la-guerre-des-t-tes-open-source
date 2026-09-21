@@ -78,16 +78,11 @@ export function setSetting(key, value) {
   save();
 }
 
-/**
- * `scan` est la texture reconstruite (tour de tête complet) ; `data` reste
- * la photo de face des versions précédentes, encore lue au chargement.
- */
-export function addFace(dataURL, name, scan) {
+export function addFace(dataURL, name) {
   const face = {
     id: "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     name: name || "Visage " + (state.faces.length + 1),
-    data: scan ? undefined : dataURL,
-    scan: scan ? dataURL : undefined,
+    data: dataURL,
     saved: false,
     created: Date.now(),
   };

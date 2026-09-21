@@ -2,7 +2,6 @@
 // masque circulaire et visages de secours dessinés par le code.
 
 import { rand, pick, TAU } from "./util.js";
-import { buildEquirect, buildAtlas, renderView, EQUI_W, EQUI_H } from "./head3d.js";
 
 export const TEX_SIZE = 256;
 export const CROP_SIZE = 192; // taille stockée (JPEG) : compromis qualité / quota localStorage
@@ -21,31 +20,28 @@ export function guideBox(stageW, stageH) {
 }
 
 /** Mappe un rectangle de l'élément affiché (object-fit: cover) vers les pixels source. */
-function coverRect(srcW, srcH, boxW, boxH, rect) {
+function coverRect(srcW, srcH, boxW, boxH, rect, mirror) {
   const scale = Math.max(boxW / srcW, boxH / srcH);
   const dw = srcW * scale, dh = srcH * scale;
   const ox = (boxW - dw) / 2, oy = (boxH - dh) / 2;
-  return {
-    sx: (rect.x - ox) / scale,
-    sy: (rect.y - oy) / scale,
-    ss: rect.side / scale,
-  };
+  let sx = (rect.x - ox) / scale;
+  const sy = (rect.y - oy) / scale;
+  const ss = rect.side / scale;
+  if (mirror) sx = srcW - sx - ss;
+  return { sx, sy, ss };
 }
 
-/**
- * Découpe le carré du gabarit dans la vidéo ; renvoie un canvas carré.
- *
- * L'aperçu de la caméra frontale est retourné par CSS, par confort : on se
- * voit comme dans un miroir. Le flux, lui, arrive déjà dans le bon sens.
- * Le retourner à la capture donnait un portrait inversé — sans conséquence
- * pour une photo de face, mais désastreux pour le scan : les profils se
- * retrouvaient collés du mauvais côté du crâne.
- */
-export function cropFromVideo(video, boxW, boxH) {
+/** Découpe le carré du gabarit dans la vidéo ; renvoie un canvas carré. */
+export function cropFromVideo(video, boxW, boxH, mirror) {
   const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
-  const { sx, sy, ss } = coverRect(vw, vh, boxW, boxH, guideBox(boxW, boxH));
+  const rect = guideBox(boxW, boxH);
+  const { sx, sy, ss } = coverRect(vw, vh, boxW, boxH, rect, mirror);
   const out = makeCanvas(CROP_SIZE);
-  out.getContext("2d").drawImage(video, sx, sy, ss, ss, 0, 0, CROP_SIZE, CROP_SIZE);
+  const ctx = out.getContext("2d");
+  ctx.save();
+  if (mirror) { ctx.translate(CROP_SIZE, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(video, sx, sy, ss, ss, 0, 0, CROP_SIZE, CROP_SIZE);
+  ctx.restore();
   return out;
 }
 
@@ -106,36 +102,6 @@ export function makeTexture(src) {
   return c;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Têtes en relief                                                     */
-/* ------------------------------------------------------------------ */
-
-export const PORTRAIT = 256;
-
-/**
- * Assemble une tête jouable à partir de prises de vue.
- * `equirect` est la seule chose à conserver : portrait et planche de
- * sprites s'en déduisent, et se reconstruisent au chargement en ~150 ms.
- */
-export function buildHead(vues) {
-  const equirect = buildEquirect(vues);
-  return {
-    equirect,
-    tex: renderView(equirect, 0, 0, PORTRAIT),  // vue de face, pleine résolution
-    atlas: null,                                 // construite à la demande
-  };
-}
-
-/** La planche de sprites ne sert qu'aux têtes qui volent : on la bâtit tard. */
-export function ensureAtlas(face) {
-  if (!face.atlas && face.equirect) face.atlas = buildAtlas(face.equirect);
-  return face.atlas;
-}
-
-export function equirectToDataURL(equirect) {
-  return equirect.toDataURL("image/jpeg", 0.78);
-}
-
 export function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -161,66 +127,62 @@ export function readFile(file) {
 const SKINS = ["#f2c39b", "#d99a6c", "#a6693f", "#7a4a2b", "#ffd9b8", "#c98a5e"];
 const HAIRS = ["#2b1d16", "#6b3f1d", "#1b1b22", "#8d5524", "#b3b3c6", "#c94f2e"];
 
-/**
- * Tête de secours peinte directement en coordonnées longitude/latitude :
- * cheveux sur tout l'arrière, oreilles sur les côtés, traits devant. Bien
- * meilleur qu'une photo de face extrapolée, puisque rien n'est inventé.
- */
-function drawDoodleEquirect(ctx, seed) {
+function drawDoodleFace(ctx, size, seed) {
   const R = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
   const skin = SKINS[Math.floor(R() * SKINS.length)];
   const hair = HAIRS[Math.floor(R() * HAIRS.length)];
-  const W = EQUI_W, H = EQUI_H;
-  // lon -PI..PI sur la largeur, lat +PI/2..-PI/2 sur la hauteur
-  const X = (lon) => ((lon + Math.PI) / (Math.PI * 2)) * W;
-  const Y = (lat) => (0.5 - lat / Math.PI) * H;
-  const ellipse = (lon, lat, rlon, rlat, couleur) => {
-    ctx.fillStyle = couleur;
-    for (const d of [-Math.PI * 2, 0, Math.PI * 2]) {   // répétition pour traverser la couture
-      ctx.beginPath();
-      ctx.ellipse(X(lon + d), Y(lat), (rlon / (Math.PI * 2)) * W, (rlat / Math.PI) * H, 0, 0, TAU);
-      ctx.fill();
-    }
-  };
+  const eyeY = size * (0.42 + R() * 0.05);
+  const eyeDx = size * (0.15 + R() * 0.04);
+  const eyeR = size * (0.045 + R() * 0.02);
 
   ctx.fillStyle = skin;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, size, size);
 
-  // Chevelure : calotte sur le haut, et tout l'arrière du crâne
+  // Cheveux
   ctx.fillStyle = hair;
-  ctx.fillRect(0, 0, W, Y(0.70 + R() * 0.12));
-  ellipse(Math.PI, 0.14, 1.32, 0.92, hair);
-  ellipse(0, 0.78, 1.4, 0.5, hair);
+  ctx.beginPath();
+  ctx.ellipse(size / 2, size * 0.26, size * 0.42, size * 0.26, 0, 0, TAU);
+  ctx.fill();
 
-  // Oreilles, là où le profil les place
-  for (const s of [-1, 1]) ellipse(s * 1.5, -0.02, 0.16, 0.22, skin);
-  for (const s of [-1, 1]) ellipse(s * 1.5, -0.02, 0.09, 0.13, "rgba(0,0,0,.22)");
-
-  // Yeux, sourcils, nez, bouche
-  const ecart = 0.26 + R() * 0.05;
+  // Yeux
   for (const s of [-1, 1]) {
-    ellipse(s * ecart, 0.1, 0.11, 0.075, "#fff");
-    ellipse(s * ecart, 0.1, 0.05, 0.05, "#20242e");
-    ctx.strokeStyle = hair;
-    ctx.lineWidth = H * 0.028;
-    ctx.lineCap = "round";
+    ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.moveTo(X(s * ecart - 0.13), Y(0.24));
-    ctx.lineTo(X(s * ecart + 0.13), Y(0.22 + R() * 0.05));
+    ctx.ellipse(size / 2 + s * eyeDx, eyeY, eyeR * 1.5, eyeR, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#20242e";
+    ctx.beginPath();
+    ctx.arc(size / 2 + s * eyeDx, eyeY, eyeR * 0.75, 0, TAU);
+    ctx.fill();
+  }
+
+  // Sourcils
+  ctx.strokeStyle = hair;
+  ctx.lineWidth = size * 0.022;
+  ctx.lineCap = "round";
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(size / 2 + s * eyeDx - size * 0.06, eyeY - size * 0.075);
+    ctx.lineTo(size / 2 + s * eyeDx + size * 0.06, eyeY - size * (0.055 + R() * 0.04));
     ctx.stroke();
   }
+
+  // Nez
   ctx.strokeStyle = "rgba(0,0,0,.35)";
-  ctx.lineWidth = H * 0.02;
+  ctx.lineWidth = size * 0.018;
   ctx.beginPath();
-  ctx.moveTo(X(0), Y(0.06));
-  ctx.lineTo(X(-0.05), Y(-0.16));
-  ctx.lineTo(X(0.04), Y(-0.19));
+  ctx.moveTo(size / 2, eyeY + size * 0.04);
+  ctx.lineTo(size / 2 - size * 0.03, eyeY + size * 0.14);
+  ctx.lineTo(size / 2 + size * 0.02, eyeY + size * 0.155);
   ctx.stroke();
+
+  // Bouche
   ctx.strokeStyle = "#8c3b3b";
-  ctx.lineWidth = H * 0.03;
+  ctx.lineWidth = size * 0.028;
   ctx.beginPath();
-  ctx.moveTo(X(-0.2), Y(-0.42));
-  ctx.quadraticCurveTo(X(0), Y(-0.42 + (R() > 0.5 ? -0.09 : 0.06)), X(0.2), Y(-0.42));
+  const my = size * 0.72;
+  ctx.moveTo(size / 2 - size * 0.12, my);
+  ctx.quadraticCurveTo(size / 2, my + size * (R() > 0.5 ? 0.08 : -0.05), size / 2 + size * 0.12, my);
   ctx.stroke();
 }
 
@@ -228,38 +190,33 @@ function drawDoodleEquirect(ctx, seed) {
 export function defaultFaces() {
   const names = ["Recrue", "Sergent", "Vétéran"];
   return names.map((name, i) => {
-    const equirect = makeCanvas(1);
-    equirect.width = EQUI_W; equirect.height = EQUI_H;
-    drawDoodleEquirect(equirect.getContext("2d"), 1234 + i * 7717);
-    return {
-      id: "default-" + i, name, saved: false, isDefault: true,
-      equirect, tex: renderView(equirect, 0, 0, PORTRAIT), atlas: null,
-    };
+    const c = makeCanvas(CROP_SIZE);
+    drawDoodleFace(c.getContext("2d"), CROP_SIZE, 1234 + i * 7717);
+    return { id: "default-" + i, name, crop: c, tex: makeTexture(c), saved: false, isDefault: true };
   });
 }
 
 /**
- * Charge les visages sauvegardés en têtes jouables.
- * Les visages d'avant le scan n'ont qu'une photo de face : ils deviennent
- * une tête à vue unique, dont l'arrière est extrapolé.
+ * Découpe la face avant d'une texture panoramique laissée par la version
+ * en relief, pour que les visages déjà enregistrés ne disparaissent pas.
  */
+function faceAvantDuPanorama(img) {
+  const c = makeCanvas(CROP_SIZE);
+  const W = img.width, H = img.height;
+  // Longitudes -50°..+50° et latitudes -45°..+45° : le visage, sans le crâne.
+  c.getContext("2d").drawImage(img, W * 0.361, H * 0.25, W * 0.278, H * 0.5,
+    0, 0, CROP_SIZE, CROP_SIZE);
+  return c;
+}
+
+/** Charge les visages sauvegardés en textures utilisables par le jeu. */
 export async function loadFaceTextures(saved) {
   const out = [];
   for (const f of saved) {
     try {
-      if (f.scan) {
-        const img = await loadImage(f.scan);
-        const equirect = makeCanvas(1);
-        equirect.width = img.width; equirect.height = img.height;
-        equirect.getContext("2d").drawImage(img, 0, 0);
-        out.push({
-          id: f.id, name: f.name, saved: f.saved, scan: true,
-          equirect, tex: renderView(equirect, 0, 0, PORTRAIT), atlas: null,
-        });
-      } else {
-        const img = await loadImage(f.data);
-        out.push({ id: f.id, name: f.name, saved: f.saved, crop: img, ...buildHead([{ image: img, lon: 0, lat: 0 }]) });
-      }
+      const img = await loadImage(f.data || f.scan);
+      const crop = f.data ? img : faceAvantDuPanorama(img);
+      out.push({ id: f.id, name: f.name, crop, tex: makeTexture(crop), saved: f.saved });
     } catch (err) {
       console.warn("Visage illisible ignoré :", f.id);
     }

@@ -109,40 +109,16 @@ Dans les deux cas, « Ajouter à l'écran d'accueil » installe le jeu comme une
 **9 niveaux** : 6 pour la campagne, 3 en mode « Montrer à un ami » (parties courtes, dont deux
 chronométrées). Chaque niveau se débloque en terminant le précédent.
 
-## Visages et scan en relief
+## Visages
 
-- **Scanner en relief** (recommandé) : un seul geste continu. Le sujet garde la tête immobile,
-  et on promène le téléphone autour de son visage, d'une oreille à l'autre. Le **gyroscope mesure
-  l'angle de chaque image** — rien n'est supposé — et une vingtaine de vues sont prises
-  automatiquement, réparties sur l'arc balayé. Un arc de progression montre ce qui est couvert et
-  signale si le geste est trop rapide. Le jeu en tire une **tête complète orientable**, qu'un
-  aperçu fait tourner avant de la garder. En jeu, les têtes se tournent réellement : elles
-  regardent où elles volent, jettent un œil au joueur, et se braquent sur lui avant de foncer.
-- Sans gyroscope, repli sur **trois poses** guidées (face et deux trois-quarts). Les angles y sont
-  supposés, donc le résultat dépend de la docilité du modèle : c'est exactement ce que la mesure
-  évite.
-- **Photo simple** : une seule vue, comme avant. La tête reste en relief, mais tout ce qui n'a pas
-  été photographié est extrapolé.
+- **Capturer** : caméra frontale, yeux et nez sur les repères, déclencheur avec compte à rebours.
 - **Importer** : n'importe quelle photo de la galerie, avec cadrage (glisser + zoom).
-- Les têtes sont stockées **uniquement sur l'appareil** (`localStorage`), sous forme d'une seule
-  texture d'environ 7 Ko. Rien n'est envoyé nulle part : il n'y a pas de serveur.
-- Tant qu'aucun visage n'est scanné, trois têtes dessinées par le code prennent le relais —
-  peintes directement en relief, cheveux et oreilles compris.
+- Les visages sont découpés en rond, ombrés comme des sphères, et stockés **uniquement sur
+  l'appareil** (`localStorage`, en JPEG). Rien n'est envoyé nulle part : il n'y a pas de serveur.
+- Tant qu'aucun visage n'est capturé, trois têtes dessinées par le code prennent le relais, donc
+  le jeu est jouable immédiatement.
 - La « fiche de profil » affichée après une capture est une plaisanterie tirée au hasard : le jeu
   ne fait aucune analyse du visage.
-
-### Ce que « scan 3D » veut dire ici, et ce que ça ne veut pas dire
-
-Le web n'expose aucun capteur de profondeur : **la forme du visage n'est pas mesurée**. Ce qui est
-mesuré, c'est l'**angle de chaque prise de vue**, par le gyroscope. Le jeu plaque ensuite les vues
-sur une tête modèle — un ellipsoïde aux proportions d'un crâne, plus étroit que haut et plus
-profond que large — en laissant chaque vue régner là où elle regarde la surface de face, puis
-replie et adoucit la zone jamais photographiée (la nuque). L'exposition de chaque vue est ramenée
-à celle de la première, sans quoi les réglages automatiques de la caméra zèbrent la tête de bandes
-claires et sombres.
-
-Le relief vient donc de la texture et de l'éclairage, pas d'une mesure de forme. C'est largement
-suffisant pour des ennemis volants, et honnête à dire.
 
 ## Réglages
 
@@ -165,8 +141,7 @@ src/util.js         maths 3D, caméra et projection, émetteur d'événements
 src/storage.js      sauvegarde locale (réglages, progression, visages)
 src/audio.js        sons synthétisés (WebAudio) et vibrations
 src/sensors.js      gyroscope (+ repli au doigt) et flux caméra
-src/head3d.js       reconstruction de la tête : texture panoramique et planche de sprites
-src/faces.js        capture, scan guidé, têtes de secours
+src/faces.js        capture, recadrage, masque circulaire, visages de secours
 src/entities.js     têtes, papillons, bombes, projectiles, boss, particules
 src/levels.js       les 9 niveaux et les difficultés
 src/game.js         boucle de jeu, vagues, tir, score, rendu, radar
@@ -192,14 +167,6 @@ Points techniques notables :
   ça consomme peu de batterie.
 - Les ennemis hors champ sont signalés par des flèches et par un radar — indispensable quand
   l'action se déroule derrière toi.
-- Les têtes sont précalculées en planche de sprites (18 caps × 3 élévations) par lancer de rayon
-  sur une sphère, un pixel à la fois : pas de triangles, pas de coutures, et le rendu reste une
-  simple recopie d'image. Reconstruction complète en ~150 ms, 60 images/s avec huit têtes à
-  l'écran. Au plus quatre visages par niveau, pour la mémoire comme pour la lisibilité.
-- `verification/` contient un banc d'essai : on y reconstruit une tête témoin dont les repères
-  colorés sont à des longitudes connues, puis on vérifie par la couleur des pixels que chacun
-  tombe au bon endroit sous neuf angles. Il a attrapé une image miroir et un retournement
-  vertical avant qu'ils n'arrivent en jeu.
 
 ## À savoir
 

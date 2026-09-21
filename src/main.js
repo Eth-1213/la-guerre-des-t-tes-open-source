@@ -5,11 +5,10 @@ import * as audio from "./audio.js";
 import { sfx } from "./audio.js";
 import { Orientation, CameraFeed } from "./sensors.js";
 import * as F from "./faces.js";
-import { SCAN_STEPS, BALAYAGE_MAX, tileFor } from "./head3d.js";
 import { Game } from "./game.js";
 import { LEVELS, indexInMode, nextLevel } from "./levels.js";
 import { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } from "./ui.js";
-import { clamp, wrapAngle, TAU } from "./util.js";
+import { clamp } from "./util.js";
 
 store.load();
 const settings = store.settings();
@@ -328,19 +327,6 @@ let pendingCrop = null;         // canvas carré prêt à être enregistré
 let importImage = null;         // image en cours de cadrage
 const importView = { zoom: 1.2, px: 0, py: 0 };
 
-// Scan en relief. Deux modes : balayage continu quand le gyroscope mesure
-// vraiment l'angle de prise de vue, trois poses supposées sinon.
-const scan = {
-  actif: false, mode: null, etape: 0, vues: [], tete: null, apercu: 0, anim: null,
-  boucle: null, lon0: 0, lat0: 0, dernierLon: 0, dernierT: 0, vitesse: 0,
-  capPrec: 0, calme: 0,
-};
-
-const CASES_ARC = 26;                 // découpage de l'arc de couverture
-const PAS_ECHANTILLON = 0.13;         // ~7,5° entre deux prises
-const VITESSE_MAX = 1.6;              // rad/s : au-delà, l'image est filée
-const VUES_MAX = 26;
-
 async function openCapture() {
   audio.unlock();
   showScreen("screen-capture");
@@ -356,17 +342,6 @@ async function openCapture() {
 function resetCaptureUi() {
   pendingCrop = null;
   importImage = null;
-  scan.actif = false;
-  scan.mode = null;
-  scan.vues.length = 0;
-  scan.tete = null;
-  if (scan.anim) { cancelAnimationFrame(scan.anim); scan.anim = null; }
-  if (scan.boucle) { cancelAnimationFrame(scan.boucle); scan.boucle = null; }
-  $("#scan-bar").classList.add("hidden");
-  $("#sweep-controls").classList.add("hidden");
-  $("#scan-arc").classList.add("hidden");
-  $("#scan-dots").classList.remove("hidden");
-  $("#capture-heading").textContent = "Aligne le visage";
   capPreview.classList.remove("on");
   $("#capture-confirm").classList.add("hidden");
   $("#capture-controls").classList.remove("hidden");
@@ -379,14 +354,12 @@ function resetCaptureUi() {
 
 function closeCapture() {
   captureFeed.stop();
-  orientation.release("scan");
   resetCaptureUi();
   refreshFaces();
   showScreen("screen-faces");
 }
 
 $("#btn-new-face").addEventListener("click", () => { sfx.ui(); openCapture(); });
-$("#btn-scan-face").addEventListener("click", () => { sfx.ui(); ouvrirScan(); });
 $("#capture-back").addEventListener("click", () => { sfx.ui(); closeCapture(); });
 $("#btn-capture-cancel").addEventListener("click", () => { sfx.ui(); closeCapture(); });
 
@@ -399,7 +372,6 @@ $("#btn-switch-cam").addEventListener("click", async () => {
 
 $("#btn-shutter").addEventListener("click", async () => {
   if (!captureFeed.ready) { toast("La caméra n'est pas prête."); return; }
-  if (scan.actif) { await prendreVueScan(); return; }
   const count = $("#capture-count");
   count.classList.remove("hidden");
   for (let i = 3; i > 0; i--) {
@@ -410,7 +382,7 @@ $("#btn-shutter").addEventListener("click", async () => {
   count.classList.add("hidden");
   sfx.shutter();
   const rect = capStage.getBoundingClientRect();
-  pendingCrop = F.cropFromVideo(capVideo, rect.width, rect.height);
+  pendingCrop = F.cropFromVideo(capVideo, rect.width, rect.height, capFacing === "user");
   showCropPreview();
 });
 
@@ -436,276 +408,18 @@ function showCropPreview() {
 
 $("#btn-face-retry").addEventListener("click", async () => {
   sfx.ui();
-  if (scan.tete || scan.actif) { resetCaptureUi(); await ouvrirScan(); return; }
   if (importImage) { resetCaptureUi(); startImportFraming(importImage); return; }
   resetCaptureUi();
   if (!captureFeed.stream) await captureFeed.start(capFacing);
 });
 
 $("#btn-face-save").addEventListener("click", () => {
-  if (scan.tete) {
-    const face = store.addFace(F.equirectToDataURL(scan.tete.equirect), "Visage " + (store.faces().length + 1), true);
-    sfx.heal();
-    toast(`${face.name} scanné et enrôlé dans la guerre des têtes.`, 2800);
-    closeCapture();
-    return;
-  }
   if (!pendingCrop) return;
   const face = store.addFace(F.toDataURL(pendingCrop), "Visage " + (store.faces().length + 1));
   sfx.heal();
   toast(`${face.name} enrôlé dans la guerre des têtes.`, 2600);
   closeCapture();
 });
-
-/* ---- Scan en relief ---- */
-
-async function ouvrirScan() {
-  audio.unlock();
-  showScreen("screen-capture");
-  resetCaptureUi();
-  scan.actif = true;
-  scan.etape = 0;
-  $("#capture-heading").textContent = "Scan en relief";
-  $("#scan-bar").classList.remove("hidden");
-
-  // Le gyroscope mesure réellement sous quel angle chaque image est prise ;
-  // sans lui on retombe sur des poses supposées, forcément approximatives.
-  const accorde = await orientation.requestPermission();
-  if (accorde) orientation.acquire("scan");
-  await wait(350);
-  scan.mode = orientation.hasGyro ? "balayage" : "poses";
-
-  const ok = await captureFeed.start(capFacing);
-  capVideo.classList.toggle("mirror", ok && capFacing === "user");
-  if (!ok) {
-    $("#capture-hint").textContent = "Caméra inaccessible : le scan a besoin de l'appareil photo.";
-    $("#btn-shutter").disabled = true;
-    return;
-  }
-  if (scan.mode === "balayage") demarrerBalayage();
-  else majEtapeScan();
-}
-
-/* --- Mode mesuré : un seul geste continu --- */
-
-function demarrerBalayage() {
-  scan.vues.length = 0;
-  scan.lon0 = null;
-  scan.dernierT = performance.now();
-  scan.vitesse = 0;
-  scan.calme = 0;
-  scan.capPrec = null;
-  $("#scan-arc").classList.remove("hidden");
-  $("#scan-dots").classList.add("hidden");
-  $("#capture-controls").classList.add("hidden");
-  $("#sweep-controls").classList.remove("hidden");
-  $("#scan-title").textContent = "Balaie autour du visage";
-  $("#scan-help").textContent = "Garde la tête immobile et promène lentement le téléphone d'une oreille à l'autre, visage dans l'ovale.";
-  $("#capture-hint").textContent = "C'est le téléphone qui tourne, pas la tête : c'est ainsi que l'angle est mesuré.";
-  scan.boucle = requestAnimationFrame(tourBalayage);
-}
-
-function tourBalayage(now) {
-  if (!scan.actif || scan.mode !== "balayage") return;
-  const dt = Math.min(0.1, Math.max(0.001, (now - scan.dernierT) / 1000));
-  scan.dernierT = now;
-  orientation.update(dt);
-
-  if (scan.lon0 === null) {
-    // La toute première image définit le « droit devant » et sert de
-    // référence d'exposition : la prendre en plein mouvement fausserait
-    // tout le balayage. On attend donc que le téléphone soit posé.
-    const cap = orientation.yaw;
-    const bouge = scan.capPrec === null ? 1 : Math.abs(wrapAngle(cap - scan.capPrec)) / dt;
-    scan.capPrec = cap;
-    scan.calme = bouge < 0.25 ? scan.calme + dt : 0;
-    $("#capture-hint").textContent = scan.calme > 0
-      ? "Ne bouge plus…"
-      : "Place le visage dans l'ovale et immobilise le téléphone.";
-    if (scan.calme > 0.4) {
-      scan.lon0 = cap;
-      scan.lat0 = orientation.pitch;
-      scan.dernierLon = 0;
-      $("#capture-hint").textContent = "C'est le téléphone qui tourne, pas la tête : c'est ainsi que l'angle est mesuré.";
-      echantillonner(0, 0);
-    }
-    dessinerArc(0);
-  } else {
-    const lon = wrapAngle(orientation.yaw - scan.lon0);
-    const lat = -(orientation.pitch - scan.lat0);
-    scan.vitesse = Math.abs(wrapAngle(lon - scan.dernierLon)) / dt;
-    const assezLoin = scan.vues.every((v) => Math.abs(wrapAngle(v.lon - lon)) >= PAS_ECHANTILLON);
-    if (assezLoin && Math.abs(lon) <= BALAYAGE_MAX && Math.abs(lat) <= 0.7
-        && scan.vitesse < VITESSE_MAX && scan.vues.length < VUES_MAX) {
-      echantillonner(lon, clamp(lat, -0.6, 0.6));
-    }
-    scan.dernierLon = lon;
-    dessinerArc(lon);
-  }
-  scan.boucle = requestAnimationFrame(tourBalayage);
-}
-
-function echantillonner(lon, lat) {
-  const rect = capStage.getBoundingClientRect();
-  scan.vues.push({ image: F.cropFromVideo(capVideo, rect.width, rect.height), lon, lat });
-  sfx.ui();
-  dessinerArc(lon);
-  majBoutonBalayage();
-}
-
-/** Assez de matière pour reconstruire ? Il faut de l'étendue, pas du nombre. */
-function couvertureBalayage() {
-  if (scan.vues.length < 2) return { cases: 0, etendue: 0, pret: false };
-  const lons = scan.vues.map((v) => v.lon);
-  const etendue = Math.max(...lons) - Math.min(...lons);
-  const cases = new Set(scan.vues.map((v) => Math.round((v.lon / BALAYAGE_MAX) * (CASES_ARC / 2)))).size;
-  return { cases, etendue, pret: scan.vues.length >= 7 && etendue >= 1.0 };
-}
-
-function majBoutonBalayage() {
-  const { pret, etendue } = couvertureBalayage();
-  const btn = $("#btn-sweep-done");
-  btn.disabled = !pret;
-  btn.textContent = pret
-    ? `Reconstruire (${scan.vues.length} vues)`
-    : `Continue à balayer… ${Math.round((etendue * 180) / Math.PI)}°`;
-}
-
-function dessinerArc(lonActuel) {
-  const c = $("#scan-arc");
-  const ctx = c.getContext("2d");
-  const W = c.width, H = c.height;
-  ctx.clearRect(0, 0, W, H);
-  const cx = W / 2, cy = H - 8, R = H - 20;
-
-  const vues = new Set(scan.vues.map((v) => Math.round((v.lon / BALAYAGE_MAX) * (CASES_ARC / 2))));
-  for (let k = -CASES_ARC / 2; k <= CASES_ARC / 2; k++) {
-    const lon = (k / (CASES_ARC / 2)) * BALAYAGE_MAX;
-    const a = -Math.PI / 2 + lon * 0.92;
-    const x = cx + Math.sin(a + Math.PI / 2) * 0 + Math.cos(a) * R;
-    const y = cy + Math.sin(a) * R;
-    const fait = vues.has(k);
-    ctx.beginPath();
-    ctx.arc(x, y, fait ? 6 : 4, 0, TAU);
-    ctx.fillStyle = fait ? "#e63b2e" : "#f6e6ca";
-    ctx.strokeStyle = "#25222b";
-    ctx.lineWidth = 2;
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  // Position actuelle du téléphone sur l'arc
-  const a = -Math.PI / 2 + clamp(lonActuel, -BALAYAGE_MAX, BALAYAGE_MAX) * 0.92;
-  ctx.beginPath();
-  ctx.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, 11, 0, TAU);
-  ctx.strokeStyle = scan.vitesse > VITESSE_MAX ? "#e63b2e" : "#25222b";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.fillStyle = "#25222b";
-  ctx.font = '700 13px ui-rounded, "Trebuchet MS", sans-serif';
-  ctx.textAlign = "center";
-  ctx.fillText(scan.vitesse > VITESSE_MAX ? "moins vite" : `${scan.vues.length} vues`, cx, cy - 6);
-}
-
-$("#btn-sweep-done").addEventListener("click", async () => {
-  if (!couvertureBalayage().pret) return;
-  sfx.ui();
-  if (scan.boucle) { cancelAnimationFrame(scan.boucle); scan.boucle = null; }
-  $("#sweep-controls").classList.add("hidden");
-  await reconstruireScan();
-});
-$("#btn-sweep-cancel").addEventListener("click", () => { sfx.ui(); closeCapture(); });
-
-/* --- Repli sans gyroscope : trois poses --- */
-
-function majEtapeScan() {
-  const etape = SCAN_STEPS[scan.etape];
-  $("#scan-arc").classList.add("hidden");
-  $("#scan-dots").classList.remove("hidden");
-  $("#scan-title").textContent = `${scan.etape + 1}/${SCAN_STEPS.length} · ${etape.titre}`;
-  $("#scan-help").textContent = etape.aide;
-  $("#capture-hint").textContent = "Sans gyroscope, les angles sont supposés : tiens la pose au plus près.";
-  $("#scan-dots").innerHTML = SCAN_STEPS
-    .map((_, i) => `<i class="${i < scan.etape ? "fait" : i === scan.etape ? "en-cours" : ""}"></i>`)
-    .join("");
-}
-
-async function prendreVueScan() {
-  const count = $("#capture-count");
-  count.classList.remove("hidden");
-  for (let i = 3; i > 0; i--) {
-    count.textContent = i;
-    sfx.ui();
-    await wait(600);
-  }
-  count.classList.add("hidden");
-  sfx.shutter();
-
-  const rect = capStage.getBoundingClientRect();
-  const etape = SCAN_STEPS[scan.etape];
-  scan.vues.push({
-    image: F.cropFromVideo(capVideo, rect.width, rect.height),
-    lon: etape.lon,
-    lat: etape.lat,
-  });
-
-  scan.etape++;
-  if (scan.etape < SCAN_STEPS.length) { majEtapeScan(); return; }
-  await reconstruireScan();
-}
-
-/* --- Reconstruction, commune aux deux modes --- */
-
-async function reconstruireScan() {
-  const voile = document.createElement("div");
-  voile.className = "scan-progress";
-  voile.textContent = "Reconstruction de la tête…";
-  capStage.appendChild(voile);
-  await wait(50);   // laisse le voile s'afficher avant de bloquer le fil
-
-  scan.tete = F.buildHead(scan.vues);
-  F.ensureAtlas(scan.tete);
-  captureFeed.stop();
-  orientation.release("scan");
-  voile.remove();
-
-  $("#scan-bar").classList.add("hidden");
-  $("#capture-controls").classList.add("hidden");
-  $("#sweep-controls").classList.add("hidden");
-  $("#capture-confirm").classList.remove("hidden");
-  $("#btn-face-save").textContent = "Garder cette tête";
-  $("#capture-hint").textContent = scan.mode === "balayage"
-    ? `Tête reconstruite depuis ${scan.vues.length} vues, angles mesurés au gyroscope.`
-    : `Tête reconstruite depuis ${scan.vues.length} poses.`;
-  animerApercu();
-}
-
-/** Aperçu : la tête tourne, pour montrer que le relief est bien là. */
-function animerApercu() {
-  const rect = capStage.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  capPreview.width = Math.round(rect.width * dpr);
-  capPreview.height = Math.round(rect.height * dpr);
-  const ctx = capPreview.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  capPreview.classList.add("on");
-
-  const taille = Math.min(rect.width, rect.height) * 0.76;
-  const boucle = () => {
-    if (!scan.tete) return;
-    scan.apercu += 0.018;
-    ctx.fillStyle = "#10131c";
-    ctx.fillRect(0, 0, rect.width, rect.height);
-    const lon = Math.sin(scan.apercu) * 1.5;
-    const lat = Math.sin(scan.apercu * 0.6) * 0.35;
-    const t = tileFor(scan.tete.atlas, lon, lat);
-    ctx.drawImage(scan.tete.atlas.canvas, t.sx, t.sy, t.size, t.size,
-      (rect.width - taille) / 2, (rect.height - taille * 1.12) / 2, taille, taille * 1.12);
-    scan.anim = requestAnimationFrame(boucle);
-  };
-  boucle();
-}
 
 /* ---- Import depuis la galerie ---- */
 
@@ -1002,7 +716,7 @@ async function boot() {
 }
 
 // Point d'accès pour le débogage et les tests automatisés.
-window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel, scan };
+window.GDT = { game, orientation, store, levels: LEVELS, faces: () => faces, startLevel };
 
 document.addEventListener("gesturestart", (e) => e.preventDefault());
 document.addEventListener("dblclick", (e) => e.preventDefault());

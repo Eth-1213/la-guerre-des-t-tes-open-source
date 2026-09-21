@@ -1,8 +1,7 @@
 // Habitants du monde AR : têtes volantes, papillons, bombes, projectiles, boss.
 // Chaque entité sait se comporter (update) et se dessiner (draw) une fois projetée.
 
-import { TAU, clamp, lerp, lerpAngle, rand, randInt, v3, vAdd, vScale, vLen, vNorm, sphere, toSpherical } from "./util.js";
-import { tileFor, viewAngles } from "./head3d.js";
+import { TAU, clamp, lerp, rand, randInt, v3, vAdd, vScale, vLen, vNorm, sphere, toSpherical } from "./util.js";
 
 export const HIT_DIST = 1.35;          // distance à laquelle une tête bouscule le joueur
 export const SPAWN_MIN = 8;
@@ -61,28 +60,6 @@ export class Head extends Entity {
     this.spitIn = rand(1.5, 3.5);
     this.hitPlayer = false;   // relevé par le jeu quand la tête bouscule le joueur
     this.spawnFx = 1;         // effet de traversée de mur
-    // Direction du nez : la tête est un volume, elle regarde quelque part.
-    this.faceYaw = yaw + Math.PI;
-    this.facePitch = 0;
-  }
-
-  /** Vers où le nez doit pointer, selon ce que fait la tête. */
-  _regardVise() {
-    const versJoueur = toSpherical(vScale(this.pos, -1));
-    // À l'approche, en charge ou juste avant de fondre sur le joueur : elle fixe.
-    if (this.state === "enter" || this.state === "charge" || this.chargeIn < 1.2) {
-      return { yaw: versJoueur.yaw, pitch: clamp(versJoueur.pitch, -0.6, 0.6) };
-    }
-    if (this.state === "flee") {
-      return { yaw: versJoueur.yaw + Math.PI, pitch: 0 };
-    }
-    // En orbite : elle regarde où elle vole, en jetant un œil de temps en temps.
-    const t = sphere(this.orbitYaw + this.orbitDir * 0.35, this.orbitPitch, 1);
-    const cap = Math.atan2(t.x - this.pos.x / vLen(this.pos), -(t.z - this.pos.z / vLen(this.pos)));
-    const coupDoeil = Math.sin(this.t * 0.6 + this.bob) > 0.75;
-    return coupDoeil
-      ? { yaw: versJoueur.yaw, pitch: versJoueur.pitch * 0.5 }
-      : { yaw: cap, pitch: Math.sin(this.t * 0.5) * 0.2 };
   }
 
   update(dt, world) {
@@ -92,11 +69,6 @@ export class Head extends Entity {
     this.flash = Math.max(0, this.flash - dt * 5);
 
     const d = this.dist;
-
-    const vise = this._regardVise();
-    const vitesse = this.state === "charge" ? 7 : 2.2;
-    this.faceYaw = lerpAngle(this.faceYaw, vise.yaw, 1 - Math.exp(-vitesse * dt));
-    this.facePitch += (vise.pitch - this.facePitch) * (1 - Math.exp(-vitesse * dt));
 
     if (this.state === "enter") {
       // Arrive de l'extérieur, comme si elle traversait le mur de la pièce.
@@ -203,22 +175,10 @@ export class Head extends Entity {
 
     ctx.rotate(wob + this.spinning * 0.1);
 
-    // Le visage, vu sous l'angle où il se présente réellement
-    // (les têtes sont un peu plus hautes que larges : un crâne, pas une bille)
-    const hauteur = r * 2 * 1.12;
-    if (this.face && this.face.atlas) {
-      const vers = vNorm(vScale(this.pos, -1));
-      const { lon, lat } = viewAngles(this.faceYaw, this.facePitch, vers);
-      // De face et en gros plan, la vue pleine résolution est plus nette
-      // que la tuile de la planche.
-      if (this.face.tex && r > 60 && Math.abs(lon) < 0.22 && Math.abs(lat) < 0.22) {
-        ctx.drawImage(this.face.tex, -r, -hauteur / 2, r * 2, hauteur);
-      } else {
-        const t = tileFor(this.face.atlas, lon, lat);
-        ctx.drawImage(this.face.atlas.canvas, t.sx, t.sy, t.size, t.size, -r, -hauteur / 2, r * 2, hauteur);
-      }
-    } else if (this.face && this.face.tex) {
-      ctx.drawImage(this.face.tex, -r, -hauteur / 2, r * 2, hauteur);
+    // Le visage
+    const img = this.face && this.face.tex;
+    if (img) {
+      ctx.drawImage(img, -r, -r, r * 2, r * 2);
     } else {
       ctx.fillStyle = this.spec.color;
       ctx.beginPath();

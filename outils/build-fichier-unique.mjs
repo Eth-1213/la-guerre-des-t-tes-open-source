@@ -17,7 +17,7 @@ const SORTIE = join(ROOT, "hors-ligne", "guerre-des-tetes.html");
 
 // Ordre de dépendances : chaque module ne dépend que des précédents.
 const MODULES = [
-  "util.js", "storage.js", "audio.js", "sensors.js", "head3d.js", "faces.js",
+  "util.js", "storage.js", "audio.js", "sensors.js", "faces.js",
   "levels.js", "entities.js", "ui.js", "game.js", "main.js",
 ];
 
