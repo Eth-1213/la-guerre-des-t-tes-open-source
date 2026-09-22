@@ -8,7 +8,7 @@ import * as F from "./faces.js";
 import { Game } from "./game.js";
 import { LEVELS, indexInMode, nextLevel } from "./levels.js";
 import { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } from "./ui.js";
-import { clamp } from "./util.js";
+import { clamp, deg } from "./util.js";
 
 store.load();
 const settings = store.settings();
@@ -386,16 +386,21 @@ $("#btn-shutter").addEventListener("click", async () => {
   showCropPreview();
 });
 
-function showCropPreview() {
+/** Dimensionne le canvas d'aperçu à la zone de capture et le vide. */
+function preparerApercu() {
   const rect = capStage.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   capPreview.width = Math.round(rect.width * dpr);
   capPreview.height = Math.round(rect.height * dpr);
   const ctx = capPreview.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, rect.width, rect.height);
   ctx.fillStyle = "#05060d";
   ctx.fillRect(0, 0, rect.width, rect.height);
+  return { ctx, rect };
+}
+
+function showCropPreview() {
+  const { ctx, rect } = preparerApercu();
   const tex = F.makeTexture(pendingCrop);
   const size = Math.min(rect.width, rect.height) * 0.72;
   ctx.drawImage(tex, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
@@ -455,14 +460,7 @@ function startImportFraming(img) {
 function drawImportPreview() {
   if (!importImage) return;
   pendingCrop = F.cropFromImage(importImage, importView);
-  const rect = capStage.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  capPreview.width = Math.round(rect.width * dpr);
-  capPreview.height = Math.round(rect.height * dpr);
-  const ctx = capPreview.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = "#05060d";
-  ctx.fillRect(0, 0, rect.width, rect.height);
+  const { ctx, rect } = preparerApercu();
   const size = Math.min(rect.width, rect.height) * 0.78;
   ctx.drawImage(pendingCrop, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
   // Aperçu de la tête finale, en petit
@@ -588,7 +586,7 @@ function boucleDiag(now) {
   else cam.update();
 
   // Tremblement : plus grand écart de cap observé sur la dernière seconde.
-  const capDeg = (orientation.yaw * 180) / Math.PI;
+  const capDeg = deg(orientation.yaw);
   let d = Math.abs(capDeg - diag.capPrec);
   if (d > 180) d = 360 - d;
   diag.capPrec = capDeg;
@@ -607,7 +605,8 @@ function boucleDiag(now) {
       : "aucune — visée au doigt";
     $("#gyro-source").textContent = src;
     $("#gyro-rate").textContent = orientation.hasGyro ? orientation.frequence.toFixed(0) + " Hz" : "—";
-    $("#gyro-angles").textContent = `${capDeg.toFixed(0)}°  /  ${((orientation.pitch * 180) / Math.PI).toFixed(0)}°  /  ${((orientation.roll * 180) / Math.PI).toFixed(0)}°`;
+    $("#gyro-angles").textContent =
+      `${capDeg.toFixed(0)}°  /  ${deg(orientation.pitch).toFixed(0)}°  /  ${deg(orientation.roll).toFixed(0)}°`;
     $("#gyro-jitter").textContent = orientation.hasGyro ? diag.jitter.toFixed(2) + "°" : "—";
     if (diag.capDepart === null) $("#gyro-drift").textContent = "—";
     else {

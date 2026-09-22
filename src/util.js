@@ -16,14 +16,8 @@ export function wrapAngle(a) {
   return a - Math.PI;
 }
 
-/** Interpolation d'angles par le plus court chemin. */
-export function lerpAngle(a, b, t) {
-  return a + wrapAngle(b - a) * t;
-}
-
 export const v3 = (x = 0, y = 0, z = 0) => ({ x, y, z });
 export const vAdd = (a, b) => v3(a.x + b.x, a.y + b.y, a.z + b.z);
-export const vSub = (a, b) => v3(a.x - b.x, a.y - b.y, a.z - b.z);
 export const vScale = (a, s) => v3(a.x * s, a.y * s, a.z * s);
 export const vDot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
 export const vLen = (a) => Math.hypot(a.x, a.y, a.z);

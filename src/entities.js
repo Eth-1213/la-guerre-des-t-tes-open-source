@@ -3,9 +3,8 @@
 
 import { TAU, clamp, lerp, rand, randInt, v3, vAdd, vScale, vLen, vNorm, sphere, toSpherical } from "./util.js";
 
-export const HIT_DIST = 1.35;          // distance à laquelle une tête bouscule le joueur
-export const SPAWN_MIN = 8;
-export const SPAWN_MAX = 13;
+const HIT_DIST = 1.35;          // distance à laquelle une tête bouscule le joueur
+const SPAWN_MAX = 13;
 
 /* ------------------------------------------------------------------ */
 /*  Base                                                               */
@@ -29,7 +28,7 @@ class Entity {
 /*  Tête volante                                                       */
 /* ------------------------------------------------------------------ */
 
-export const HEAD_TYPES = {
+const HEAD_TYPES = {
   basic:   { hp: 1, speed: 1.00, radius: 0.52, score: 100, color: "#ff3b6b" },
   fast:    { hp: 1, speed: 1.85, radius: 0.40, score: 160, color: "#38e8ff" },
   armor:   { hp: 2, speed: 0.80, radius: 0.60, score: 220, color: "#ffcc4d" },
@@ -697,5 +696,3 @@ export class Particles {
 
   clear() { this.list.length = 0; }
 }
-
-export { Entity };

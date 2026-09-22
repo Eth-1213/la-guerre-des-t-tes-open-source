@@ -18,11 +18,6 @@ export function hideScreens() {
   $$(".screen").forEach((s) => s.classList.remove("active"));
 }
 
-export function currentScreen() {
-  const el = $(".screen.active");
-  return el ? el.id : null;
-}
-
 export function setHud(visible) {
   const hud = $("#hud");
   hud.classList.toggle("hidden", !visible);

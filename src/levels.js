@@ -68,7 +68,6 @@ export const LEVELS = [
 ];
 
 export const byMode = (mode) => LEVELS.filter((l) => l.mode === mode);
-export const byId = (id) => LEVELS.find((l) => l.id === id);
 export const indexInMode = (level) => byMode(level.mode).findIndex((l) => l.id === level.id);
 export const nextLevel = (level) => byMode(level.mode)[indexInMode(level) + 1] || null;
 

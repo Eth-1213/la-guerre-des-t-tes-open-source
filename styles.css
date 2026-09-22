@@ -47,14 +47,6 @@ html, body {
 
 .hidden { display: none !important; }
 
-/* Plaque blanche cernée de noir : lisible par-dessus n'importe quelle image. */
-.plaque {
-  background: var(--blanc);
-  border: 3px solid var(--encre);
-  border-radius: 999px;
-  box-shadow: 0 3px 0 var(--encre);
-}
-
 /* ---------------------------- HUD ---------------------------- */
 #hud {
   position: fixed; inset: 0; z-index: 3;
@@ -66,8 +58,7 @@ html, body {
 
 .hud-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .hud-left { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.hud-right { display: flex; flex-direction: column; gap: 6px; }
-.hud-right { align-items: flex-end; }
+.hud-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 
 .hearts {
   display: flex; gap: 3px; align-items: center;

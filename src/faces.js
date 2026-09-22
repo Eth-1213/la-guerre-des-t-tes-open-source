@@ -3,8 +3,8 @@
 
 import { rand, pick, TAU } from "./util.js";
 
-export const TEX_SIZE = 256;
-export const CROP_SIZE = 192; // taille stockée (JPEG) : compromis qualité / quota localStorage
+const TEX_SIZE = 256;
+const CROP_SIZE = 192; // taille stockée (JPEG) : compromis qualité / quota localStorage
 
 function makeCanvas(size) {
   const c = document.createElement("canvas");
@@ -13,7 +13,7 @@ function makeCanvas(size) {
 }
 
 /** Géométrie du gabarit ovale affiché par-dessus la vidéo de capture. */
-export function guideBox(stageW, stageH) {
+function guideBox(stageW, stageH) {
   const s = Math.min(stageW, stageH);
   const side = s * 0.78;
   return { x: (stageW - side) / 2, y: (stageH - side) / 2, side };

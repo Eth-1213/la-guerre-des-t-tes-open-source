@@ -59,14 +59,6 @@ html, body {
 
 .hidden { display: none !important; }
 
-/* Plaque blanche cernée de noir : lisible par-dessus n'importe quelle image. */
-.plaque {
-  background: var(--blanc);
-  border: 3px solid var(--encre);
-  border-radius: 999px;
-  box-shadow: 0 3px 0 var(--encre);
-}
-
 /* ---------------------------- HUD ---------------------------- */
 #hud {
   position: fixed; inset: 0; z-index: 3;
@@ -78,8 +70,7 @@ html, body {
 
 .hud-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .hud-left { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.hud-right { display: flex; flex-direction: column; gap: 6px; }
-.hud-right { align-items: flex-end; }
+.hud-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 
 .hearts {
   display: flex; gap: 3px; align-items: center;
@@ -738,14 +729,8 @@ function wrapAngle(a) {
   return a - Math.PI;
 }
 
-/** Interpolation d'angles par le plus court chemin. */
-function lerpAngle(a, b, t) {
-  return a + wrapAngle(b - a) * t;
-}
-
 const v3 = (x = 0, y = 0, z = 0) => ({ x, y, z });
 const vAdd = (a, b) => v3(a.x + b.x, a.y + b.y, a.z + b.z);
-const vSub = (a, b) => v3(a.x - b.x, a.y - b.y, a.z - b.z);
 const vScale = (a, s) => v3(a.x * s, a.y * s, a.z * s);
 const vDot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
 const vLen = (a) => Math.hypot(a.x, a.y, a.z);
@@ -919,7 +904,7 @@ const vCross = (a, b) => v3(
   a.x * b.y - a.y * b.x,
 );
 
-return { TAU, clamp, lerp, rand, randInt, pick, deg, rad, wrapAngle, lerpAngle, v3, vAdd, vSub, vScale, vDot, vLen, vNorm, sphere, toSpherical, Camera, Emitter, formatScore, quat, quatFromEulerYXZ, quatFromAxisAngle, quatMul, quatRotate, quatSlerp, cameraQuaternion, vCross };
+return { TAU, clamp, lerp, rand, randInt, pick, deg, rad, wrapAngle, v3, vAdd, vScale, vDot, vLen, vNorm, sphere, toSpherical, Camera, Emitter, formatScore, quat, quatFromEulerYXZ, quatFromAxisAngle, quatMul, quatRotate, quatSlerp, cameraQuaternion, vCross };
 })();
 
 __modules["storage.js"] = (function () {
@@ -1633,7 +1618,7 @@ function funProfile() {
     `menace ${pick(["faible", "modérée", "élevée", "maximale"])}`;
 }
 
-return { TEX_SIZE, CROP_SIZE, guideBox, cropFromVideo, cropFromImage, toDataURL, makeTexture, loadImage, readFile, defaultFaces, loadFaceTextures, funProfile };
+return { cropFromVideo, cropFromImage, toDataURL, makeTexture, loadImage, readFile, defaultFaces, loadFaceTextures, funProfile };
 })();
 
 __modules["levels.js"] = (function () {
@@ -1707,7 +1692,6 @@ const LEVELS = [
 ];
 
 const byMode = (mode) => LEVELS.filter((l) => l.mode === mode);
-const byId = (id) => LEVELS.find((l) => l.id === id);
 const indexInMode = (level) => byMode(level.mode).findIndex((l) => l.id === level.id);
 const nextLevel = (level) => byMode(level.mode)[indexInMode(level) + 1] || null;
 
@@ -1717,7 +1701,7 @@ const DIFFICULTY = {
   intense: { speed: 1.22, aggro: 1.35, hearts: 3, damage: 1 },
 };
 
-return { LEVELS, byMode, byId, indexInMode, nextLevel, DIFFICULTY };
+return { LEVELS, byMode, indexInMode, nextLevel, DIFFICULTY };
 })();
 
 __modules["entities.js"] = (function () {
@@ -1726,7 +1710,6 @@ __modules["entities.js"] = (function () {
 
 const { TAU, clamp, lerp, rand, randInt, v3, vAdd, vScale, vLen, vNorm, sphere, toSpherical } = __modules["util.js"];
 const HIT_DIST = 1.35;          // distance à laquelle une tête bouscule le joueur
-const SPAWN_MIN = 8;
 const SPAWN_MAX = 13;
 
 /* ------------------------------------------------------------------ */
@@ -2420,8 +2403,7 @@ class Particles {
   clear() { this.list.length = 0; }
 }
 
-
-return { HIT_DIST, SPAWN_MIN, SPAWN_MAX, HEAD_TYPES, Head, Butterfly, Bomb, Projectile, Boss, Particles, Entity };
+return { Head, Butterfly, Bomb, Projectile, Boss, Particles };
 })();
 
 __modules["ui.js"] = (function () {
@@ -2442,11 +2424,6 @@ function showScreen(id) {
 
 function hideScreens() {
   $$(".screen").forEach((s) => s.classList.remove("active"));
-}
-
-function currentScreen() {
-  const el = $(".screen.active");
-  return el ? el.id : null;
 }
 
 function setHud(visible) {
@@ -2575,7 +2552,7 @@ function drawFaceInto(canvas, tex) {
   if (tex) ctx.drawImage(tex, 0, 0, canvas.width, canvas.height);
 }
 
-return { $, $$, showScreen, hideScreens, currentScreen, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto };
+return { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto };
 })();
 
 __modules["game.js"] = (function () {
@@ -3017,7 +2994,7 @@ class Game extends Emitter {
       ctx.translate(rand(-s, s), rand(-s, s));
     }
 
-    if (!this.useCameraFeed) this._drawRoom(ctx);
+    if (!this.useCameraFeed) this.drawRoom();
 
     // Tri par profondeur : le plus loin d'abord.
     const list = [];
@@ -3044,13 +3021,12 @@ class Game extends Emitter {
     this._drawRadar();
   }
 
-  /** Redessine le décor de repli seul (utilisé par le test du gyroscope). */
+  /**
+   * Décor de repli : une salle en fil de fer quand la caméra n'est pas
+   * disponible. Sert aussi de référence au test du gyroscope.
+   */
   drawRoom() {
-    this._drawRoom(this.ctx);
-  }
-
-  /** Décor de repli : une salle en fil de fer quand la caméra n'est pas disponible. */
-  _drawRoom(ctx) {
+    const ctx = this.ctx;
     const W = this.W, H = this.H;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#2d3f63");
@@ -3233,7 +3209,7 @@ const F = __modules["faces.js"];
 const { Game } = __modules["game.js"];
 const { LEVELS, indexInMode, nextLevel } = __modules["levels.js"];
 const { $, $$, showScreen, hideScreens, setHud, toast, hud, renderLevels, renderFaces, drawFaceInto } = __modules["ui.js"];
-const { clamp } = __modules["util.js"];
+const { clamp, deg } = __modules["util.js"];
 store.load();
 const settings = store.settings();
 audio.setEnabled(settings.sound);
@@ -3610,16 +3586,21 @@ $("#btn-shutter").addEventListener("click", async () => {
   showCropPreview();
 });
 
-function showCropPreview() {
+/** Dimensionne le canvas d'aperçu à la zone de capture et le vide. */
+function preparerApercu() {
   const rect = capStage.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   capPreview.width = Math.round(rect.width * dpr);
   capPreview.height = Math.round(rect.height * dpr);
   const ctx = capPreview.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, rect.width, rect.height);
   ctx.fillStyle = "#05060d";
   ctx.fillRect(0, 0, rect.width, rect.height);
+  return { ctx, rect };
+}
+
+function showCropPreview() {
+  const { ctx, rect } = preparerApercu();
   const tex = F.makeTexture(pendingCrop);
   const size = Math.min(rect.width, rect.height) * 0.72;
   ctx.drawImage(tex, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
@@ -3679,14 +3660,7 @@ function startImportFraming(img) {
 function drawImportPreview() {
   if (!importImage) return;
   pendingCrop = F.cropFromImage(importImage, importView);
-  const rect = capStage.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  capPreview.width = Math.round(rect.width * dpr);
-  capPreview.height = Math.round(rect.height * dpr);
-  const ctx = capPreview.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = "#05060d";
-  ctx.fillRect(0, 0, rect.width, rect.height);
+  const { ctx, rect } = preparerApercu();
   const size = Math.min(rect.width, rect.height) * 0.78;
   ctx.drawImage(pendingCrop, (rect.width - size) / 2, (rect.height - size) / 2, size, size);
   // Aperçu de la tête finale, en petit
@@ -3812,7 +3786,7 @@ function boucleDiag(now) {
   else cam.update();
 
   // Tremblement : plus grand écart de cap observé sur la dernière seconde.
-  const capDeg = (orientation.yaw * 180) / Math.PI;
+  const capDeg = deg(orientation.yaw);
   let d = Math.abs(capDeg - diag.capPrec);
   if (d > 180) d = 360 - d;
   diag.capPrec = capDeg;
@@ -3831,7 +3805,8 @@ function boucleDiag(now) {
       : "aucune — visée au doigt";
     $("#gyro-source").textContent = src;
     $("#gyro-rate").textContent = orientation.hasGyro ? orientation.frequence.toFixed(0) + " Hz" : "—";
-    $("#gyro-angles").textContent = `${capDeg.toFixed(0)}°  /  ${((orientation.pitch * 180) / Math.PI).toFixed(0)}°  /  ${((orientation.roll * 180) / Math.PI).toFixed(0)}°`;
+    $("#gyro-angles").textContent =
+      `${capDeg.toFixed(0)}°  /  ${deg(orientation.pitch).toFixed(0)}°  /  ${deg(orientation.roll).toFixed(0)}°`;
     $("#gyro-jitter").textContent = orientation.hasGyro ? diag.jitter.toFixed(2) + "°" : "—";
     if (diag.capDepart === null) $("#gyro-drift").textContent = "—";
     else {

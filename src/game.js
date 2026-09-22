@@ -437,7 +437,7 @@ export class Game extends Emitter {
       ctx.translate(rand(-s, s), rand(-s, s));
     }
 
-    if (!this.useCameraFeed) this._drawRoom(ctx);
+    if (!this.useCameraFeed) this.drawRoom();
 
     // Tri par profondeur : le plus loin d'abord.
     const list = [];
@@ -464,13 +464,12 @@ export class Game extends Emitter {
     this._drawRadar();
   }
 
-  /** Redessine le décor de repli seul (utilisé par le test du gyroscope). */
+  /**
+   * Décor de repli : une salle en fil de fer quand la caméra n'est pas
+   * disponible. Sert aussi de référence au test du gyroscope.
+   */
   drawRoom() {
-    this._drawRoom(this.ctx);
-  }
-
-  /** Décor de repli : une salle en fil de fer quand la caméra n'est pas disponible. */
-  _drawRoom(ctx) {
+    const ctx = this.ctx;
     const W = this.W, H = this.H;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#2d3f63");
