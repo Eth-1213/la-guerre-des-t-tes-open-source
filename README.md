@@ -168,9 +168,19 @@ Points techniques notables :
 - Les ennemis hors champ sont signalés par des flèches et par un radar — indispensable quand
   l'action se déroule derrière toi.
 
+## Licence
+
+Code sous licence MIT — voir [LICENSE](LICENSE). Faites-en ce que vous voulez, y compris
+commercialement, à condition de conserver la mention de copyright.
+
+La licence ne couvre évidemment pas les visages que vous photographiez : ils restent sur votre
+appareil et ne sont jamais envoyés nulle part.
+
 ## À savoir
 
 Ce dépôt est un hommage indépendant, écrit de zéro : aucun code, image ni son de Nintendo n'y
-figure. *Face Raiders* est une marque de Nintendo / HAL Laboratory.
+figure. *Face Raiders* est une marque de Nintendo / HAL Laboratory. Le nom, les personnages et
+l'habillage d'origine appartiennent à leurs ayants droit ; ce projet ne les reprend pas, il
+s'inspire du principe de jeu.
 
 Le jeu se joue **debout, en tournant sur soi-même**. Regarde autour de toi avant de commencer.
