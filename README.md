@@ -11,77 +11,18 @@ kabuto dont la gemme frontale est le point faible.
 Tout tient dans une page web : ni moteur de jeu, ni dépendance, ni build. HTML, CSS et
 JavaScript modules, un canvas 2D avec sa propre projection 3D, et des sons synthétisés à la volée.
 
-## Tester sans rien publier
+## Jouer
 
-Le jeu a besoin d'une **origine sécurisée** (HTTPS ou `localhost`) pour accéder à la caméra et
-aux capteurs de mouvement : c'est une règle des navigateurs, pas du jeu. Deux façons de tester
-sur ton téléphone sans mettre quoi que ce soit en ligne.
+### → **[la-guerre-des-tetes.vercel.app](https://la-guerre-des-tetes.vercel.app)**
 
-### 1. Serveur HTTPS local — réalité augmentée complète
+Ouvre ce lien sur ton téléphone et accepte les demandes de caméra et de capteurs de mouvement.
+**Lève-toi** : les têtes arrivent de partout, y compris derrière toi.
 
-Sur un ordinateur relié au **même Wi-Fi** que le téléphone :
+« Ajouter à l'écran d'accueil » installe le jeu comme une application — il reste alors jouable
+sans connexion.
 
-```bash
-npm start          # ou : node outils/serveur.mjs
-```
-
-Le serveur fabrique un certificat auto-signé (via OpenSSL, une seule fois) et affiche les
-adresses à ouvrir, par exemple :
-
-```
-  Sur ton téléphone (même réseau Wi-Fi) :
-    https://192.168.1.24:8443   (wlan0)
-```
-
-Tape cette adresse dans le navigateur du téléphone. Comme le certificat est auto-signé, une page
-d'avertissement apparaît : accepte-la une fois (*Paramètres avancés → Continuer* sur Android,
-*Afficher les détails → Visiter ce site web* sur iPhone). Ensuite la caméra, le gyroscope, les
-vibrations et la sauvegarde fonctionnent normalement. Rien n'est publié : tout reste sur ton
-réseau local.
-
-Aucune dépendance à installer, le serveur n'utilise que Node (18 ou plus récent).
-
-> Un message d'erreur de certificat concernant le *service worker* peut apparaître dans la
-> console : les navigateurs refusent de l'installer derrière un certificat auto-signé. Cela n'a
-> aucun effet sur le jeu.
-
-Variante sans certificat : `npm run http` sert en HTTP simple. Pratique pour vérifier
-l'interface, mais les navigateurs y bloquent la caméra et les capteurs — le jeu bascule alors
-sur le décor de secours et la visée au doigt.
-
-### 2. Fichier unique — rien à installer
-
-```bash
-npm run hors-ligne   # écrit hors-ligne/guerre-des-tetes.html
-```
-
-Le fichier `hors-ligne/guerre-des-tetes.html` (~115 Ko) contient **tout le jeu** : interface,
-styles et code. Envoie-le au téléphone comme tu veux (AirDrop, message, clé USB, téléchargement
-depuis ce dépôt) et ouvre-le. Il est aussi versionné ici, donc téléchargeable directement sans
-rien lancer.
-
-Limite à connaître : sur une URL `file://`, les navigateurs interdisent la caméra. Le jeu le
-détecte, l'annonce sur l'écran d'accueil et passe au décor de secours avec visée au doigt (ou au
-gyroscope s'il répond). Tout le reste — niveaux, boss, capture par import de photo, scores —
-fonctionne. C'est l'aperçu rapide ; pour la vraie AR, prends la méthode 1.
-
-Ce fichier est **généré** à partir de `src/` : après une modification du code, relance
-`npm run hors-ligne` pour le régénérer.
-
-## Publier (facultatif)
-
-Le jeu est un site statique : n'importe quel hébergement HTTPS convient.
-
-**Vercel** — `vercel.json` est fourni : pas de build, la racine du dépôt est servie telle quelle,
-avec une `Permissions-Policy` qui autorise la caméra et les capteurs de mouvement. En ligne de
-commande : `npx vercel --prod`. Pour retirer le déploiement ensuite, supprime le projet depuis le
-tableau de bord Vercel (*Settings → Delete Project*), ou `npx vercel remove <nom-du-projet>`.
-
-**GitHub Pages** — *Settings → Pages → Source : Deploy from a branch*, puis la branche et le
-dossier `/`.
-
-Dans les deux cas, « Ajouter à l'écran d'accueil » installe le jeu comme une application
-(manifeste + service worker, jouable hors connexion).
+Sur ordinateur, ça marche aussi : sans gyroscope, on tourne la vue à la souris, et sans caméra
+un décor de secours prend le relais.
 
 ## Commandes
 
@@ -131,6 +72,68 @@ utilisée, sa fréquence, le cap, l'élévation, le roulis, le tremblement et la
 repères tiennent en place quand le téléphone est posé, le capteur va bien — ce sont les têtes
 qui volent.
 
+## Le faire tourner chez soi
+
+Le jeu a besoin d'une **origine sécurisée** (HTTPS ou `localhost`) pour accéder à la caméra et
+aux capteurs de mouvement : c'est une règle des navigateurs, pas du jeu. Aucune dépendance à
+installer, seulement Node 18 ou plus récent.
+
+### Serveur HTTPS local — réalité augmentée complète
+
+Sur un ordinateur relié au **même Wi-Fi** que le téléphone :
+
+```bash
+npm start          # ou : node outils/serveur.mjs
+```
+
+Le serveur fabrique un certificat auto-signé (via OpenSSL, une seule fois) et affiche les
+adresses à ouvrir, par exemple :
+
+```
+  Sur ton téléphone (même réseau Wi-Fi) :
+    https://192.168.1.24:8443   (wlan0)
+```
+
+Tape cette adresse dans le navigateur du téléphone. Comme le certificat est auto-signé, une page
+d'avertissement apparaît : accepte-la une fois (*Paramètres avancés → Continuer* sur Android,
+*Afficher les détails → Visiter ce site web* sur iPhone). Ensuite la caméra, le gyroscope, les
+vibrations et la sauvegarde fonctionnent normalement, et rien ne quitte ton réseau local.
+
+> Un message d'erreur de certificat concernant le *service worker* peut apparaître dans la
+> console : les navigateurs refusent de l'installer derrière un certificat auto-signé. Cela n'a
+> aucun effet sur le jeu.
+
+Variante sans certificat : `npm run http` sert en HTTP simple. Pratique pour vérifier
+l'interface, mais les navigateurs y bloquent la caméra et les capteurs.
+
+### Fichier unique — rien à installer
+
+```bash
+npm run hors-ligne   # écrit hors-ligne/guerre-des-tetes.html
+```
+
+Ce fichier (~140 Ko) contient **tout le jeu** : interface, styles et code. Envoie-le au téléphone
+comme tu veux et ouvre-le, sans serveur ni connexion. Il est versionné ici, donc téléchargeable
+directement.
+
+Limite à connaître : sur une URL `file://`, les navigateurs interdisent la caméra. Le jeu le
+détecte, l'annonce sur l'écran d'accueil et passe au décor de secours avec visée au doigt (ou au
+gyroscope s'il répond). Tout le reste fonctionne.
+
+C'est un fichier **généré** à partir de `src/` : après une modification du code, relance
+`npm run hors-ligne` pour le régénérer.
+
+### Héberger ailleurs
+
+Le jeu est un site statique : n'importe quel hébergement HTTPS convient.
+
+**Vercel** — `vercel.json` est fourni : pas de build, la racine du dépôt est servie telle quelle,
+avec une `Permissions-Policy` qui autorise la caméra et les capteurs. En ligne de commande :
+`npx vercel --prod`.
+
+**GitHub Pages** — *Settings → Pages → Source : Deploy from a branch*, puis la branche et le
+dossier `/`.
+
 ## Architecture
 
 ```
@@ -170,10 +173,10 @@ Points techniques notables :
 
 ## Licence
 
-Code sous licence MIT — voir [LICENSE](LICENSE). Faites-en ce que vous voulez, y compris
+Code sous licence MIT — voir [LICENSE](LICENSE). Fais-en ce que tu veux, y compris
 commercialement, à condition de conserver la mention de copyright.
 
-La licence ne couvre évidemment pas les visages que vous photographiez : ils restent sur votre
+La licence ne couvre évidemment pas les visages que tu photographies : ils restent sur ton
 appareil et ne sont jamais envoyés nulle part.
 
 ## À savoir
