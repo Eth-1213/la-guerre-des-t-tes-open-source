@@ -5,8 +5,8 @@ réalité augmentée préinstallé sur les consoles Nintendo 3DS.
 
 Tu photographies un visage, il devient la tête d'ennemis volants qui traversent les murs de
 ta pièce. Tu vises en **bougeant réellement ton téléphone** (gyroscope), sur 360°, avec le flux
-de la caméra arrière comme décor. Chaque niveau se termine par une **Grande Tête** coiffée d'un
-kabuto dont la gemme frontale est le point faible.
+de la caméra arrière comme décor. La plupart des niveaux se terminent par une **Grande Tête**
+coiffée d'un kabuto dont la gemme frontale est le point faible.
 
 Tout tient dans une page web : ni moteur de jeu, ni dépendance, ni build. HTML, CSS et
 JavaScript modules, un canvas 2D avec sa propre projection 3D, et des sons synthétisés à la volée.
@@ -47,8 +47,9 @@ un décor de secours prend le relais.
 - **Boss** : la visière du kabuto se relève par intermittence et découvre la gemme. C'est le seul
   moment où il est vulnérable. Le vaincre « sauve » le visage utilisé et débloque le niveau suivant.
 
-**9 niveaux** : 6 pour la campagne, 3 en mode « Montrer à un ami » (parties courtes, dont deux
-chronométrées). Chaque niveau se débloque en terminant le précédent.
+**9 niveaux** : 6 pour la campagne, 3 en mode « Montrer à un ami ». Chacun se débloque en
+terminant le précédent. Sept se concluent par un boss ; les deux démos chronométrées
+(« Démonstration », 45 s, et « Chasse aux papillons », 60 s) s'arrêtent au chrono.
 
 ## Visages
 
