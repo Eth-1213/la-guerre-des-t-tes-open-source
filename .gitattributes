@@ -1,0 +1,5 @@
+# Le fichier hors ligne est produit par outils/build-fichier-unique.mjs : c'est
+# du JavaScript recopié dans une balise <script>, pas du HTML écrit à la main.
+# Sans cette ligne, GitHub le compte comme du HTML et annonce « HTML » comme
+# langage principal du dépôt.
+hors-ligne/guerre-des-tetes.html linguist-generated=true
